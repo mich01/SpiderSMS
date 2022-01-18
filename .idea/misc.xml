@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/drawable/background_received.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/background_sent.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/bg_edit_text.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/chat_bg_gradient.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/contact_icon.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_chat.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_contacts.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_data_qrgenerator.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_home.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_login.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_login2.xml" value="0.159375" />
+        <entry key="app/src/main/res/layout/activity_otpactivity.xml" value="0.12" />
+        <entry key="app/src/main/res/layout/activity_qrscanner.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_setup.xml" value="0.15" />
+        <entry key="app/src/main/res/layout/contact_item.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/receiver_bubble.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/sender_bubble.xml" value="0.1" />
+        <entry key="app/src/main/res/menu/contact_menu.xml" value="0.1" />
+        <entry key="app/src/main/res/menu/main_menu.xml" value="0.1" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
