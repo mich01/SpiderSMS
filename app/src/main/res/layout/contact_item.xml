@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:divider="@null"
+    android:dividerHeight="0dp"
+    android:padding="6dp">
+<ImageView
+    android:layout_width="50dp"
+    android:layout_height="50dp"
+    android:src="@drawable/contact_icon"
+    android:id="@+id/contact_img"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/contact_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:text="main text"
+            android:textColor="#000"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/contact_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sub text"
+            android:textColor="#a9a9a9"
+            android:textStyle="bold"
+            android:layout_margin="0dp"
+            android:textSize="15sp"/>
+    </LinearLayout>
+</LinearLayout>

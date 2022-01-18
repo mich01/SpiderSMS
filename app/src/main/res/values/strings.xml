@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SpiderSMS</string>
+    <string name="form_phone_no">254722000000</string>
+    <string name="lbl_phone_number">Enter Phone number</string>
+</resources>
