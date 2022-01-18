@@ -9,6 +9,7 @@
         <entry key="app/src/main/res/drawable/chat_bg_gradient.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/contact_icon.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_chat.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_config_choice.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_contacts.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_data_qrgenerator.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_home.xml" value="0.1" />
@@ -16,6 +17,7 @@
         <entry key="app/src/main/res/layout/activity_login2.xml" value="0.159375" />
         <entry key="app/src/main/res/layout/activity_otpactivity.xml" value="0.12" />
         <entry key="app/src/main/res/layout/activity_qrscanner.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_scanner_setup.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_setup.xml" value="0.15" />
         <entry key="app/src/main/res/layout/contact_item.xml" value="0.1" />
         <entry key="app/src/main/res/layout/receiver_bubble.xml" value="0.1" />

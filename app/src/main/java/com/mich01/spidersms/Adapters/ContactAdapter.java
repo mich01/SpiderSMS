@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat;
 
 
 import com.mich01.spidersms.R;
+import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.ContactsActivity;
 import com.mich01.spidersms.UI.DataQRGenerator;
 import com.mich01.spidersms.UI.HomeActivity;
@@ -65,7 +66,7 @@ public class ContactAdapter extends ArrayAdapter<String>
             @Override
             public void onClick(View v)
             {
-                /*if(is_App.get(position)==1)
+                if(is_App.get(position)==1)
                 {
                     Toast.makeText(context, C_ID.get(position), Toast.LENGTH_LONG).show();
                     Intent ChatIntent = new Intent(context, ChatActivity.class);
@@ -74,29 +75,36 @@ public class ContactAdapter extends ArrayAdapter<String>
                     ChatIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
                     ChatIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(ChatIntent);
-                    //((ContactsActivity)getContext()).finish();
+                    ((ContactsActivity)getContext()).finish();
                 }
                 else
                 {
+                    Intent smsIntent = new Intent(context, ChatActivity.class);
+                    smsIntent.putExtra("ContactID", C_ID.get(position));
+                    smsIntent.putExtra("ContactName", C_Status.get(position));
+                    smsIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
+                    smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    //((ContactsActivity)getContext()).finish();
                     if (ActivityCompat.checkSelfPermission(context,
                             Manifest.permission.SEND_SMS) !=
                             PackageManager.PERMISSION_GRANTED)
                     {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            ((ContactsActivity)getContext()).requestPermissions(new String[]{Manifest.permission.SEND_SMS},1111);
+                            //((ContactsActivity)getContext()).requestPermissions(new String[]{Manifest.permission.SEND_SMS},1111);
+                            //context.getApplicationContext().requestPermissions(new String[]{Manifest.permission.SEND_SMS},1111);
                         }
                     }
                     else
                     {
-                        Intent smsIntent = new Intent(context, SMS_activity.class);
+                        /*Intent smsIntent = new Intent(context, ChatActivity.class);
                         smsIntent.putExtra("ContactID", C_ID.get(position));
                         smsIntent.putExtra("ContactName", C_Status.get(position));
                         smsIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
                         smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(smsIntent);
+                        context.startActivity(smsIntent);*/
                     }
 
-                    }*/
+                    }
                 }
         });
         contact_row.setOnLongClickListener(new View.OnLongClickListener() {

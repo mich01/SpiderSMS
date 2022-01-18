@@ -9,9 +9,6 @@
     <item android:id="@+id/add_contact"
         android:title="Add Contact"
         app:showAsAction="never"/>
-    <item android:id="@+id/create_group"
-        android:title="Create Group"
-        app:showAsAction="never"/>
     <item android:id="@+id/reconfigure"
         android:title="Settings"
         app:showAsAction="never"/>

@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.CAMERA" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -38,6 +39,15 @@
             android:exported="false" />
         <activity
             android:name=".UI.ContactsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UI.DataQRGenerator"
+            android:exported="false" />
+        <activity
+            android:name=".Setup.ConfigChoiceActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Setup.ScannerSetupActivity"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"

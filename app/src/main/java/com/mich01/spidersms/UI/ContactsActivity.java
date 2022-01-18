@@ -66,7 +66,6 @@ public class ContactsActivity extends AppCompatActivity {
                 {
                     dialog = ProgressDialog.show(ContactsActivity.this, "",
                             "Loading. Please wait...: ", true);
-                    //Log.i("Progress: ", "here");
                 }
             }
         });
@@ -112,7 +111,6 @@ public class ContactsActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String query) {
-                Log.i("Action: "," Data has been entered"+query.toString());
                 FilterContacts(query);
                 return false;
             }
@@ -162,7 +160,6 @@ public class ContactsActivity extends AppCompatActivity {
             {
                 return;
             }
-            Toast.makeText(activity.getApplicationContext(), "Updated Contact List",Toast.LENGTH_LONG).show();
             adapter = new ContactAdapter(activity.getApplicationContext(),CID,ContactNames,ContactStatus, ContactImgs,CType);
             dialog.dismiss();
             ContactListView.setAdapter(adapter);
