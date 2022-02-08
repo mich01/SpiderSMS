@@ -18,10 +18,10 @@ import android.widget.Toast;
 
 import com.mich01.spidersms.Prefs.PrefsMgr;
 
-/*import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECParameterSpec;*/
+import org.bouncycastle.jce.spec.ECParameterSpec;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -202,7 +202,7 @@ public class IDManagementProtocol
         return true;
     }
 
- /*   public static void PKI_CURVE_25519()
+    public static void PKI_CURVE_25519()
     {
         PublicKey publicKey = null;
         PrivateKey privateKey =null;
@@ -221,5 +221,5 @@ public class IDManagementProtocol
             e.printStackTrace();
         }
         Log.i("Keys: ",publicKey+" -- "+privateKey+" -- "+keyPair);
-    }*/
+    }
 }

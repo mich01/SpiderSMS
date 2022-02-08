@@ -31,6 +31,7 @@ public class DBManager extends SQLiteOpenHelper
     {
         db.execSQL("drop table if exists UserProfile");
         db.execSQL("drop table if exists Contacts");
+        db.execSQL("drop table if exists EncryptedSMS");
     }
     public boolean insertUserDetails(String CID, String PhoneNo, String UserName, String ServerURL)
     {

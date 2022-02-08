@@ -79,30 +79,14 @@ public class ContactAdapter extends ArrayAdapter<String>
                 }
                 else
                 {
-                    Intent smsIntent = new Intent(context, ChatActivity.class);
-                    smsIntent.putExtra("ContactID", C_ID.get(position));
-                    smsIntent.putExtra("ContactName", C_Status.get(position));
-                    smsIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
-                    smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    //((ContactsActivity)getContext()).finish();
-                    if (ActivityCompat.checkSelfPermission(context,
-                            Manifest.permission.SEND_SMS) !=
-                            PackageManager.PERMISSION_GRANTED)
-                    {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            //((ContactsActivity)getContext()).requestPermissions(new String[]{Manifest.permission.SEND_SMS},1111);
-                            //context.getApplicationContext().requestPermissions(new String[]{Manifest.permission.SEND_SMS},1111);
-                        }
-                    }
-                    else
-                    {
-                        /*Intent smsIntent = new Intent(context, ChatActivity.class);
-                        smsIntent.putExtra("ContactID", C_ID.get(position));
-                        smsIntent.putExtra("ContactName", C_Status.get(position));
-                        smsIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
-                        smsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(smsIntent);*/
-                    }
+                    Toast.makeText(context, C_ID.get(position), Toast.LENGTH_LONG).show();
+                    Intent SMSIntent = new Intent(context, ChatActivity.class);
+                    SMSIntent.putExtra("ContactID", C_ID.get(position));
+                    SMSIntent.putExtra("ContactName", C_Names.get(position));
+                    SMSIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
+                    SMSIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(SMSIntent);
+                    ((ContactsActivity)getContext()).finish();
 
                     }
                 }

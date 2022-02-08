@@ -5,17 +5,22 @@ import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.mich01.spidersms.Backend.BackendFunctions;
 import com.mich01.spidersms.Setup.SetupConfig;
+import com.mich01.spidersms.UI.ContactsActivity;
 import com.mich01.spidersms.UI.HomeActivity;
 import com.mich01.spidersms.UI.LoginActivity;
 import com.mich01.spidersms.UI.SetupActivity;
@@ -43,19 +48,29 @@ public class SplashActivity extends AppCompatActivity {
                 PrefEditor.putBoolean("Licensed", false);
                 PrefEditor.apply();
             }
-                                    h.postDelayed(() -> {
-                First_Run = preferences.getInt("SetupComplete", 0);
-                Intent i;
-                if (First_Run == 0)
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS)  != PackageManager.PERMISSION_GRANTED)
+            {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 {
-                    i = new Intent(SplashActivity.this, HomeActivity.class);
-
-                } else {
-                    i = new Intent(SplashActivity.this, LoginActivity.class);
+                    requestPermissions(new String[]{Manifest.permission.SEND_SMS},1111);
                 }
-                startActivity(i);
-                finish();
-            }, 1000);
+            }
+            else
+            {
+                h.postDelayed(() -> {
+                    First_Run = preferences.getInt("SetupComplete", 0);
+                    Intent i;
+                    if (First_Run == 0)
+                    {
+                        i = new Intent(SplashActivity.this, HomeActivity.class);
+
+                    } else {
+                        i = new Intent(SplashActivity.this, LoginActivity.class);
+                    }
+                    startActivity(i);
+                    finish();
+                }, 1000);
+            }
         } else {
             AlertDialog alertDialog = new AlertDialog.Builder(SplashActivity.this).create();
             alertDialog.setTitle("Error");

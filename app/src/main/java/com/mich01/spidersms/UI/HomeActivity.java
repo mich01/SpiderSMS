@@ -36,7 +36,8 @@ public class HomeActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab_chat);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)  != PackageManager.PERMISSION_GRANTED)
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -49,7 +50,6 @@ public class HomeActivity extends AppCompatActivity {
                             .setAction("Action", null).show();
                     startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
                 }
-
             }
         });
     }
@@ -86,8 +86,6 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ConfigChoiceActivity.class));
                 break;
             case  R.id.share_contact:
-                //new XMPPConnection(this).createNewUser();
-                //Log.i("Contact Domain",MyContact);
                 SharedPreferences preferences = this.getSharedPreferences("global", Context.MODE_PRIVATE);
                 JSONObject ContactJson = new JSONObject();
                 try {
@@ -101,9 +99,7 @@ public class HomeActivity extends AppCompatActivity {
                 Intent QRIntent = new Intent(this, DataQRGenerator.class);
                 QRIntent.putExtra("Contact", ContactJson.toString());
                 QRIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
                 startActivity(QRIntent);
-
                 break;
         }
         return super.onOptionsItemSelected(item);

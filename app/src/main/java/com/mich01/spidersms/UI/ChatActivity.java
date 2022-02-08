@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mich01.spidersms.Adapters.MessageAdapter;
 import com.mich01.spidersms.Backend.ResponseMessage;
+import com.mich01.spidersms.Backend.SMSHandler;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
 
@@ -64,7 +65,7 @@ public class ChatActivity extends AppCompatActivity {
                 if(actionId == EditorInfo.IME_ACTION_SEND)
                 {
                     ResponseMessage message = new ResponseMessage(userInput.getText().toString(), true,1);
-                    //SendMessage(userInput.getText().toString(),bundle.getString("ContactID"));
+                    new SMSHandler(context).sendEncryptedSMS(bundle.getString("ContactID"),userInput.getText().toString());
                     Log.i("sending msg: ",userInput.getText().toString());
                     responseMessageList.add(message);
                     messageAdapter.notifyDataSetChanged();
@@ -73,7 +74,7 @@ public class ChatActivity extends AppCompatActivity {
                         recyclerView.smoothScrollToPosition(messageAdapter.getItemCount()-1);
                     }
                 }
-                //userInput.setText("");
+                userInput.setText("");
                 return false;
             }
         });
@@ -186,4 +187,5 @@ public class ChatActivity extends AppCompatActivity {
         });
 
     }*/
+
 }

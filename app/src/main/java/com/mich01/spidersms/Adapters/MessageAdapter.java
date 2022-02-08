@@ -56,16 +56,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
     @Override
     public void onBindViewHolder(@NonNull @NotNull MessageAdapter.CustomViewHolder holder, int position)
     {
-        if(responseMessageList.get(position).getMessageType()==1) {
-            holder.textView.setText(responseMessageList.get(position).getTextMessage());
+        if(responseMessageList.get(position).getMessageType()==1 || !responseMessageList.isEmpty()) {
+            //holder.textView.setText(responseMessageList.get(position).getTextMessage());
         }
         else
         {
-            holder.textView.setText(responseMessageList.get(position).getTextMessage());
-            //Uri imgUri=Uri.parse("/sdcard/DCIM/Camera/20210604_202818.jpg");
-            //holder.imageView.setImageURI(null);
-            //holder.imageView.setImageURI(imgUri);
-            //holder.imageView.setImageURI(Uri.fromFile(new File("/sdcard/DCIM/Camera/20210604_202818.jpg")));
+            //holder.textView.setText(responseMessageList.get(position).getTextMessage());
         }
     }
 
