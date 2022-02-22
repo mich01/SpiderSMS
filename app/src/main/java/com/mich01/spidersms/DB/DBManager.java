@@ -25,6 +25,8 @@ public class DBManager extends SQLiteOpenHelper
         db.execSQL("create Table UserProfile(CID TEXT primary key, PhoneNo TEXT, UserName TEXT, ServerURL TEXT)");
         db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, CryptoAlg TEXT, StegKey TEXT, Secret TEXT, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
         db.execSQL("create Table EncryptedSMS(MessageID INTEGER primary key AUTOINCREMENT NOT NULL,SenderNumber TEXT,CID TEXT,inorout INTEGER, PubKey TEXT, CryptoAlg TEXT, StegKey TEXT,Timestamp)");
+        db.execSQL("create Table LastChats(CID TEXT primary key,MessageText TEXT,inorout INTEGER,ReadStatus INEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
+
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
@@ -299,5 +301,52 @@ public class DBManager extends SQLiteOpenHelper
             e.printStackTrace();
         }
         return result;
+    }
+    public Cursor getLastChatList()
+    {
+        SQLiteDatabase DB = this.getWritableDatabase();
+        Cursor cursor = DB.rawQuery("select LastChats.CID, " +
+                "LastChats.MessageText, " +
+                "LastChats.Timestamp, " +
+                "LastChats.ReadStatus, " +
+                "LastChats.inorout, " +
+                "Contacts.ContactName  " +
+                "from LastChats LEFT JOIN Contacts on  Contacts.CID = LastChats.CID Order By LastChats.Timestamp DESC",null);
+        return cursor;
+    }
+    public boolean updateLastMessage(String CID, String MessageText, int InOrOut, int ReadStatus)
+    {
+        boolean status = false;
+        SQLiteDatabase DB = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("CID", CID);
+        contentValues.put("MessageText", MessageText);
+        contentValues.put("inorout", InOrOut);
+        contentValues.put("ReadStatus", ReadStatus);
+        contentValues.put("Timestamp", System.currentTimeMillis());
+        Log.i("Current ID: ",CID);
+        Cursor ChatCursor = DB.rawQuery("select * from LastChats where CID=?", new String[]{CID});
+        if (ChatCursor.getCount() > 0) {
+            long result = DB.update("LastChats", contentValues, "CID=?", new String[]{CID});
+            if (result == -1) {
+                status = false;
+            }
+            else
+            {
+                status = true;
+            }
+        }
+        else
+        {
+            long result = DB.insert("LastChats", null, contentValues);
+            if (result == -1) {
+                status =false;
+            }
+            else
+            {
+                status = true;
+            }
+        }
+        return status;
     }
 }

@@ -3,6 +3,7 @@ package com.mich01.spidersms.Setup;
 import static android.service.controls.ControlsProviderService.TAG;
 
 import static com.mich01.spidersms.Crypto.IDManagementProtocol.GenerateNewKey;
+import static com.mich01.spidersms.Crypto.IDManagementProtocol.ShareContact;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
 
@@ -11,6 +12,7 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.UI.HomeActivity;
 
 import org.json.JSONException;
@@ -40,13 +42,13 @@ public class SetupConfig
                 }
                 break;
             case "HelloContact":
-               /* if(new DBManager(context).AddContact(Input))
+                if(new DBManager(context).AddContact(Input))
                 {
                     context.startActivity(new Intent(context, HomeActivity.class));
                     Toast.makeText(context.getApplicationContext(), "New Contact Added", Toast.LENGTH_LONG).show();
                     ShareContact(context,Input.getString("CID"));
                     ((ScannerSetupActivity)context).finish();
-                }*/
+                }
                 break;
             case "Group":
                 Toast.makeText(context.getApplicationContext(), "Group Data", Toast.LENGTH_LONG).show();

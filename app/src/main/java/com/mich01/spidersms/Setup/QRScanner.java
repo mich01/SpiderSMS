@@ -65,7 +65,7 @@ public class QRScanner extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(getApplicationContext(), ConfigChoiceActivity.class));
+                startActivity(new Intent(getApplicationContext(), ConfigChoiceActivity.class));
                 finish();
             }
         });

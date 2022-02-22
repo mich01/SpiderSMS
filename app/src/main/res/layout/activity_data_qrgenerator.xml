@@ -42,10 +42,10 @@
         app:srcCompat="@drawable/ic_code_scanner_auto_focus_off" />
 
     <Button
-        android:id="@+id/cmd_cave_qr"
+        android:id="@+id/cmd_share_qr"
         android:layout_width="199dp"
         android:layout_height="56dp"
-        android:text="Save Contact QR"
+        android:text="Share Contact QR"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
