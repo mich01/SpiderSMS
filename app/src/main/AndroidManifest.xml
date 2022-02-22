@@ -17,14 +17,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SpiderSMS">
+        <activity
+            android:name=".Setup.OTPActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UI.UnlockActivity"
+            android:exported="false" />
+
         <receiver
             android:name=".Recievers.MainReceiver"
             android:enabled="true"
-            android:exported="true"></receiver>
-
-        <activity
-            android:name=".Setup.OTPActivity"
             android:exported="true" />
+
         <activity
             android:name=".Setup.LoginActivity"
             android:exported="true" />

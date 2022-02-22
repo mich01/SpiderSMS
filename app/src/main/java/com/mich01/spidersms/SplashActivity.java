@@ -24,6 +24,7 @@ import com.mich01.spidersms.UI.ContactsActivity;
 import com.mich01.spidersms.UI.HomeActivity;
 import com.mich01.spidersms.UI.LoginActivity;
 import com.mich01.spidersms.UI.SetupActivity;
+import com.mich01.spidersms.UI.UnlockActivity;
 
 import java.util.Objects;
 
@@ -62,10 +63,10 @@ public class SplashActivity extends AppCompatActivity {
                     Intent i;
                     if (First_Run == 0)
                     {
-                        i = new Intent(SplashActivity.this, HomeActivity.class);
+                        i = new Intent(SplashActivity.this, SetupActivity.class);
 
                     } else {
-                        i = new Intent(SplashActivity.this, LoginActivity.class);
+                        i = new Intent(SplashActivity.this, UnlockActivity.class);
                     }
                     startActivity(i);
                     finish();

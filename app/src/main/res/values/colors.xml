@@ -15,4 +15,5 @@
     <color name="sent_msg">#00badc</color>
     <color name="received_msg">#aaaaaa</color>
     <color name="unregistered_contact">#eee</color>
+    <color name="error">#f00</color>
 </resources>

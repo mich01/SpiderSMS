@@ -74,10 +74,24 @@ public class ContactsActivity extends AppCompatActivity {
         ContactListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
             }
         });
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -105,7 +119,6 @@ public class ContactsActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query)
             {
-
                 return false;
             }
 

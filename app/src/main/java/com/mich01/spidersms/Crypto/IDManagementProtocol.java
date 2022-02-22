@@ -175,24 +175,6 @@ public class IDManagementProtocol
     {
         return true;
     }
-    public static boolean HelloContact(Context context,String ContactID)
-    {
-        JSONObject myContact = new JSONObject();
-        try
-        {
-            SharedPreferences preferences = context.getSharedPreferences("global", Context.MODE_PRIVATE);
-            myContact.put("Data","HelloContact");
-            //myContact.put("CID", SERVER_USER_NAME);
-            myContact.put("CName", preferences.getString("PublicName","0"));
-            myContact.put("PubKey", preferences.getString("ServerPubKey","0"));
-            ShareContact(context,ContactID);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return true;
-    }
-
     public static boolean ID_Key_ExchangeFail(String Stage)
     {
         return true;
@@ -202,7 +184,7 @@ public class IDManagementProtocol
         return true;
     }
 
-    public static void PKI_CURVE_25519()
+    public static JSONObject PKI_CURVE_25519()
     {
         PublicKey publicKey = null;
         PrivateKey privateKey =null;
@@ -220,6 +202,15 @@ public class IDManagementProtocol
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         }
+        JSONObject KeyJSON = new JSONObject();
+        try {
+            KeyJSON.put("PublicKey",publicKey);
+            KeyJSON.put("PrivateKey",privateKey);
+            KeyJSON.put("KeyPair",keyPair);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         Log.i("Keys: ",publicKey+" -- "+privateKey+" -- "+keyPair);
+        return KeyJSON;
     }
 }

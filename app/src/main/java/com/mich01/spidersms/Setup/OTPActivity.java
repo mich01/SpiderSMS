@@ -1,0 +1,94 @@
+package com.mich01.spidersms.Setup;
+
+import static android.content.ContentValues.TAG;
+
+import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
+import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
+import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseException;
+import com.google.firebase.FirebaseTooManyRequestsException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthSettings;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthOptions;
+import com.google.firebase.auth.PhoneAuthProvider;
+import com.mich01.spidersms.R;
+import com.mich01.spidersms.UI.HomeActivity;
+import com.mich01.spidersms.UI.SetupActivity;
+
+import java.util.concurrent.TimeUnit;
+
+public class OTPActivity extends AppCompatActivity {
+
+    private static final String TAG = "PhoneAuthActivity";
+
+    // [START declare_auth]
+    private FirebaseAuth mAuth;
+    // [END declare_auth]
+    String ContactID;
+    String ContactName;
+
+    private String mVerificationId;
+    private PhoneAuthProvider.ForceResendingToken mResendToken;
+    private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_otp);
+        Bundle bundle = getIntent().getExtras();
+        ContactID = bundle.getString("ContactID");
+        ContactName = bundle.getString("ContactName");
+        mAuth = FirebaseAuth.getInstance();
+        String phoneNumber = "+"+ContactID;
+        String smsCode = "123456";
+        // The test phone number and code should be whitelisted in the console.
+
+
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuthSettings firebaseAuthSettings = firebaseAuth.getFirebaseAuthSettings();
+
+// Configure faking the auto-retrieval with the whitelisted numbers.
+        firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber(phoneNumber, smsCode);
+
+        PhoneAuthOptions options = PhoneAuthOptions.newBuilder(firebaseAuth)
+                .setPhoneNumber(phoneNumber)
+                .setTimeout(60L, TimeUnit.SECONDS)
+                .setActivity(this)
+                .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    @Override
+                    public void onVerificationCompleted(PhoneAuthCredential credential) {
+                        MyPrefs = OTPActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                        MyPrefsEditor = MyPrefs.edit();
+                        MyPrefsEditor.putString("MyContact", ContactID);
+                        MyPrefsEditor.putString("ContactName", ContactName);
+                        MyPrefsEditor.apply();
+                        MyPrefsEditor.commit();
+                        startActivity(new Intent(OTPActivity.this, HomeActivity.class));
+
+                    }
+
+                    @Override
+                    public void onVerificationFailed(@NonNull FirebaseException e) {
+
+                    }
+
+                    // ...
+                })
+                .build();
+        PhoneAuthProvider.verifyPhoneNumber(options);
+    }
+}

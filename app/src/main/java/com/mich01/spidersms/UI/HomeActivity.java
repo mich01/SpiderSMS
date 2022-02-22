@@ -1,6 +1,7 @@
 package com.mich01.spidersms.UI;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -75,6 +76,7 @@ public class HomeActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId())
@@ -92,7 +94,7 @@ public class HomeActivity extends AppCompatActivity {
                     ContactJson.put("Data","HelloContact");
                     ContactJson.put("CID", "254724724008");
                     ContactJson.put("CName", preferences.getString("PublicName",null));
-                    ContactJson.put("PubKey", preferences.getString("ServerPubKey",null));
+                    ContactJson.put("PubKey", preferences.getString("PublicKey",null));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
