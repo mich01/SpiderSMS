@@ -1,4 +1,4 @@
-package com.mich01.spidersms.Adapters;
+package com.mich01.spidersms.Data;
 
 public class LastChat
 {
@@ -51,6 +51,4 @@ public class LastChat
     public int getProfilePicture() {
         return ProfilePicture;
     }
-
-
 }

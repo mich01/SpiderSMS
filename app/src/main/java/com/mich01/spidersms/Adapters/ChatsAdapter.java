@@ -16,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.HomeActivity;
@@ -31,7 +32,7 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
     {
         super(c, resource, chatsList);
        this.chatsList = chatsList;
-        Log.i("Chat Lists: ","Construct---- and count: "+chatsList.size());
+       // Log.i("Chat Lists: ","Construct---- and count: "+chatsList.size());
     }
 
     @Override

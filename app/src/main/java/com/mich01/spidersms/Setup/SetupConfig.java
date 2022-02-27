@@ -20,8 +20,6 @@ import org.json.JSONObject;
 
 public class SetupConfig
 {
-    private static Object LoginActivity;
-
     public static void ReadScan(Context context, JSONObject Input) throws JSONException {
         switch (Input.getString("Data"))
         {

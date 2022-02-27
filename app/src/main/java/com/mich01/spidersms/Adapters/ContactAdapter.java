@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 
@@ -92,6 +93,7 @@ public class ContactAdapter extends ArrayAdapter<String>
                 }
         });
         contact_row.setOnLongClickListener(new View.OnLongClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.R)
             @Override
             public boolean onLongClick(View v)
             {

@@ -62,11 +62,6 @@ public class ContactsActivity extends AppCompatActivity {
             {
                 PopulateContacts populateContacts = new PopulateContacts(ContactsActivity.this);
                 populateContacts.execute();
-                synchronized(this)
-                {
-                    dialog = ProgressDialog.show(ContactsActivity.this, "",
-                            "Loading. Please wait...: ", true);
-                }
             }
         });
 
@@ -151,7 +146,6 @@ public class ContactsActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings)
         {
-
             ContactsActivity activity = activityWeakReference.get();
             if(activity==null|| activity.isFinishing())
             {
@@ -173,9 +167,10 @@ public class ContactsActivity extends AppCompatActivity {
             {
                 return;
             }
+            new GetPhoneContacts().getMyContacts(activity.getApplicationContext());
             adapter = new ContactAdapter(activity.getApplicationContext(),CID,ContactNames,ContactStatus, ContactImgs,CType);
-            dialog.dismiss();
-            ContactListView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+
         }
     }
     public void FilterContacts(String SearchString)

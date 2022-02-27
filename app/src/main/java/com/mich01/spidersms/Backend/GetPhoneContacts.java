@@ -10,6 +10,8 @@ import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ContactsActivity;
 
+import org.json.JSONObject;
+
 
 public class GetPhoneContacts
 {
@@ -18,7 +20,6 @@ public class GetPhoneContacts
     public void getPhoneContacts(Context ContactContext)
     {
         String phoneNo = null;
-
         ContentResolver cr = ContactContext.getContentResolver();
         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
                 null, null, null, null);
@@ -49,7 +50,13 @@ public class GetPhoneContacts
                     ContactsActivity.ContactImgs.add(R.drawable.contact_icon);
                     ContactsActivity.ContactStatus.add(phoneNo);
                     ContactsActivity.CType.add(0);
-                    pCur.close();
+                    JSONObject ContactJSON = new JSONObject();
+                    try {
+                        ContactJSON.put("CID",phoneNo);
+                        ContactJSON.put("ContactName",name);
+                        new DBManager(ContactContext).UpdatePhoneBook(ContactJSON);
+                    }
+                    catch (Exception e){}
                 }
             }
         }

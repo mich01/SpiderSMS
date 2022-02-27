@@ -76,91 +76,6 @@ public class DBManager extends SQLiteOpenHelper
             } else {
             }
             status = true;
-            /*if(cursor.getString(cursor.getColumnIndex("Secret")).equals(ContactObject.getString("Secret")))
-            {
-                long result = DB.update("Contacts", contentValues, "CID=?", new String[]{CID});
-                if (result == -1) {
-                } else {
-                }
-            }
-            else
-            {
-                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
-                            case DialogInterface.BUTTON_POSITIVE:
-                                long result = DB.update("Contacts", contentValues, "CID=?", new String[]{CID});
-                                if (result == -1) {
-                                } else {
-                                }
-                                ContentValues contentValues = new ContentValues();
-                                contentValues.put("CID", CID);
-                                long resultChats = DB.update("Chats", contentValues, "CID=?", new String[]{CID});
-                                if (result == -1) {
-                                } else {
-                                }
-                                context.startActivity(new Intent(context, HomeActivity.class));
-                                Toast.makeText(context.getApplicationContext(), "Contact Updated", Toast.LENGTH_LONG).show();
-                                //if(!MainApplication.ActivityName.equals("HomeActivity"))
-                                ((ScannerSetupActivity)context).finish();
-                                break;
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                break;
-                        }
-                    }
-                };
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage("Contact Exists").setPositiveButton("Update Contact", dialogClickListener)
-                        .setNegativeButton("Ignore", dialogClickListener).show();
-                status= false;
-            }*/
-            /*if(cursor.getString(get"Secret"))
-            {
-                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
-                            case DialogInterface.BUTTON_POSITIVE:
-                                long result = DB.update("Contacts", contentValues, "CID=?", new String[]{CID});
-                                if (result == -1) {
-                                } else {
-                                }
-                                ContentValues contentValues = new ContentValues();
-                                contentValues.put("CID", CID);
-                                long resultChats = DB.update("Chats", contentValues, "CID=?", new String[]{CID});
-                                if (result == -1) {
-                                } else {
-                                }
-                                context.startActivity(new Intent(context, HomeActivity.class));
-                                Toast.makeText(context.getApplicationContext(), "Contact Updated", Toast.LENGTH_LONG).show();
-                                //if(!MainApplication.ActivityName.equals("HomeActivity"))
-                                ((ScannerSetupActivity)context).finish();
-                                break;
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                break;
-                        }
-                    }
-                };
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage("Contact Exists").setPositiveButton("Update Contact", dialogClickListener)
-                        .setNegativeButton("Ignore", dialogClickListener).show();
-                status= false;
-            }
-            else
-            {
-                long result = DB.insert("Contacts", null, contentValues);
-                if(result==-1)
-                {
-                    status= false;
-                }
-                else
-                {
-                    status= true;
-                }
-            }*/
         }
         catch (JSONException e)
         {
@@ -346,6 +261,46 @@ public class DBManager extends SQLiteOpenHelper
             {
                 status = true;
             }
+        }
+        return status;
+    }
+    public boolean UpdatePhoneBook(JSONObject ContactObject)
+    {
+        boolean status = false;
+        try
+        {
+            String CID = ContactObject.getString("CID");
+            SQLiteDatabase DB = this.getWritableDatabase();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("CID", CID);
+            contentValues.put("PubKey", "000000");
+            contentValues.put("ContactName", ContactObject.getString("ContactName"));
+            contentValues.put("PrivKey", "0000");
+            contentValues.put("StegKey", "0000");
+            contentValues.put("CryptoAlg", "0000");
+            contentValues.put("Secret", "0000");
+            Cursor cursor = DB.rawQuery("select * from Contacts where CID=?", new String[] {CID});
+            if(cursor.getCount()<1)
+            {
+                long result = DB.insert("Contacts", null, contentValues);
+                if(result==-1)
+                {
+                    status= false;
+                }
+                else
+                {
+                    status= true;
+                }
+            }
+            else
+            {
+                status = false;
+            }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+            status = false;
         }
         return status;
     }

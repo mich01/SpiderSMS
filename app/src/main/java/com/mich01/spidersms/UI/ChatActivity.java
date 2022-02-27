@@ -66,6 +66,8 @@ public class ChatActivity extends AppCompatActivity {
                 {
                     ResponseMessage message = new ResponseMessage(userInput.getText().toString(), true,1);
                     new SMSHandler(context).sendEncryptedSMS(bundle.getString("ContactID"),userInput.getText().toString());
+                    new DBManager(context).updateLastMessage(bundle.getString("ContactID"), userInput.getText().toString(), 1,1);
+                    Log.i("Spider MS: ","MESSAGE SENT to: "+bundle.getString("ContactID"));
                     Log.i("sending msg: ",userInput.getText().toString());
                     responseMessageList.add(message);
                     messageAdapter.notifyDataSetChanged();

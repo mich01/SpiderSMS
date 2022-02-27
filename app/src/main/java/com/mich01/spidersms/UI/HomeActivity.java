@@ -1,18 +1,21 @@
 package com.mich01.spidersms.UI;
 
+import static android.os.Looper.getMainLooper;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
+import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,8 +33,10 @@ import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.Adapters.ContactAdapter;
-import com.mich01.spidersms.Backend.GetPhoneContacts;
+import com.mich01.spidersms.DB.DBManager;
+import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.Setup.ConfigChoiceActivity;
 
@@ -43,8 +48,12 @@ import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity {
     //Temp
-    public static ListView ContactListView;
-    public static ContactAdapter adapter;
+    public static ListView ChatListView;
+    public static ChatsAdapter adapter;
+    static Activity myActivity;
+    View view;
+    private static ArrayList<LastChat> ChatsList;
+    //public static ListView ChatListView;
     TextView StatusStext;
     ProgressBar progressBar;
     EditText SearchText;
@@ -61,28 +70,22 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        ContactListView = findViewById(R.id.chats_list);
+        ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
         StatusStext = findViewById(R.id.lbl_contact_Status);
-        new GetPhoneContacts().getMyContacts(this.getApplicationContext());
-        adapter = new ContactAdapter(this.getApplicationContext(),CID,ContactNames,ContactStatus, ContactImgs,CType);
-        ContactListView.setAdapter(adapter);
+        Cursor cur = new DBManager(HomeActivity.this).getLastChatList();
+        adapter = new ChatsAdapter(HomeActivity.this,R.layout.chat_list_item,ChatsList);
         Handler h = new Handler(getMainLooper());
-       /* h.post(new Runnable()
+        h.post(new Runnable()
         {
+            @SuppressLint("Range")
             @Override
-            public void run()
-            {
-                PopulateContacts populateContacts = new HomeActivity.PopulateContacts(HomeActivity.this);
-                populateContacts.execute();
-                synchronized(this)
-                {
-                    dialog = ProgressDialog.show(HomeActivity.this, "",
-                            "Loading. Please wait...: ", true);
-                }
+            public void run() {
+                PopulateChats(HomeActivity.this);
             }
-        });*/
-        ContactListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+
+        });
+        ChatListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id)
@@ -128,6 +131,19 @@ public class HomeActivity extends AppCompatActivity {
         menu.findItem(R.id.search).setOnActionExpandListener(onActionExpandListener);
         SearchView searchView= (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setQueryHint("Search Contact..");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query)
+            {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                FilterChats(query);
+                return false;
+            }
+        });
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -161,72 +177,66 @@ public class HomeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    public static class PopulateContacts extends AsyncTask<String, String, String>
+    public void PopulateChats(Context context)
     {
-        WeakReference<HomeActivity> activityWeakReference;
-        PopulateContacts(HomeActivity activity)
+        ChatsList = new ArrayList<LastChat>();
+        Handler h = new Handler(getMainLooper());
+        h.post(new Runnable()
         {
-            activityWeakReference = new WeakReference<HomeActivity>(activity);
-        }
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            HomeActivity activity = activityWeakReference.get();
-            if(activity==null|| activity.isFinishing())
+            @SuppressLint("Range")
+            @Override
+            public void run()
             {
-                return;
+                int index=0;
+                Cursor cur = new DBManager(context).getLastChatList();
+                while (cur != null && cur.moveToNext())
+                {
+                    if(cur.getString(cur.getColumnIndex("ContactName"))==null)
+                    {
+                        Log.i("Record: ", cur.getString(cur.getColumnIndex("CID")));
+                        ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
+                                cur.getString(cur.getColumnIndex("CID")),
+                                cur.getString(cur.getColumnIndex("MessageText")),
+                                cur.getString(cur.getColumnIndex("Timestamp")),
+                                cur.getInt(cur.getColumnIndex("ReadStatus")),
+                                R.drawable.contact_icon));
+                    }
+                    else {
+                        Log.i("Record: ", cur.getString(cur.getColumnIndex("ContactName")));
+                        ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
+                                cur.getString(cur.getColumnIndex("ContactName")),
+                                cur.getString(cur.getColumnIndex("MessageText")),
+                                cur.getString(cur.getColumnIndex("Timestamp")),
+                                cur.getInt(cur.getColumnIndex("ReadStatus")),
+                                R.drawable.contact_icon));
+                    }
+                    index++;
+                }
+                synchronized(this)
+                {
+                    ChatsAdapter UpdatedChats =new ChatsAdapter(context, R.layout.chat_list_item,ChatsList);
+                    ChatListView.setAdapter(UpdatedChats);
+                }
             }
+        });
 
-        }
-        @Override
-        protected String doInBackground(String... strings)
-        {
-
-            HomeActivity activity = activityWeakReference.get();
-            if(activity==null|| activity.isFinishing())
-            {
-                return "null";
-            }
-            new GetPhoneContacts().getPhoneContacts(activity.getApplicationContext());
-            return "populating ContactList";
-        }
-        @Override
-        protected void onProgressUpdate(String... values) {HomeActivity activity = activityWeakReference.get();
-            super.onProgressUpdate(values);
-        }
-        @Override
-        protected void onPostExecute(String s)
-        {
-            super.onPostExecute(s);
-            HomeActivity activity = activityWeakReference.get();
-            if(activity==null|| activity.isFinishing())
-            {
-                return;
-            }
-            adapter = new ContactAdapter(activity.getApplicationContext(),CID,ContactNames,ContactStatus, ContactImgs,CType);
-            dialog.dismiss();
-            ContactListView.setAdapter(adapter);
-        }
     }
-    public void FilterContacts(String SearchString)
+    public void FilterChats(String SearchString)
     {
-        ArrayList<String> FilteredContactID = new ArrayList<String>();
-        ArrayList<String> FilteredContactName = new ArrayList<String>();
-        ArrayList<String> FilteredContactStatus = new ArrayList<String>();
-        ArrayList<Integer> FilteredContactImg = new ArrayList<Integer>();
-        ArrayList<Integer> FilteredCType = new ArrayList<Integer>();
-        for(int i=0;i<ContactNames.size();i++)
+        ArrayList<LastChat> FilteredChatList = new ArrayList<LastChat>();
+        for(int i=0;i<ChatsList.size();i++)
         {
-            if(ContactNames.get(i).toLowerCase().contains(SearchString.toLowerCase()))
+            if(ChatsList.get(i).getContactName().toLowerCase().contains(SearchString.toLowerCase()) | ChatsList.get(i).getLastMessage().toLowerCase().contains(SearchString.toLowerCase()))
             {
-                FilteredContactID.add(CID.get(i));
-                FilteredContactName.add(ContactNames.get(i));
-                FilteredContactImg.add(ContactImgs.get(i));
-                FilteredContactStatus.add(ContactStatus.get(i));
-                FilteredCType.add(CType.get(i));
+                FilteredChatList.add(new LastChat(ChatsList.get(i).getContactID(),
+                        ChatsList.get(i).getContactName(),
+                        ChatsList.get(i).getLastMessage(),
+                        ChatsList.get(i).getTimestamp(),
+                        ChatsList.get(i).getStatus(),
+                        R.drawable.contact_icon));
             }
         }
-        ContactAdapter Filteredadapter = new ContactAdapter(getApplicationContext(),FilteredContactID,FilteredContactName,FilteredContactStatus, FilteredContactImg,FilteredCType);
-        ContactListView.setAdapter(Filteredadapter);
+        ChatsAdapter UpdatedChats =new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item,FilteredChatList);
+        ChatListView.setAdapter(UpdatedChats);
     }
 }
