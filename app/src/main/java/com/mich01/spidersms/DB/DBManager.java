@@ -164,13 +164,6 @@ public class DBManager extends SQLiteOpenHelper
         Cursor cursor = DB.rawQuery("select * from Chats where CID=? Order By Timestamp ASC", new String[]{CID});
         return cursor;
     }
-    public int DeleteContact(String CID)
-    {
-        SQLiteDatabase DB = this.getWritableDatabase();
-        int result = DB.delete("Contacts", "CID=?", new String[]{CID});
-        Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
-        return result;
-    }
     public int UpdateContact(String CID, JSONObject ContactDetails)
     {
         int result =0;
@@ -303,5 +296,34 @@ public class DBManager extends SQLiteOpenHelper
             status = false;
         }
         return status;
+    }
+    public int DeleteContact(String CID)
+    {
+        SQLiteDatabase DB = this.getWritableDatabase();
+        int result = DB.delete("Contacts", "CID=?", new String[]{CID});
+        Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
+        return result;
+    }
+    public int DeleteMessage(String MessageID)
+    {
+        SQLiteDatabase DB = this.getWritableDatabase();
+        int result = DB.delete("Chats", "MessageID=?", new String[]{MessageID});
+        Toast.makeText(context,"Message Deleted: "+MessageID, Toast.LENGTH_LONG).show();
+        return result;
+    }
+    public int DeleteAllContacts(String CID)
+    {
+        SQLiteDatabase DB = this.getWritableDatabase();
+        int result = DB.delete("Contacts", "CID!=?", new String[]{CID});
+        Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
+        return result;
+    }
+    public int DeleteAllChats(String CID)
+    {
+        SQLiteDatabase DB = this.getWritableDatabase();
+        int result = DB.delete("Chats", "CID=?", new String[]{CID});
+        int result2 = DB.delete("LastChats", "CID=?", new String[]{CID});
+        Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
+        return result;
     }
 }

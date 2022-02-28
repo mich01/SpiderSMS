@@ -1,6 +1,7 @@
 package com.mich01.spidersms.UI;
 
 import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,8 +19,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 
+import com.google.android.material.snackbar.Snackbar;
+import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.Adapters.ContactAdapter;
 import com.mich01.spidersms.Backend.GetPhoneContacts;
 import com.mich01.spidersms.R;
@@ -50,20 +54,13 @@ public class ContactsActivity extends AppCompatActivity {
         ContactListView = findViewById(R.id.contacts_list);
         progressBar = findViewById(R.id.contacts_progressBar);
         StatusStext = findViewById(R.id.lbl_contact_Status);
+        SwipeRefreshLayout swipeRefreshLayout;
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.contactRefreshLayout);
         new GetPhoneContacts().getMyContacts(this.getApplicationContext());
         adapter = new ContactAdapter(this.getApplicationContext(),CID,ContactNames,ContactStatus, ContactImgs,CType);
         ContactListView.setAdapter(adapter);
         this.getSupportActionBar().setTitle(String.valueOf("Contacts"));
-        Handler h = new Handler(getMainLooper());
-        h.post(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                PopulateContacts populateContacts = new PopulateContacts(ContactsActivity.this);
-                populateContacts.execute();
-            }
-        });
+
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ContactListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -71,6 +68,29 @@ public class ContactsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id)
             {
+            }
+        });
+        // Implementing setOnRefreshListener on SwipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeRefreshLayout.setRefreshing(false);
+                // User defined method to shuffle the array list items
+                Handler h = new Handler(getMainLooper());
+                h.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        PopulateContacts populateContacts = new PopulateContacts(ContactsActivity.this);
+                        populateContacts.execute();
+                        synchronized(this)
+                        {
+                            dialog = ProgressDialog.show(ContactsActivity.this, "",
+                                    "Updating Contacts. Please wait...", true);
+                        }
+                    }
+                });
             }
         });
     }
@@ -168,9 +188,14 @@ public class ContactsActivity extends AppCompatActivity {
                 return;
             }
             new GetPhoneContacts().getMyContacts(activity.getApplicationContext());
+            dialog.dismiss();
             adapter = new ContactAdapter(activity.getApplicationContext(),CID,ContactNames,ContactStatus, ContactImgs,CType);
+            ContactListView.setAdapter(adapter);
             adapter.notifyDataSetChanged();
-
+            Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
+            snackbar.setBackgroundTint(Color.GREEN);
+            snackbar.setTextColor(Color.BLACK);
+            snackbar.show();
         }
     }
     public void FilterContacts(String SearchString)
@@ -192,6 +217,8 @@ public class ContactsActivity extends AppCompatActivity {
             }
         }
         ContactAdapter Filteredadapter = new ContactAdapter(getApplicationContext(),FilteredContactID,FilteredContactName,FilteredContactStatus, FilteredContactImg,FilteredCType);
+        Filteredadapter.notifyDataSetChanged();
         ContactListView.setAdapter(Filteredadapter);
+
     }
 }

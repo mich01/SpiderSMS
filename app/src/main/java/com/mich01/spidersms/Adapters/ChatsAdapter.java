@@ -1,7 +1,9 @@
 package com.mich01.spidersms.Adapters;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ChatActivity;
@@ -32,7 +35,7 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
     {
         super(c, resource, chatsList);
        this.chatsList = chatsList;
-       // Log.i("Chat Lists: ","Construct---- and count: "+chatsList.size());
+       //Log.i("Chat Lists: ","Construct---- and count: "+chatsList.size());
     }
 
     @Override
@@ -89,9 +92,11 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         }
         LastText.setText(chatsList.get(position).getLastMessage());
 
-        convertView.setOnClickListener(new View.OnClickListener() {
+        convertView.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 Intent ChatIntent = new Intent(getContext(), ChatActivity.class);
                 ChatIntent.putExtra("ContactID", chatsList.get(position).getContactID());
                 ChatIntent.putExtra("ContactName", chatsList.get(position).getContactName());
@@ -100,7 +105,28 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
                 getContext().startActivity(ChatIntent);
             }
         });
+        convertView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+                alert.setTitle("Are you sure you want to delete this conversation");
+                alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        new DBManager(getContext()).DeleteAllChats(chatsList.get(position).getContactID());
+                        HomeActivity.PopulateChats(getContext());
+                        HomeActivity.adapter.notifyDataSetChanged();
+                    }
+                });
 
+                alert.setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                            }
+                        });
+                alert.show();
+                return false;
+            }
+        });
         return convertView;
     }
     public static void updateText(int position)

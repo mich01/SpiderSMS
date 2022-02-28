@@ -64,6 +64,7 @@ public class GetPhoneContacts
             cur.close();
         }
     }
+    @SuppressLint("Range")
     public void getMyContacts(Context context)
     {
         ContactsActivity.ContactNames.clear();
@@ -81,8 +82,15 @@ public class GetPhoneContacts
             ContactsActivity.CID.add(CID);
             ContactsActivity.ContactImgs.add(R.drawable.contact_icon);
             ContactsActivity.ContactStatus.add(ContactStatus);
-            ContactsActivity.CType.add(1);
+            if (cur.getString(cur.getColumnIndex("PubKey")).equals("000000"))
+            {
+                ContactsActivity.CType.add(0);
+            }else
+            {
+                ContactsActivity.CType.add(1);
+            }
             index++;
         }
+        cur.close();
     }
 }

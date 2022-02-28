@@ -102,11 +102,11 @@ public class ContactAdapter extends ArrayAdapter<String>
                     JSONObject ContactJson = new JSONObject();
                     try {
                         ContactJson.put("Data","Contact");
-                        ContactJson.put("CID", MyPrefs.getString("CID",null));
-                        ContactJson.put("CName", MyPrefs.getString("UserName",null));
-                        ContactJson.put("PubKey", MyPrefs.getString("PublicKey",null));
-                        ContactJson.put("StegKey", MyPrefs.getString("StegKey",null));
-                        ContactJson.put("Alg", MyPrefs.getString("CryptoAlg",null));
+                        ContactJson.put("CID",  C_ID.get(position));
+                        ContactJson.put("CName", C_Names.get(position));
+                        //ContactJson.put("PubKey", MyPrefs.getString("PublicKey",null));
+                        //ContactJson.put("StegKey", MyPrefs.getString("StegKey",null));
+                        //ContactJson.put("Alg", MyPrefs.getString("CryptoAlg",null));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -117,7 +117,7 @@ public class ContactAdapter extends ArrayAdapter<String>
                     QRIntent.putExtra("ContactName", C_Names.get(position));
                     QRIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(QRIntent);
-                    ((ContactsActivity)context).finish();
+                    //((ContactsActivity)context).finish();
                 }
                 else
                 {

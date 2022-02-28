@@ -27,6 +27,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,8 +49,11 @@ public class DataQRGenerator extends AppCompatActivity {
     String inputValue;
     Bitmap bitmap;
     QRGEncoder qrgEncoder;
+    JSONObject ContactJSON;
+    String ContactID;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_qrgenerator);
         ContactQR = findViewById(R.id.txt_contact_shared);
@@ -58,6 +64,12 @@ public class DataQRGenerator extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         inputValue = bundle.getString("Contact");
         ContactName.setText(bundle.getString("ContactName"));
+        try {
+            ContactJSON = new JSONObject(inputValue);
+            ContactID = ContactJSON.getString("CID");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         //((ContactsActivity)getApplicationContext()).finish();
         if(bundle.getString("ContactName")==null)
         {
@@ -105,9 +117,12 @@ public class DataQRGenerator extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
-                if(new DBManager(getApplicationContext()).DeleteContact(bundle.getString("ContactID"))==0);
+                Log.i("Contact..",inputValue);
+                if(new DBManager(getApplicationContext()).DeleteContact(ContactID)==0);
                 {
                     startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
+                    HomeActivity.PopulateChats(DataQRGenerator.this);
+                    HomeActivity.adapter.notifyDataSetChanged();
                     finish();
                 }
             }

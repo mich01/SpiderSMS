@@ -13,16 +13,19 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.Adapters.MessageAdapter;
 import com.mich01.spidersms.Backend.ResponseMessage;
 import com.mich01.spidersms.Backend.SMSHandler;
 import com.mich01.spidersms.DB.DBManager;
+import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ public class ChatActivity extends AppCompatActivity {
     public static MessageAdapter messageAdapter;
     public static String ContactID;
     static Context context;
+    static ArrayList<LastChat> chatsList;
+    public static ListView ChatListView;
     private String activityReference;
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -76,21 +81,22 @@ public class ChatActivity extends AppCompatActivity {
                         recyclerView.smoothScrollToPosition(messageAdapter.getItemCount()-1);
                     }
                 }
+                HomeActivity.PopulateChats(context);
+                HomeActivity.adapter.notifyDataSetChanged();
                 userInput.setText("");
                 return false;
             }
         });
-        //PopulateChats(context);
     }
 
     @SuppressLint("Range")
     public static void PopulateChatView()
     {
         Cursor cur = new DBManager(context.getApplicationContext()).getCIDChats(ContactID);
-        int index=0;
         responseMessageList.clear();
         while (cur != null && cur.moveToNext())
         {
+            Log.i("here here",cur.getString(cur.getColumnIndex("MessageBody")));
             if(cur.getInt(cur.getColumnIndex("inorout"))==0)
             {
                 responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")),true,2));
@@ -99,7 +105,7 @@ public class ChatActivity extends AppCompatActivity {
             {
                 responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")),false,2));
             }
-            //index++;
+            responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")),false,2));
         }
         if(cur!=null)
         {
@@ -145,9 +151,9 @@ public class ChatActivity extends AppCompatActivity {
         //new MainApplication().onActivityDestroyed(this);
         //MainApplication.ActivityName =activityReference;
     }
-    /*public static void PopulateChats(Context context)
+    public void PopulateChats(Context context)
     {
-        ChatsList = new ArrayList<LastChat>();
+        chatsList = new ArrayList<LastChat>();
         Handler h = new Handler(getMainLooper());
         h.post(new Runnable()
         {
@@ -162,7 +168,7 @@ public class ChatActivity extends AppCompatActivity {
                     if(cur.getString(cur.getColumnIndex("ContactName"))==null)
                     {
                         Log.i("Record: ", cur.getString(cur.getColumnIndex("CID")));
-                        ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
+                        chatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("MessageText")),
                                 cur.getString(cur.getColumnIndex("Timestamp")),
@@ -171,7 +177,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     else {
                         Log.i("Record: ", cur.getString(cur.getColumnIndex("ContactName")));
-                        ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
+                        chatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("ContactName")),
                                 cur.getString(cur.getColumnIndex("MessageText")),
                                 cur.getString(cur.getColumnIndex("Timestamp")),
@@ -182,12 +188,12 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 synchronized(this)
                 {
-                    ChatsAdapter UpdatedChats =new ChatsAdapter(context, R.layout.chat_list_item,ChatsList);
-                    ChatListView.setAdapter(UpdatedChats);
+                    ChatsAdapter UpdatedChats =new ChatsAdapter(context, R.layout.chat_list_item,chatsList);
+                    //ChatListView.setAdapter(UpdatedChats);
                 }
             }
         });
 
-    }*/
+    }
 
 }

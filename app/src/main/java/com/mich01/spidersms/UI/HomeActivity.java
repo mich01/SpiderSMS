@@ -75,6 +75,7 @@ public class HomeActivity extends AppCompatActivity {
         StatusStext = findViewById(R.id.lbl_contact_Status);
         Cursor cur = new DBManager(HomeActivity.this).getLastChatList();
         adapter = new ChatsAdapter(HomeActivity.this,R.layout.chat_list_item,ChatsList);
+        //new DBManager(getApplicationContext()).DeleteAllContacts("06");
         Handler h = new Handler(getMainLooper());
         h.post(new Runnable()
         {
@@ -177,10 +178,10 @@ public class HomeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    public void PopulateChats(Context context)
+    public static void PopulateChats(Context context)
     {
         ChatsList = new ArrayList<LastChat>();
-        Handler h = new Handler(getMainLooper());
+        Handler h = new Handler(context.getMainLooper());
         h.post(new Runnable()
         {
             @SuppressLint("Range")
