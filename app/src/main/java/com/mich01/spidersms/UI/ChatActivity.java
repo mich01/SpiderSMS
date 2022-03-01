@@ -9,6 +9,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
@@ -16,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,18 +50,24 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         context = this;
+        //getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        //getSupportActionBar().setCustomView(R.layout.contact_action_bar);
+        //this.getSupportActionBar().setTitle("Contacts")
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //new MainApplication().onActivityCreated(this,savedInstanceState);
         //new MainApplication().onActivityStarted(this);
         Bundle bundle = getIntent().getExtras();
         ContactID = bundle.getString("ContactID");
         activityReference =  bundle.getString("CalledBy");
+        new DBManager(ChatActivity.this).UpdateMessageStatus(ContactID,1);
         userInput = findViewById(R.id.userInput);
         recyclerView = findViewById(R.id.chat_conversation);
         responseMessageList = new ArrayList<>();
         messageAdapter = new MessageAdapter(responseMessageList);
         recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL,false));
         recyclerView.setAdapter(messageAdapter);
-        this.getSupportActionBar().setTitle(bundle.getString("ContactName"));
+        userInput.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_baseline_send_24, 0);
+        getSupportActionBar().setTitle(bundle.getString("ContactName"));
         PopulateChatView();
         userInput.setOnEditorActionListener(new TextView.OnEditorActionListener()
         {
@@ -86,6 +94,7 @@ public class ChatActivity extends AppCompatActivity {
                 userInput.setText("");
                 return false;
             }
+
         });
     }
 
@@ -147,9 +156,8 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //PopulateChats(context);
-        //new MainApplication().onActivityDestroyed(this);
-        //MainApplication.ActivityName =activityReference;
+        HomeActivity.PopulateChats(context);
+        HomeActivity.adapter.notifyDataSetChanged();
     }
     public void PopulateChats(Context context)
     {

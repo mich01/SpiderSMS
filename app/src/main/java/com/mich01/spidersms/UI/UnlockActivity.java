@@ -4,6 +4,7 @@ import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
@@ -15,13 +16,11 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.mich01.spidersms.Crypto.IDManagementProtocol;
-import com.mich01.spidersms.Prefs.PrefsMgr;
 import com.mich01.spidersms.R;
 
 import java.util.concurrent.Executor;
@@ -45,6 +44,19 @@ public class UnlockActivity extends AppCompatActivity {
         UserPin = findViewById(R.id.txt_user_pin);
         UnlockStatus = findViewById(R.id.img_lock_status);
         executor = ContextCompat.getMainExecutor(this);
+        this.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        this.getSupportActionBar().setCustomView(R.layout.unclock_action_bar);
+        getBiometrics();
+        UnlockStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getBiometrics();
+            }
+        });
+
+    }
+    public void getBiometrics()
+    {
         biometricPrompt = new BiometricPrompt(UnlockActivity.this,
                 executor, new BiometricPrompt.AuthenticationCallback() {
             @Override

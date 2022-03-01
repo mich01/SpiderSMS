@@ -17,4 +17,13 @@
     <color name="received_msg">#aaaaaa</color>
     <color name="unregistered_contact">#eee</color>
     <color name="error">#f00</color>
+    <color name="gold">#f3b632</color>
+    <color name="dark_gold">#CFA068</color>
+    <color name="darkblue">#162336</color>
+    <color name="not_in_app">#eee</color>
+    <color name="in_app">#01182E</color>
+    <color name="icon_in_app">#CFA068</color>
+    <color name="text_in_app">#CFA068</color>
+    <color name="blue_fade_start">#003037</color>
+    <color name="blue_fade_end">#162336</color>
 </resources>

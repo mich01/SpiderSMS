@@ -32,19 +32,10 @@
             android:exported="true" />
 
         <activity
-            android:name=".Setup.LoginActivity"
-            android:exported="true" />
-        <activity
             android:name=".Setup.QRScanner"
             android:exported="true" />
         <activity
             android:name=".UI.SetupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".UI.LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".UI.SMSActivity"
             android:exported="false" />
         <activity
             android:name=".UI.HomeActivity"

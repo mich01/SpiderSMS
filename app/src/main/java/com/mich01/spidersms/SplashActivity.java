@@ -17,12 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.mich01.spidersms.Backend.BackendFunctions;
-import com.mich01.spidersms.Setup.SetupConfig;
-import com.mich01.spidersms.UI.ContactsActivity;
-import com.mich01.spidersms.UI.HomeActivity;
-import com.mich01.spidersms.UI.LoginActivity;
 import com.mich01.spidersms.UI.SetupActivity;
 import com.mich01.spidersms.UI.UnlockActivity;
 

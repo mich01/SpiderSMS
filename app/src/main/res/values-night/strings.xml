@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="version_number">V1.0</string>
+    <string name="form_phone_no">254722000000</string>
+    <string name="lbl_phone_number">Enter Phone number</string>
+    <string name="app_name">SpiderSMS</string>
+    <string name="app_tagline">Stealthy SMS Communications</string>
+    <string name="txt_unlock_instructions">Use Fingerprint or Unlock Key to use app</string>
+    <string name="enter_4_digit_pin">Enter 4 Digit Pin</string>
+</resources>

@@ -2,11 +2,11 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:background="@color/white"
     android:layout_height="wrap_content">
     <TextView
         android:layout_margin="8dp"
         android:id="@+id/textMessage"
+        android:textColor="@color/gold"
         android:textSize="20sp"
         android:padding="4dp"
         android:layout_width="300dp"

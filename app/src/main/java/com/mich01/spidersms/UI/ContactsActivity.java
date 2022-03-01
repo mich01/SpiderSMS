@@ -18,6 +18,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -59,9 +60,9 @@ public class ContactsActivity extends AppCompatActivity {
         new GetPhoneContacts().getMyContacts(this.getApplicationContext());
         adapter = new ContactAdapter(this.getApplicationContext(),CID,ContactNames,ContactStatus, ContactImgs,CType);
         ContactListView.setAdapter(adapter);
-        this.getSupportActionBar().setTitle(String.valueOf("Contacts"));
-
-
+        //getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        //getSupportActionBar().setCustomView(R.layout.contact_action_bar);
+        getSupportActionBar().setTitle("Contacts");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ContactListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {

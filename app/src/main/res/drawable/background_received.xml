@@ -5,7 +5,6 @@
         android:bottomRightRadius="10dp"
         android:topLeftRadius="10dp"
         android:topRightRadius="10dp"/>
-    <solid android:color="@color/received_msg"/>
-    <gradient android:startColor="@color/received_msg"
-        android:endColor="@color/purple_200"/>
+    <solid android:color="@color/darkblue"/>
+
 </shape>

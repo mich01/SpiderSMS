@@ -7,6 +7,7 @@
         app:showAsAction="always"
         app:actionViewClass="android.widget.SearchView"/>
     <item android:id="@+id/add_contact"
+        android:itemBackground="@color/darkblue"
         android:title="Add Contact"
         app:showAsAction="never"/>
     <item android:id="@+id/reconfigure"

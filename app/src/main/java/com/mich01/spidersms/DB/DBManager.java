@@ -127,7 +127,7 @@ public class DBManager extends SQLiteOpenHelper
     public Cursor getContacts()
     {
         SQLiteDatabase DB = this.getWritableDatabase();
-        Cursor cursor = DB.rawQuery("select * from Contacts", null);
+        Cursor cursor = DB.rawQuery("select * from Contacts Order By ContactName ASC", null);
         return cursor;
     }
     //ChatsTable
@@ -310,6 +310,22 @@ public class DBManager extends SQLiteOpenHelper
         int result = DB.delete("Chats", "MessageID=?", new String[]{MessageID});
         Toast.makeText(context,"Message Deleted: "+MessageID, Toast.LENGTH_LONG).show();
         return result;
+    }
+    public boolean UpdateMessageStatus(String CID, int Status)
+    {
+        Log.i("Current ID: ",CID);
+        SQLiteDatabase DB = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("ReadStatus", Status);
+        long result = DB.update("LastChats", contentValues, "CID=?", new String[]{CID});
+        if (result == -1)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
     public int DeleteAllContacts(String CID)
     {

@@ -7,7 +7,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +24,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.ContactsActivity;
@@ -57,12 +61,14 @@ public class ContactAdapter extends ArrayAdapter<String>
     {
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contact_row  = layoutInflater.inflate(R.layout.contact_item, parent, false);
+        TextDrawable drawable = TextDrawable.builder().buildRect(String.valueOf(C_Names.get(position).charAt(0)), R.id.contact_img);
         ImageView images = contact_row.findViewById(R.id.contact_img);
         TextView contactID = contact_row.findViewById(R.id.contact_id);
         TextView status = contact_row.findViewById(R.id.contact_status);
-        images.setImageResource(C_Imgs.get(position));
+        images.setImageDrawable(drawable);
         contactID.setText(C_Names.get(position));
         status.setText(C_Status.get(position));
+        contact_row.setBackgroundResource(R.color.in_app);
         contact_row.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
@@ -128,7 +134,19 @@ public class ContactAdapter extends ArrayAdapter<String>
         });
         if(is_App.get(position)==0)
         {
-            contact_row.setBackgroundColor(0xfff2f2f2);
+
+            contactID.setTypeface(null, Typeface.NORMAL);
+            status.setTypeface(null, Typeface.NORMAL);
+            contactID.setTextColor(context.getResources().getColor(R.color.white));
+            status.setTextColor(Color.GRAY);
+            images.setBackground(context.getResources().getDrawable(R.drawable.background_gradient));
+        }
+        else
+        {
+            images.setBackgroundResource(R.color.gold);
+            contact_row.setBackgroundResource(R.color.in_app);
+            contactID.setTextColor(context.getResources().getColor(R.color.gold));
+            status.setTextColor(context.getResources().getColor(R.color.white));
         }
         return contact_row;
     }

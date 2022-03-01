@@ -1,9 +1,8 @@
 package com.mich01.spidersms.UI;
 
-import static android.os.Looper.getMainLooper;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -34,7 +33,6 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.mich01.spidersms.Adapters.ChatsAdapter;
-import com.mich01.spidersms.Adapters.ContactAdapter;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
@@ -43,7 +41,6 @@ import com.mich01.spidersms.Setup.ConfigChoiceActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity {
@@ -73,6 +70,8 @@ public class HomeActivity extends AppCompatActivity {
         ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
         StatusStext = findViewById(R.id.lbl_contact_Status);
+        this.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        this.getSupportActionBar().setCustomView(R.layout.main_action_bar);
         Cursor cur = new DBManager(HomeActivity.this).getLastChatList();
         adapter = new ChatsAdapter(HomeActivity.this,R.layout.chat_list_item,ChatsList);
         //new DBManager(getApplicationContext()).DeleteAllContacts("06");
@@ -85,13 +84,6 @@ public class HomeActivity extends AppCompatActivity {
                 PopulateChats(HomeActivity.this);
             }
 
-        });
-        ChatListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-            }
         });
         fab = findViewById(R.id.fab_chat);
         fab.setOnClickListener(new View.OnClickListener() {

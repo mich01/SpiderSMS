@@ -5,8 +5,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.google.zxing.pdf417.encoder.Dimensions;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
@@ -25,6 +29,8 @@ import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.HomeActivity;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class ChatsAdapter extends ArrayAdapter<LastChat>
 {
@@ -65,11 +71,15 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
             Log.i("Chat Lists: ","Null----");
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.chat_list_item,parent,false);
         }
+        TextDrawable drawable = TextDrawable.builder().buildRect(String.valueOf(chatsList.get(position).getContactName().charAt(0)), R.id.last_contact_img);
         ImageView images = convertView.findViewById(R.id.last_contact_img);
         TextView contactID = convertView.findViewById(R.id.last_contact_id);
+        TextView TimeStamp = convertView.findViewById(R.id.time_stamp);
         LastText = convertView.findViewById(R.id.last_chat_text);
-        images.setImageResource(chatsList.get(position).getProfilePicture());
+        images.setImageDrawable(drawable);
         contactID.setText(chatsList.get(position).getContactName());
+        String niceDateStr = (String) DateUtils.getRelativeTimeSpanString(Long.parseLong(chatsList.get(position).getTimestamp()), Calendar.getInstance().getTimeInMillis(), DateUtils.MINUTE_IN_MILLIS);
+        TimeStamp.setText(niceDateStr);
         if(chatsList.get(position).getContactID().equalsIgnoreCase(chatsList.get(position).getContactName()))
         {
             Log.i("Contact: ", String.valueOf(chatsList.get(position).getContactID()+" -- "+chatsList.get(position).getContactName()));
@@ -84,11 +94,14 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         {
             LastText.setTypeface(null, Typeface.BOLD);
             LastText.setTextColor(Color.BLACK);
+            convertView.setBackgroundResource(R.color.gold);
         }
         else
         {
             LastText.setTypeface(null, Typeface.NORMAL);
-            LastText.setTextColor(Color.GRAY);
+            contactID.setTextColor(Color.WHITE);
+            LastText.setTextColor(Color.WHITE);
+            convertView.setBackgroundResource(R.color.darkblue);
         }
         LastText.setText(chatsList.get(position).getLastMessage());
 

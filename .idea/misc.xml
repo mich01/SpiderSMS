@@ -3,11 +3,26 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable-v24/background_gradient.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_received.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_sent.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/bg_edit_text.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/chat_bg_gradient.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/contact_icon.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/contact_icon_design.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_baseline_send_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_baseline_textsms_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_invalid_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_locked_fingerprint_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_match_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_unlocked_fingerprint_24.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/img.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/input_text_design.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/last_chat_bg.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/user_icon_design.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_chat.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_config_choice.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_contacts.xml" value="0.1" />
@@ -20,13 +35,19 @@
         <entry key="app/src/main/res/layout/activity_qrscanner.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_scanner_setup.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_setup.xml" value="0.22" />
-        <entry key="app/src/main/res/layout/activity_unlock.xml" value="0.15" />
-        <entry key="app/src/main/res/layout/chat_item.xml" value="0.1" />
-        <entry key="app/src/main/res/layout/chat_list_item.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_smsactivity.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_splash.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/activity_unlock.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/chat_item.xml" value="0.22" />
+        <entry key="app/src/main/res/layout/chat_list_item.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/contact_action_bar.xml" value="0.1" />
         <entry key="app/src/main/res/layout/contact_item.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/custom_action_bar.xml" value="0.16757246376811594" />
         <entry key="app/src/main/res/layout/fragment_chat_list.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/main_action_bar.xml" value="0.1" />
         <entry key="app/src/main/res/layout/receiver_bubble.xml" value="0.1" />
         <entry key="app/src/main/res/layout/sender_bubble.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/unclock_action_bar.xml" value="0.1" />
         <entry key="app/src/main/res/menu/contact_menu.xml" value="0.1" />
         <entry key="app/src/main/res/menu/main_menu.xml" value="0.1" />
       </map>
@@ -41,7 +62,7 @@
   <component name="VisualizationToolProject">
     <option name="state">
       <ProjectState>
-        <option name="scale" value="0.15" />
+        <option name="scale" value="0.9" />
       </ProjectState>
     </option>
   </component>

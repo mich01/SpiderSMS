@@ -4,30 +4,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/chat_bg_gradient"
+    android:background="@drawable/bg_1"
     tools:context=".UI.ChatActivity">
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_conversation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/userInput"/>
+
     <EditText
         android:id="@+id/userInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/bg_edit_text"
-        android:textSize="15sp"
-        android:inputType="text"
+        android:elevation="3dp"
         android:hint="Type a message"
+        android:imeActionId="4"
+        android:importantForAutofill="yes"
+        android:inputType="textMultiLine|textImeMultiLine"
+        android:padding="12dp"
+        android:scrollbars="vertical"
+        android:singleLine="false"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
-        android:layout_margin="8dp"
-        android:padding="12dp"
-        android:imeActionId="4"
-        android:imeOptions="actionSend"
-        android:elevation="3dp"
-        android:importantForAutofill="yes" />
-
+        android:textSize="15sp" />
 
 </RelativeLayout>

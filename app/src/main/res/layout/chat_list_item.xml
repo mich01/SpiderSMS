@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:divider="@null"
-    android:dividerHeight="0dp"
-    android:padding="6dp">
-    <ImageView
+    android:divider="@color/darkblue"
+    android:dividerHeight="2dp"
+    android:background="@color/gold"
+    android:padding="8dp">
+    <com.google.android.material.imageview.ShapeableImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:src="@drawable/contact_icon"
-        android:id="@+id/last_contact_img"/>
+        android:id="@+id/last_contact_img"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
+        />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,6 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="0dp"
             android:text="main text"
+            android:paddingLeft="5dp"
             android:textColor="#000"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -33,9 +37,23 @@
             android:layout_height="wrap_content"
             android:layout_gravity=""
             android:layout_margin="0dp"
+            android:paddingLeft="5dp"
             android:maxLines="1"
             android:text="..."
             android:ellipsize="end"
+            android:textColor="#a9a9a9"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/time_stamp"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_margin="0dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingLeft="5dp"
+            android:text="..."
             android:textColor="#a9a9a9"
             android:textSize="15sp" />
     </LinearLayout>

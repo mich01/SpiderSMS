@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.UI.HomeActivity;
+import com.mich01.spidersms.UI.UnlockActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +28,7 @@ public class SetupConfig
                 if(ConfigServer(context,Input.toString()))
                 {
                     if(MyPrefs.getInt("DBExists",0)==0) {
-                        context.startActivity(new Intent(context, LoginActivity.class));
+                        context.startActivity(new Intent(context, UnlockActivity.class));
                         Toast.makeText(context, "Server Config Setup Successfull", Toast.LENGTH_LONG).show();
                         //((SetupConfig) context).finish();
                     }
