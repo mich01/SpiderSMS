@@ -26,4 +26,5 @@
     <color name="text_in_app">#CFA068</color>
     <color name="blue_fade_start">#003037</color>
     <color name="blue_fade_end">#162336</color>
+    <color name="danger">#FB1100</color>
 </resources>

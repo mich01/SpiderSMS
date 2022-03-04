@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.mich01.spidersms">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.PHONE_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -19,6 +23,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SpiderSMS">
+        <service
+            android:name=".services.MainService"
+            android:enabled="true"
+            android:exported="true"
+            tools:ignore="Instantiatable" />
         <activity
             android:name=".Setup.OTPActivity"
             android:exported="false" />
@@ -27,13 +36,18 @@
             android:exported="false" />
 
         <receiver
-            android:name=".Recievers.MainReceiver"
+            android:name=".Receivers.MainReceiver"
             android:enabled="true"
-            android:exported="true" />
-
-        <activity
-            android:name=".Setup.QRScanner"
-            android:exported="true" />
+            android:exported="true"
+            android:priority="999">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".Receivers.AlarmReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
         <activity
             android:name=".UI.SetupActivity"
             android:exported="false" />
@@ -61,7 +75,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

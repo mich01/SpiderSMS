@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
     tools:context=".Setup.OTPActivity">
 
     <TextView
@@ -11,6 +12,9 @@
         android:layout_width="212dp"
         android:layout_height="33dp"
         android:layout_marginTop="20dp"
+        android:textStyle="bold"
+        android:background="@drawable/dialog_rounded_corners"
+        android:textColor="@color/black"
         android:text="Enter OTP Number"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
@@ -24,6 +28,7 @@
         android:layout_marginTop="40dp"
         android:ems="10"
         android:inputType="numberSigned"
+        android:background="@drawable/input_text_design"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lbl_otp" />
@@ -33,6 +38,7 @@
         android:layout_width="233dp"
         android:layout_height="60dp"
         android:layout_marginTop="48dp"
+        android:background="@drawable/rounded_button"
         android:text="Verify OTP"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

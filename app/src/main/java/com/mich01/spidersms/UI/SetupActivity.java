@@ -7,6 +7,9 @@ import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.transition.Fade;
+import android.transition.Slide;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,6 +35,7 @@ public class SetupActivity extends AppCompatActivity {
     EditText txtUserName;
     EditText txtPhoneNumber;
     String Pin_Number;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +48,6 @@ public class SetupActivity extends AppCompatActivity {
         RegisterUserBtn.setEnabled(false);
         txtPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_invalid_24, 0);
         txtConfirmPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_invalid_24, 0);
-
         txtConfirmPinNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -143,4 +146,5 @@ public class SetupActivity extends AppCompatActivity {
         }
         return completed;
     }
+
 }

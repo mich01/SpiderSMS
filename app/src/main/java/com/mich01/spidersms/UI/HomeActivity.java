@@ -10,8 +10,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -36,7 +38,10 @@ import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
+import com.mich01.spidersms.Receivers.MainReceiver;
 import com.mich01.spidersms.Setup.ConfigChoiceActivity;
+import com.mich01.spidersms.SplashActivity;
+import com.mich01.spidersms.services.MainService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,11 +54,11 @@ public class HomeActivity extends AppCompatActivity {
     public static ChatsAdapter adapter;
     static Activity myActivity;
     View view;
+    Menu MainMenu;
     private static ArrayList<LastChat> ChatsList;
     //public static ListView ChatListView;
     TextView StatusStext;
     ProgressBar progressBar;
-    EditText SearchText;
     public static ArrayList<String> CID = new ArrayList<String>();
     public static ArrayList<String> ContactNames = new ArrayList<String>();
     public static ArrayList<String> ContactStatus = new ArrayList<String>();
@@ -70,6 +75,13 @@ public class HomeActivity extends AppCompatActivity {
         ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
         StatusStext = findViewById(R.id.lbl_contact_Status);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(new Intent(this, MainService.class));
+        }else
+        {
+            startService(new Intent(this, MainService.class));
+
+        }
         this.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.main_action_bar);
         Cursor cur = new DBManager(HomeActivity.this).getLastChatList();
@@ -106,37 +118,48 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         Log.i("onCreate", "menu");
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-        MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return false;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                return false;
-            }
-        };
-        menu.findItem(R.id.search).setOnActionExpandListener(onActionExpandListener);
-        SearchView searchView= (SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setQueryHint("Search Contact..");
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query)
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECEIVE_SMS)  != PackageManager.PERMISSION_GRANTED)
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             {
-                return false;
+                requestPermissions(new String[]{Manifest.permission.RECEIVE_SMS},1111);
             }
+        }
+        else
+        {
+            MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
+                @Override
+                public boolean onMenuItemActionExpand(MenuItem item) {
+                    return false;
+                }
 
-            @Override
-            public boolean onQueryTextChange(String query) {
-                FilterChats(query);
-                return false;
-            }
-        });
+                @Override
+                public boolean onMenuItemActionCollapse(MenuItem item) {
+                    return false;
+                }
+            };
+            menu.findItem(R.id.search).setOnActionExpandListener(onActionExpandListener);
+            SearchView searchView= (SearchView) menu.findItem(R.id.search).getActionView();
+            searchView.setQueryHint("Search Contact..");
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query)
+                {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String query) {
+                    FilterChats(query);
+                    return false;
+                }
+            });
+        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -146,6 +169,7 @@ public class HomeActivity extends AppCompatActivity {
         switch (item.getItemId())
         {
             case R.id.add_contact:
+
                 startActivity(new Intent(this, ConfigChoiceActivity.class));
                 break;
             case  R.id.reconfigure:
@@ -208,7 +232,12 @@ public class HomeActivity extends AppCompatActivity {
                 synchronized(this)
                 {
                     ChatsAdapter UpdatedChats =new ChatsAdapter(context, R.layout.chat_list_item,ChatsList);
-                    ChatListView.setAdapter(UpdatedChats);
+                    try {
+                        ChatListView.setAdapter(UpdatedChats);
+                    }catch (NullPointerException e)
+                    {
+                        
+                    }
                 }
             }
         });

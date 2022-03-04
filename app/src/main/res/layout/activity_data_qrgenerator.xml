@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.DataQRGenerator">
+    android:background="@color/dark_gold"
+    tools:context=".UI.DataQRGenerator">
 
     <TextView
         android:id="@+id/TxtContact"
@@ -14,6 +15,7 @@
         android:layout_marginTop="48dp"
         android:layout_marginEnd="43dp"
         android:textAlignment="center"
+        android:textColor="@color/gold"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -26,7 +28,9 @@
         android:layout_height="47dp"
         android:layout_marginTop="116dp"
         android:text="Delete Contact"
-        app:backgroundTint="#FB1100"
+        android:background="@drawable/rounded_button"
+        app:backgroundTint="@color/danger"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -45,16 +49,18 @@
         android:id="@+id/cmd_share_qr"
         android:layout_width="199dp"
         android:layout_height="56dp"
-        android:text="Share Contact QR"
+        android:text="@string/share_contact_qr"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/rounded_button"
         app:layout_constraintTop_toBottomOf="@+id/img_ContactQR" />
 
     <TextView
         android:id="@+id/txt_contact_shared"
         android:layout_width="418dp"
         android:layout_height="69dp"
+        android:textColor="@color/darkblue"
         android:text="..."
         android:textSize="30dp"
         android:textStyle="bold"

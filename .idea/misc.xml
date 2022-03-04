@@ -11,6 +11,7 @@
         <entry key="app/src/main/res/drawable/chat_bg_gradient.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/contact_icon.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/contact_icon_design.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/dialog_rounded_corners.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_baseline_send_24.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_baseline_textsms_24.xml" value="0.1" />
@@ -22,11 +23,12 @@
         <entry key="app/src/main/res/drawable/img.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/input_text_design.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/last_chat_bg.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/rounded_button.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/user_icon_design.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_chat.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_config_choice.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_contacts.xml" value="0.1" />
-        <entry key="app/src/main/res/layout/activity_data_qrgenerator.xml" value="0.18" />
+        <entry key="app/src/main/res/layout/activity_data_qrgenerator.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_home.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_login.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_login2.xml" value="0.159375" />
@@ -46,6 +48,7 @@
         <entry key="app/src/main/res/layout/fragment_chat_list.xml" value="0.1" />
         <entry key="app/src/main/res/layout/main_action_bar.xml" value="0.1" />
         <entry key="app/src/main/res/layout/receiver_bubble.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/send_options_modal.xml" value="0.15" />
         <entry key="app/src/main/res/layout/sender_bubble.xml" value="0.1" />
         <entry key="app/src/main/res/layout/unclock_action_bar.xml" value="0.1" />
         <entry key="app/src/main/res/menu/contact_menu.xml" value="0.1" />

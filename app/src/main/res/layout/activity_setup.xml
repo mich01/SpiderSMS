@@ -1,82 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_2"
     tools:context=".UI.SetupActivity">
-
-
     <TextView
         android:id="@+id/txt_setup_status"
         android:layout_width="377dp"
         android:layout_height="70dp"
         android:layout_marginTop="64dp"
         android:ems="30"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        android:background="@drawable/dialog_rounded_corners"
+        android:textColor="@color/black"
         android:text="Enter a 4 digit pin that you will use to unlock your device"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/txt_pin"
-        android:layout_width="262dp"
-        android:layout_height="58dp"
-        android:layout_marginTop="80dp"
-        android:ems="10"
-        android:inputType="numberPassword"
-        android:maxLength="4"
-        android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.503"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_phone_number" />
-
-    <EditText
-        android:id="@+id/txt_confirm_pin"
-        android:layout_width="261dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="32dp"
-        android:ems="10"
-        android:inputType="numberPassword"
-        android:maxLength="4"
-        android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_pin" />
-
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/user_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/txt_setup_status"
+        android:hint="@string/enter_name">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txt_username"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:background="@drawable/input_text_design"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/phone_number"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/user_name"
+        android:hint="@string/lbl_phone_number">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txt_phone_number"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="phone"
+            android:background="@drawable/input_text_design"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/pin_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/phone_number"
+        android:hint="@string/enter_4_digit_pin">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txt_pin"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="numberPassword"
+            android:maxLength="4"
+            android:textAlignment="center"
+            android:background="@drawable/input_text_design"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.503"
+            app:layout_constraintStart_toStartOf="parent"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/pin_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/pin_1"
+        android:hint="@string/enter_4_digit_pin">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txt_confirm_pin"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="numberPassword"
+            android:maxLength="4"
+            android:textAlignment="center"
+            android:background="@drawable/input_text_design"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </com.google.android.material.textfield.TextInputLayout>
     <Button
         android:id="@+id/cmd_complete"
         android:layout_width="261dp"
         android:layout_height="57dp"
-        android:layout_marginTop="84dp"
+        android:layout_marginTop="30dp"
+        android:alpha="1"
         android:text="Complete Setup"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_confirm_pin" />
-
-    <EditText
-        android:id="@+id/txt_username"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="72dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Name"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_setup_status" />
-
-    <EditText
-        android:id="@+id/txt_phone_number"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:ems="10"
-        android:inputType="phone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_username" />
+        android:background="@drawable/rounded_button"
+        app:layout_constraintTop_toBottomOf="@+id/pin_2" />
 </androidx.constraintlayout.widget.ConstraintLayout>

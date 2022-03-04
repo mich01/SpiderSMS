@@ -94,6 +94,7 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         {
             LastText.setTypeface(null, Typeface.BOLD);
             LastText.setTextColor(Color.BLACK);
+            TimeStamp.setTextColor(Color.BLACK);
             convertView.setBackgroundResource(R.color.gold);
         }
         else
@@ -101,6 +102,7 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
             LastText.setTypeface(null, Typeface.NORMAL);
             contactID.setTextColor(Color.WHITE);
             LastText.setTextColor(Color.WHITE);
+            TimeStamp.setTextColor(Color.WHITE);
             convertView.setBackgroundResource(R.color.darkblue);
         }
         LastText.setText(chatsList.get(position).getLastMessage());

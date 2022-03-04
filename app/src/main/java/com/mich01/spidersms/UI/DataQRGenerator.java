@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Display;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -61,6 +62,7 @@ public class DataQRGenerator extends AppCompatActivity {
         DeleteContact = findViewById(R.id.cmdDeleteContact);
         QRImage = findViewById(R.id.img_ContactQR);
         ShareQRContact = findViewById(R.id.cmd_share_qr);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         Bundle bundle = getIntent().getExtras();
         inputValue = bundle.getString("Contact");
         ContactName.setText(bundle.getString("ContactName"));
@@ -102,9 +104,9 @@ public class DataQRGenerator extends AppCompatActivity {
             Toast.makeText(this, "Value Required ",Toast.LENGTH_LONG).show();
         }
         ShareQRContact.setOnClickListener(new View.OnClickListener() {
-            String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,"MyContact", null);
             @Override
             public void onClick(View v) {
+                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,ContactID, null);
                 Uri bmpUri = Uri.parse(tempFile);
                 final Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
                 shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -127,5 +129,14 @@ public class DataQRGenerator extends AppCompatActivity {
                 }
             }
         });
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

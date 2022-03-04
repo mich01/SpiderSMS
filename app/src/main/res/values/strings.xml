@@ -1,9 +1,17 @@
 <resources>
     <string name="app_name">SpiderSMS</string>
     <string name="form_phone_no">254722000000</string>
-    <string name="lbl_phone_number">Enter Phone number</string>
+    <string name="lbl_phone_number">Enter Phone number 254 700123456</string>
     <string name="version_number">V1.0</string>
     <string name="app_tagline">Stealthy SMS Communications</string>
     <string name="txt_unlock_instructions">Use Fingerprint or Unlock Key to use app</string>
     <string name="enter_4_digit_pin">Enter 4 Digit Pin</string>
+    <string name="select_config_file">Select Config File</string>
+    <string name="scan_qr_to_config">Scan QR to Config</string>
+    <string name="share_contact_qr">Share Contact QR</string>
+    <string name="send_option1">Encrypt and Send Directly to</string>
+    <string name="send_option2">Encrypt and sed to Covert PhoneNo</string>
+    <string name="send_option3">Encrypt and Send Using Online Service</string>
+    <string name="sending_options">Sending Options</string>
+    <string name="enter_name">Enter Your Contact Name</string>
 </resources>

@@ -12,6 +12,8 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import com.mich01.spidersms.DB.DBManager;
+
 public class SMSHandler
 {
     Context context;
@@ -42,6 +44,16 @@ public class SMSHandler
         }
     }
     public void sendEncryptedSMS(String PhoneNo, String SMSText)
+    {
+        new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
+        new DBManager(context).AddChatMessage(PhoneNo,0,SMSText,false);
+        Log.i("SMS Handler: ","Message sent to "+PhoneNo+" Message: "+SMSText);
+        SmsManager manager = SmsManager.getDefault();
+        PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
+        PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
+        manager.sendTextMessage(PhoneNo, null, SMSText, piSend, piDelivered);
+    }
+    public void proxyEncryptedSMS(String PhoneNo,String Target, String SMSText)
     {
         Log.i("SMS Handler: ","Message sent to "+PhoneNo+" Message: "+SMSText);
         SmsManager manager = SmsManager.getDefault();

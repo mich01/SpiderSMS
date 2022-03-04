@@ -25,6 +25,7 @@ import androidx.core.app.ActivityCompat;
 
 
 import com.amulyakhare.textdrawable.TextDrawable;
+import com.google.android.material.snackbar.Snackbar;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.ContactsActivity;
@@ -82,18 +83,14 @@ public class ContactAdapter extends ArrayAdapter<String>
                     ChatIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
                     ChatIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(ChatIntent);
+                    //eRROR REPORTED HERE
                     ((ContactsActivity)getContext()).finish();
                 }
                 else
                 {
-                    Toast.makeText(context, C_ID.get(position), Toast.LENGTH_LONG).show();
-                    Intent SMSIntent = new Intent(context, ChatActivity.class);
-                    SMSIntent.putExtra("ContactID", C_ID.get(position));
-                    SMSIntent.putExtra("ContactName", C_Names.get(position));
-                    SMSIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
-                    SMSIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(SMSIntent);
-                    ((ContactsActivity)getContext()).finish();
+                    Snackbar snackbar = Snackbar.make(v, "Cannot send to contact invite to download app?", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(Color.RED);
+                    snackbar.show();
 
                     }
                 }

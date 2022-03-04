@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/dark_gold"
     tools:context=".Setup.ConfigChoiceActivity">
 
     <Button
@@ -13,7 +14,8 @@
         android:layout_marginStart="31dp"
         android:layout_marginTop="164dp"
         android:layout_marginEnd="31dp"
-        android:text="Select Config File"
+        android:text="@string/select_config_file"
+        android:background="@drawable/rounded_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,9 +26,10 @@
         android:layout_width="349dp"
         android:layout_height="54dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="150dp"
         android:layout_marginEnd="30dp"
-        android:text="Scan QR to Config"
+        android:text="@string/scan_qr_to_config"
+        android:background="@drawable/rounded_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"

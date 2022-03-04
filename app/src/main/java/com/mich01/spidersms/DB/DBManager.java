@@ -24,7 +24,7 @@ public class DBManager extends SQLiteOpenHelper
     {
         db.execSQL("create Table UserProfile(CID TEXT primary key, PhoneNo TEXT, UserName TEXT, ServerURL TEXT)");
         db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, CryptoAlg TEXT, StegKey TEXT, Secret TEXT, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
-        db.execSQL("create Table EncryptedSMS(MessageID INTEGER primary key AUTOINCREMENT NOT NULL,SenderNumber TEXT,CID TEXT,inorout INTEGER, PubKey TEXT, CryptoAlg TEXT, StegKey TEXT,Timestamp)");
+        db.execSQL("create Table EncryptedSMS(MessageID INTEGER primary key AUTOINCREMENT NOT NULL,CID TEXT, MessageBody  TEXT,inorout INTEGER, Status INTEGER,Timestamp)");
         db.execSQL("create Table LastChats(CID TEXT primary key,MessageText TEXT,inorout INTEGER,ReadStatus INEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
     }
@@ -148,7 +148,7 @@ public class DBManager extends SQLiteOpenHelper
         contentValues.put("MessageBody", ChatMessage);
         contentValues.put("inorout", InorOut);
         contentValues.put("Status",Status_Int);
-        long result = DB.insert("Chats", null, contentValues);
+        long result = DB.insert("EncryptedSMS", null, contentValues);
         if(result==-1)
         {
             return false;
@@ -158,10 +158,9 @@ public class DBManager extends SQLiteOpenHelper
             return true;
         }
     }
-    public Cursor getCIDChats(String CID)
-    {
+    public Cursor getCIDChats(String CID) {
         SQLiteDatabase DB = this.getWritableDatabase();
-        Cursor cursor = DB.rawQuery("select * from Chats where CID=? Order By Timestamp ASC", new String[]{CID});
+        Cursor cursor = DB.rawQuery("select * from EncryptedSMS where CID=? Order By Timestamp ASC", new String[]{CID});
         return cursor;
     }
     public int UpdateContact(String CID, JSONObject ContactDetails)
@@ -201,7 +200,7 @@ public class DBManager extends SQLiteOpenHelper
                         result = DBUpdateContact.update("Contacts", contentValues, "CID=?", new String[]{OLD_CID});
                         ContentValues chatValues = new ContentValues();
                         chatValues.put("CID",CID);
-                        result = DBUpdateChats.update("Chats", chatValues, "CID=?", new String[]{OLD_CID});
+                        result = DBUpdateChats.update("EncryptedSMS", chatValues, "CID=?", new String[]{OLD_CID});
                         Toast.makeText(context.getApplicationContext(), ContactDetails.getString("CName")+" Has Updated their Contacts", Toast.LENGTH_LONG).show();
 
                 }
@@ -224,6 +223,7 @@ public class DBManager extends SQLiteOpenHelper
     }
     public boolean updateLastMessage(String CID, String MessageText, int InOrOut, int ReadStatus)
     {
+        Log.i("Spiderman: ",CID);
         boolean status = false;
         SQLiteDatabase DB = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -307,7 +307,7 @@ public class DBManager extends SQLiteOpenHelper
     public int DeleteMessage(String MessageID)
     {
         SQLiteDatabase DB = this.getWritableDatabase();
-        int result = DB.delete("Chats", "MessageID=?", new String[]{MessageID});
+        int result = DB.delete("EncryptedSMS", "MessageID=?", new String[]{MessageID});
         Toast.makeText(context,"Message Deleted: "+MessageID, Toast.LENGTH_LONG).show();
         return result;
     }
@@ -337,7 +337,7 @@ public class DBManager extends SQLiteOpenHelper
     public int DeleteAllChats(String CID)
     {
         SQLiteDatabase DB = this.getWritableDatabase();
-        int result = DB.delete("Chats", "CID=?", new String[]{CID});
+        int result = DB.delete("EncryptedSMS", "CID=?", new String[]{CID});
         int result2 = DB.delete("LastChats", "CID=?", new String[]{CID});
         Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
         return result;

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -35,10 +36,11 @@ public class ScannerSetupActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_scanner_setup);
+        setContentView(R.layout.activity_qrscanner);
         Scannerview = findViewById(R.id.scannerView);
         backButton = findViewById(R.id.cmdBack);
         codeScanner = new CodeScanner(this, Scannerview);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         codeScanner.setDecodeCallback(new DecodeCallback() {
             @Override
             public void onDecoded(@NonNull @NotNull Result result) {
@@ -88,5 +90,14 @@ public class ScannerSetupActivity extends AppCompatActivity {
         {
             codeScanner.startPreview();
         }
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

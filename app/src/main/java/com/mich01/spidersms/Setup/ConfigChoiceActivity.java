@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.FileUtils;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -42,6 +43,7 @@ public class ConfigChoiceActivity extends AppCompatActivity {
         setContentView(R.layout.activity_config_choice);
         ScanQRButton = findViewById(R.id.cmdNavigateToQR);
         SelectFileButton = findViewById(R.id.cmdFilechooser);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ScanQRButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -126,5 +128,14 @@ public class ConfigChoiceActivity extends AppCompatActivity {
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

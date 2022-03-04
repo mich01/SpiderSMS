@@ -6,11 +6,12 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_1"
     tools:context=".UI.ChatActivity">
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_conversation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/userInput"/>
+        android:layout_above="@+id/userInput" />
 
     <EditText
         android:id="@+id/userInput"
@@ -21,17 +22,29 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:layout_toLeftOf="@+id/sendButton"
         android:background="@drawable/bg_edit_text"
         android:elevation="3dp"
         android:hint="Type a message"
         android:imeActionId="4"
         android:importantForAutofill="yes"
-        android:inputType="textMultiLine|textImeMultiLine"
+        android:inputType="textLongMessage|textAutoCorrect|textMultiLine|text"
         android:padding="12dp"
-        android:scrollbars="vertical"
         android:singleLine="false"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:textSize="15sp" />
+
+    <ImageButton
+        android:id="@+id/sendButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/ic_baseline_send_24" />
+
 
 </RelativeLayout>
