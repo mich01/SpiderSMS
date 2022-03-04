@@ -6,4 +6,45 @@
     android:layout_height="match_parent"
     tools:context=".Setup.OTPActivity">
 
+    <TextView
+        android:id="@+id/lbl_otp"
+        android:layout_width="212dp"
+        android:layout_height="33dp"
+        android:layout_marginTop="20dp"
+        android:text="Enter OTP Number"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/img_status" />
+
+    <EditText
+        android:id="@+id/txt_otp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:ems="10"
+        android:inputType="numberSigned"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lbl_otp" />
+
+    <Button
+        android:id="@+id/cmd_complete_setup"
+        android:layout_width="233dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="48dp"
+        android:text="Verify OTP"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt_otp" />
+
+    <ImageView
+        android:id="@+id/img_status"
+        android:layout_width="184dp"
+        android:layout_height="191dp"
+        android:layout_marginTop="56dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/ic_lock_idle_lock" />
 </androidx.constraintlayout.widget.ConstraintLayout>

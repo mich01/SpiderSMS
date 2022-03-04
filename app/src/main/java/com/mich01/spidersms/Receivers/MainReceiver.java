@@ -1,13 +1,14 @@
-package com.mich01.spidersms.Recievers;
+package com.mich01.spidersms.Receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.mich01.spidersms.DB.DBManager;
 
 public class MainReceiver extends BroadcastReceiver {
 
@@ -28,8 +29,10 @@ public class MainReceiver extends BroadcastReceiver {
                         SmsMessage currentMessage = SmsMessage.createFromPdu((byte[]) aPdusObj);
                         String senderNum = currentMessage.getDisplayOriginatingAddress();
                         String message = currentMessage.getDisplayMessageBody();
-                        if(message.contains("SM:||")||message.toLowerCase().contains("jambo"))
+                        if(message.contains("SM:||")||message.toLowerCase().contains(" "))
                         {
+                            new DBManager(context).updateLastMessage(bundle.getString("ContactID"), message, 0, 0);
+                            new DBManager(context).AddChatMessage(bundle.getString("ContactID"),1,message,false);
                             Toast.makeText(context, "Message from: "+senderNum,Toast.LENGTH_LONG).show();
                         }
                     } // end for loop
