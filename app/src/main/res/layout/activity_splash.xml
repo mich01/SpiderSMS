@@ -10,11 +10,11 @@
     <TextView
         android:id="@+id/textView"
         android:layout_width="187dp"
-        android:layout_height="37dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="80dp"
         android:textColor="@color/green"
         android:textAlignment="center"
-        android:textSize="50px"
+        android:textSize="30sp"
         android:text="@string/app_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -28,7 +28,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView"
-        app:srcCompat="@drawable/ic_unlocked_fingerprint_24" />
+        app:srcCompat="@drawable/ic_unlocked_fingerprint_24"
+        android:contentDescription="@string/app_logo" />
 
     <TextView
         android:id="@+id/textView2"

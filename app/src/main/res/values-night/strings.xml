@@ -13,4 +13,10 @@
     <string name="send_option1">Encrypt and Send Directly to</string>
     <string name="sending_options">Sending Options</string>
     <string name="enter_name">Enter Your Contact Name</string>
+    <string name="app_logo">App Logo</string>
+    <string name="unclock_device_text">Enter a 4 digit pin that you will use to unlock your device</string>
+    <string name="complete_setup">Complete Setup</string>
+    <string name="enter_otp_number">Enter OTP Number</string>
+    <string name="verify_otp">Verify OTP</string>
+    <string name="otp_status">OTP Status</string>
 </resources>

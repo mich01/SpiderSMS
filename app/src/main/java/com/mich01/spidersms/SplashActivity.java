@@ -3,11 +3,8 @@ package com.mich01.spidersms;
 
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -16,14 +13,18 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.transition.Fade;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.mich01.spidersms.Backend.BackendFunctions;
-import com.mich01.spidersms.UI.SetupActivity;
+import com.mich01.spidersms.Setup.SetupActivity;
 import com.mich01.spidersms.UI.UnlockActivity;
 
 import java.util.Objects;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
 
     Handler h = new Handler();
@@ -34,12 +35,23 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        setupWindowAnimations();
         Objects.requireNonNull(getSupportActionBar()).hide();
         if (!BackendFunctions.CheckRoot())
         {
-            CheckPermissions();
-        } else {
+            preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            if (preferences.getLong("InstalledTimestamp", 0) == 0)
+            {
+                SharedPreferences.Editor PrefEditor;
+                PrefEditor = preferences.edit();
+                PrefEditor.putLong("InstalledTimestamp", System.currentTimeMillis());
+                PrefEditor.putBoolean("Licensed", false);
+                PrefEditor.apply();
+            }
+            {
+                CheckPermissions();
+            }
+        }
+        else {
             AlertDialog alertDialog = new AlertDialog.Builder(SplashActivity.this).create();
             alertDialog.setTitle("Error");
             //alertDialog.setIcon(R.drawable.ic_stop_no_action);
@@ -53,22 +65,8 @@ public class SplashActivity extends AppCompatActivity {
             alertDialog.show();
         }
     }
-    private void setupWindowAnimations() {
-        Fade fade = new Fade();
-        fade.setDuration(1000);
-        getWindow().setExitTransition(fade);
-    }
     public void CheckPermissions()
     {
-        preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        if (preferences.getLong("InstalledTimestamp", 0) == 0)
-        {
-            SharedPreferences.Editor PrefEditor;
-            PrefEditor = preferences.edit();
-            PrefEditor.putLong("InstalledTimestamp", System.currentTimeMillis());
-            PrefEditor.putBoolean("Licensed", false);
-            PrefEditor.apply();
-        }
         if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS)  != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)  != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECEIVE_SMS)  != PackageManager.PERMISSION_GRANTED ||
@@ -79,7 +77,7 @@ public class SplashActivity extends AppCompatActivity {
         else
         {
             h.postDelayed(() -> {
-                preferences.getInt("SetupComplete", 0);
+                First_Run=preferences.getInt("SetupComplete", 0);
                 Intent i;
                 if (First_Run == 0)
                 {

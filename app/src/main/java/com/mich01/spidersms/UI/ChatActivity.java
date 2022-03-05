@@ -77,7 +77,7 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setAdapter(messageAdapter);
         sendButton = findViewById(R.id.sendButton);
         getSupportActionBar().setTitle(bundle.getString("ContactName"));
-        PopulateChatView();
+        PopulateChatView(context);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -128,8 +128,9 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @SuppressLint("Range")
-    public static void PopulateChatView() {
-        Cursor cur = new DBManager(context.getApplicationContext()).getCIDChats(ContactID);
+    public static void PopulateChatView(Context c) {
+
+        Cursor cur = new DBManager(c.getApplicationContext()).getCIDChats(ContactID);
         responseMessageList.clear();
         while (cur != null && cur.moveToNext())
         {

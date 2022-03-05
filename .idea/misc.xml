@@ -5,6 +5,7 @@
       <map>
         <entry key="app/src/main/res/drawable-v24/background_gradient.xml" value="0.1" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/background_light.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_received.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_sent.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/bg_edit_text.xml" value="0.1" />
@@ -32,7 +33,7 @@
         <entry key="app/src/main/res/layout/activity_home.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_login.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_login2.xml" value="0.159375" />
-        <entry key="app/src/main/res/layout/activity_otp.xml" value="0.16259057971014493" />
+        <entry key="app/src/main/res/layout/activity_otp.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_otpactivity.xml" value="0.12" />
         <entry key="app/src/main/res/layout/activity_qrscanner.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_scanner_setup.xml" value="0.1" />

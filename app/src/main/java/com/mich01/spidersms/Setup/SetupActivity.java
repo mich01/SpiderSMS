@@ -1,4 +1,4 @@
-package com.mich01.spidersms.UI;
+package com.mich01.spidersms.Setup;
 
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
@@ -6,9 +6,6 @@ import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-
-import android.transition.Fade;
-import android.transition.Slide;
 
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +20,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mich01.spidersms.Crypto.IDManagementProtocol;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
-import com.mich01.spidersms.Setup.OTPActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,14 +37,15 @@ public class SetupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
         RegisterUserBtn = findViewById(R.id.cmd_complete);
+        RegisterUserBtn.setEnabled(false);
         txtPinNumber = findViewById(R.id.txt_pin);
         txtConfirmPinNumber = findViewById(R.id.txt_confirm_pin);
         txtUserName = findViewById(R.id.txt_username);
         txtPhoneNumber = findViewById(R.id.txt_phone_number);
-        RegisterUserBtn.setEnabled(false);
         txtPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_invalid_24, 0);
         txtConfirmPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_invalid_24, 0);
-        txtConfirmPinNumber.addTextChangedListener(new TextWatcher() {
+        txtConfirmPinNumber.addTextChangedListener(new TextWatcher()
+        {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 txtPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_invalid_24, 0);
@@ -91,33 +88,23 @@ public class SetupActivity extends AppCompatActivity {
                 }
             }
         });
-        RegisterUserBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Pin_Number = txtPinNumber.getText().toString();
+        RegisterUserBtn.setOnClickListener(view -> {
+            Pin_Number = txtPinNumber.getText().toString();
+            if(SetKeyPin(Pin_Number))
+            {
+                CheckAllFields(view);
+            }
+            else
+            {
                 Snackbar snackbar;
-                if(SetKeyPin(Pin_Number, view))
-                {
-                    snackbar = Snackbar.make(view,"Pin Setup Successful",Snackbar.LENGTH_LONG);
-                    snackbar.getView().setBackgroundColor(ContextCompat.getColor(SetupActivity.this, R.color.light_blue_600));
-                    snackbar.show();
-                    Intent i = new Intent(SetupActivity.this, OTPActivity.class);
-                    i.putExtra("ContactID",txtPhoneNumber.getText().toString());
-                    i.putExtra("ContactName",txtUserName.getText().toString());
-                    startActivity(i);
-                    finish();
-                }
-                else
-                {
-                    snackbar =Snackbar.make(view,"Pin Setup Failed",Snackbar.LENGTH_LONG);
-                    snackbar.getView().setBackgroundColor(ContextCompat.getColor(SetupActivity.this, R.color.error));
-                    snackbar.show();
-                }
+                snackbar =Snackbar.make(view,"Pin Setup Failed",Snackbar.LENGTH_LONG);
+                snackbar.getView().setBackgroundColor(ContextCompat.getColor(SetupActivity.this, R.color.error));
+                snackbar.show();
             }
         });
     }
 
-    private boolean SetKeyPin(String Pin, View view)
+    private boolean SetKeyPin(String Pin)
     {
         boolean completed;
         String PinHash = IDManagementProtocol.ComputeHash(Pin);
@@ -136,15 +123,34 @@ public class SetupActivity extends AppCompatActivity {
 
         MyPrefsEditor.putInt("SetupComplete", 1);
         MyPrefsEditor.apply();
-        if(MyPrefsEditor.commit())
-        {
-            completed =true;
-        }
-        else
-        {
-            completed= false;
-        }
+        completed = MyPrefsEditor.commit();
         return completed;
     }
 
+    private void CheckAllFields(View view) {
+        if (txtUserName.length()==0)
+        {
+            txtUserName.setError("Username field is required");
+        }
+        if(txtPhoneNumber.length()==0)
+        {
+            txtPhoneNumber.setError("Phone Number field is required");
+        }
+        if(txtPinNumber.length()==0)
+        {
+            txtPinNumber.setError("Pin Is Required field is required");
+        }
+        if(txtPinNumber.length()==4 && txtUserName.length()>0 && txtPhoneNumber.length()>0)
+        {
+            Snackbar snackbar;
+            snackbar = Snackbar.make(view,"Pin Setup Successful",Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(ContextCompat.getColor(SetupActivity.this, R.color.light_blue_600));
+            snackbar.show();
+            Intent i = new Intent(SetupActivity.this, OTPActivity.class);
+            i.putExtra("ContactID",txtPhoneNumber.getText().toString());
+            i.putExtra("ContactName",txtUserName.getText().toString());
+            startActivity(i);
+            finish();
+        }
+    }
 }

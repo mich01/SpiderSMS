@@ -44,7 +44,7 @@ public class MainReceiver extends BroadcastReceiver {
                 Log.i("SpiderMan context", "TRIGGERED here: " );
                 new DBManager(context).updateLastMessage(senderNum, message, 0, 0);
                 new DBManager(context).AddChatMessage(senderNum,1,message,false);
-                ChatActivity.PopulateChatView();
+                ChatActivity.PopulateChatView(context);
                 ChatActivity.messageAdapter.notifyDataSetChanged();
                 HomeActivity.PopulateChats(context);
                 HomeActivity.adapter.notifyDataSetChanged();

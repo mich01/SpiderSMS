@@ -49,7 +49,7 @@
             android:enabled="true"
             android:exported="true"></receiver>
         <activity
-            android:name=".UI.SetupActivity"
+            android:name=".Setup.SetupActivity"
             android:exported="false" />
         <activity
             android:name=".UI.HomeActivity"

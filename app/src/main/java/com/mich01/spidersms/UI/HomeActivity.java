@@ -1,19 +1,9 @@
 package com.mich01.spidersms.UI;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -24,13 +14,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -38,33 +31,24 @@ import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
-import com.mich01.spidersms.Receivers.MainReceiver;
 import com.mich01.spidersms.Setup.ConfigChoiceActivity;
-import com.mich01.spidersms.SplashActivity;
 import com.mich01.spidersms.services.MainService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class HomeActivity extends AppCompatActivity {
     //Temp
+    @SuppressLint("StaticFieldLeak")
     public static ListView ChatListView;
     public static ChatsAdapter adapter;
-    static Activity myActivity;
-    View view;
-    Menu MainMenu;
     private static ArrayList<LastChat> ChatsList;
     //public static ListView ChatListView;
-    TextView StatusStext;
+    TextView StatusText;
     ProgressBar progressBar;
-    public static ArrayList<String> CID = new ArrayList<String>();
-    public static ArrayList<String> ContactNames = new ArrayList<String>();
-    public static ArrayList<String> ContactStatus = new ArrayList<String>();
-    public static ArrayList<Integer> ContactImgs = new ArrayList<Integer>();
-    public static ArrayList<Integer> CType = new ArrayList<Integer>();
-    static ProgressDialog dialog;
     //Temp-End
     FloatingActionButton fab;
     //private ActivityHomeBinding binding;
@@ -74,7 +58,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
-        StatusStext = findViewById(R.id.lbl_contact_Status);
+        StatusText = findViewById(R.id.lbl_contact_Status);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(new Intent(this, MainService.class));
         }else
@@ -82,38 +66,25 @@ public class HomeActivity extends AppCompatActivity {
             startService(new Intent(this, MainService.class));
 
         }
-        this.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        Objects.requireNonNull(this.getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.main_action_bar);
-        Cursor cur = new DBManager(HomeActivity.this).getLastChatList();
         adapter = new ChatsAdapter(HomeActivity.this,R.layout.chat_list_item,ChatsList);
         //new DBManager(getApplicationContext()).DeleteAllContacts("06");
         Handler h = new Handler(getMainLooper());
-        h.post(new Runnable()
-        {
-            @SuppressLint("Range")
-            @Override
-            public void run() {
-                PopulateChats(HomeActivity.this);
-            }
-
-        });
+        h.post(() -> PopulateChats(HomeActivity.this));
         fab = findViewById(R.id.fab_chat);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view)
+        fab.setOnClickListener(view -> {
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)  != PackageManager.PERMISSION_GRANTED)
             {
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)  != PackageManager.PERMISSION_GRANTED)
-                {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},1111);
-                    }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},1111);
                 }
-                else
-                {
-                    Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                    startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
-                }
+            }
+            else
+            {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
             }
         });
     }
@@ -163,13 +134,13 @@ public class HomeActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId())
         {
             case R.id.add_contact:
-
                 startActivity(new Intent(this, ConfigChoiceActivity.class));
                 break;
             case  R.id.reconfigure:
@@ -196,7 +167,7 @@ public class HomeActivity extends AppCompatActivity {
     }
     public static void PopulateChats(Context context)
     {
-        ChatsList = new ArrayList<LastChat>();
+        ChatsList = new ArrayList<>();
         Handler h = new Handler(context.getMainLooper());
         h.post(new Runnable()
         {
@@ -204,7 +175,6 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void run()
             {
-                int index=0;
                 Cursor cur = new DBManager(context).getLastChatList();
                 while (cur != null && cur.moveToNext())
                 {
@@ -227,7 +197,6 @@ public class HomeActivity extends AppCompatActivity {
                                 cur.getInt(cur.getColumnIndex("ReadStatus")),
                                 R.drawable.contact_icon));
                     }
-                    index++;
                 }
                 synchronized(this)
                 {
@@ -236,7 +205,7 @@ public class HomeActivity extends AppCompatActivity {
                         ChatListView.setAdapter(UpdatedChats);
                     }catch (NullPointerException e)
                     {
-                        
+                        e.printStackTrace();
                     }
                 }
             }
@@ -245,7 +214,7 @@ public class HomeActivity extends AppCompatActivity {
     }
     public void FilterChats(String SearchString)
     {
-        ArrayList<LastChat> FilteredChatList = new ArrayList<LastChat>();
+        ArrayList<LastChat> FilteredChatList = new ArrayList<>();
         for(int i=0;i<ChatsList.size();i++)
         {
             if(ChatsList.get(i).getContactName().toLowerCase().contains(SearchString.toLowerCase()) | ChatsList.get(i).getLastMessage().toLowerCase().contains(SearchString.toLowerCase()))
