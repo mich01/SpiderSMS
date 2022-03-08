@@ -10,7 +10,6 @@ import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,7 +30,7 @@ import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
-import com.mich01.spidersms.Setup.ConfigChoiceActivity;
+import com.mich01.spidersms.Setup.ScannerSetupActivity;
 import com.mich01.spidersms.services.MainService;
 
 import org.json.JSONException;
@@ -44,6 +43,7 @@ public class HomeActivity extends AppCompatActivity {
     //Temp
     @SuppressLint("StaticFieldLeak")
     public static ListView ChatListView;
+    @SuppressLint("StaticFieldLeak")
     public static ChatsAdapter adapter;
     private static ArrayList<LastChat> ChatsList;
     //public static ListView ChatListView;
@@ -91,7 +91,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        Log.i("onCreate", "menu");
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECEIVE_SMS)  != PackageManager.PERMISSION_GRANTED)
@@ -140,11 +139,18 @@ public class HomeActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId())
         {
-            case R.id.add_contact:
-                startActivity(new Intent(this, ConfigChoiceActivity.class));
+            case R.id.send_invite:
+                Intent sendIntent = new Intent();
+                sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.share_app));
+                sendIntent.setType("text/plain");
+                Intent shareIntent = Intent.createChooser(sendIntent, "Share App Link");
+                startActivity(shareIntent);
                 break;
+            case R.id.add_contact:
             case  R.id.reconfigure:
-                startActivity(new Intent(this, ConfigChoiceActivity.class));
+                startActivity(new Intent(getApplicationContext(), ScannerSetupActivity.class));
                 break;
             case  R.id.share_contact:
                 SharedPreferences preferences = this.getSharedPreferences("global", Context.MODE_PRIVATE);
@@ -180,22 +186,18 @@ public class HomeActivity extends AppCompatActivity {
                 {
                     if(cur.getString(cur.getColumnIndex("ContactName"))==null)
                     {
-                        Log.i("Record: ", cur.getString(cur.getColumnIndex("CID")));
                         ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("MessageText")),
                                 cur.getString(cur.getColumnIndex("Timestamp")),
-                                cur.getInt(cur.getColumnIndex("ReadStatus")),
-                                R.drawable.contact_icon));
+                                cur.getInt(cur.getColumnIndex("ReadStatus"))));
                     }
                     else {
-                        Log.i("Record: ", cur.getString(cur.getColumnIndex("ContactName")));
                         ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("ContactName")),
                                 cur.getString(cur.getColumnIndex("MessageText")),
                                 cur.getString(cur.getColumnIndex("Timestamp")),
-                                cur.getInt(cur.getColumnIndex("ReadStatus")),
-                                R.drawable.contact_icon));
+                                cur.getInt(cur.getColumnIndex("ReadStatus"))));
                     }
                 }
                 synchronized(this)
@@ -223,8 +225,7 @@ public class HomeActivity extends AppCompatActivity {
                         ChatsList.get(i).getContactName(),
                         ChatsList.get(i).getLastMessage(),
                         ChatsList.get(i).getTimestamp(),
-                        ChatsList.get(i).getStatus(),
-                        R.drawable.contact_icon));
+                        ChatsList.get(i).getStatus()));
             }
         }
         ChatsAdapter UpdatedChats =new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item,FilteredChatList);

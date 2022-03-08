@@ -44,10 +44,7 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
             </intent-filter>
         </receiver>
-        <receiver
-            android:name=".Receivers.AlarmReceiver"
-            android:enabled="true"
-            android:exported="true"></receiver>
+
         <activity
             android:name=".Setup.SetupActivity"
             android:exported="false" />
@@ -63,9 +60,6 @@
         </activity>
         <activity
             android:name=".UI.ChatActivity"
-            android:exported="false" />
-        <activity
-            android:name=".Setup.ConfigChoiceActivity"
             android:exported="false" />
         <activity
             android:name=".Setup.ScannerSetupActivity"

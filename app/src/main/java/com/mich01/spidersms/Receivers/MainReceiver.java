@@ -1,5 +1,6 @@
 package com.mich01.spidersms.Receivers;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,6 +17,7 @@ import com.mich01.spidersms.UI.HomeActivity;
 
 public class MainReceiver extends BroadcastReceiver {
 
+    @SuppressLint("NotifyDataSetChanged")
     @TargetApi(Build.VERSION_CODES.M)
     @Override
     public void onReceive(Context context, Intent intent)
@@ -39,6 +41,7 @@ public class MainReceiver extends BroadcastReceiver {
                 } // bundle is null
             } catch (Exception ignored) {
             }
+            assert message != null;
             if(message.contains("123")||message.toLowerCase().contains(" "))
             {
                 Log.i("SpiderMan context", "TRIGGERED here: " );

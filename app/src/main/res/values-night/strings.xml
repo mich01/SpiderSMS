@@ -19,4 +19,19 @@
     <string name="enter_otp_number">Enter OTP Number</string>
     <string name="verify_otp">Verify OTP</string>
     <string name="otp_status">OTP Status</string>
+    <string name="share_app">You can download and Contact me using this app https://play.google.com/store/apps/details?id=com.mich01.hustlepos</string>
+    <string name="rooted_device_error">App Wont run on rooted Devices</string>
+    <string name="exit_btn">EXIT</string>
+    <string name="my_contact">My Contact</string>
+    <string name="delete_contact">Delete Contact</string>
+    <string name="qr_image">QR Image</string>
+    <string name="null_text">...</string>
+    <string name="contacts_view_title">Contacts</string>
+    <string name="config_update_success">App Configuration Updated Successfully</string>
+    <string name="search">search</string>
+    <string name="add_contact">Add Contact</string>
+    <string name="share_my_contact">Share My Contact</string>
+    <string name="send_invite">Send Invite</string>
+    <string name="settings">Settings</string>
+    <string name="main_text">main text</string>
 </resources>

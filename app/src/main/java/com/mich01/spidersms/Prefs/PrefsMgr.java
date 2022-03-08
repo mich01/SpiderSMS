@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 public class PrefsMgr
 {
     public static final String PREF_NAME = "global";
-    public static final String IS_NEW_SETUP = "SetupComplete";
     public static SharedPreferences MyPrefs;
     public static SharedPreferences.Editor MyPrefsEditor;
     Context _context;
@@ -20,12 +19,9 @@ public class PrefsMgr
         MyPrefsEditor.putInt("DBExists", 0);
         MyPrefs.getString("UserName",null);
         MyPrefs.getString("PhoneNumber",null);
-        MyPrefs.getString("SeverURL","127.0.0.1");
-        MyPrefs.getInt("Port",0);
-        MyPrefs.getString("ServerUserName",null);
-        MyPrefs.getString("ServerPassword",null);
-        MyPrefs.getString("BlockID",null);
-        MyPrefs.getString("ServerPubKey",null);
+        MyPrefs.getString("SeverURL","---");
+        MyPrefs.getString("ProxyNumber","---");
+        MyPrefs.getString("ServerPublicKey","---");
         MyPrefsEditor.apply();
         MyPrefsEditor.commit();
     }

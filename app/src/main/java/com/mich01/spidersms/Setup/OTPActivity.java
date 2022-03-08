@@ -1,32 +1,22 @@
 package com.mich01.spidersms.Setup;
 
-import static android.content.ContentValues.TAG;
-
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.FirebaseException;
-import com.google.firebase.FirebaseTooManyRequestsException;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthSettings;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
@@ -37,10 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 public class OTPActivity extends AppCompatActivity {
 
-    private static final String TAG = "PhoneAuthActivity";
 
-    // [START declare_auth]
-    private FirebaseAuth mAuth;
     // [END declare_auth]
     String ContactID;
     String ContactName;
@@ -60,7 +47,8 @@ public class OTPActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         ContactID = bundle.getString("ContactID");
         ContactName = bundle.getString("ContactName");
-        mAuth = FirebaseAuth.getInstance();
+        // [START declare_auth]
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         String phoneNumber = "+"+ContactID;
         String smsCode = "123456";
         // The test phone number and code should be whitelisted in the console.
@@ -78,7 +66,7 @@ public class OTPActivity extends AppCompatActivity {
                 .setActivity(this)
                 .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                     @Override
-                    public void onVerificationCompleted(PhoneAuthCredential credential) {
+                    public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
                         OTP_Status.setImageResource(R.drawable.otp_success);
                         MyPrefs = OTPActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
                         MyPrefsEditor = MyPrefs.edit();
@@ -99,20 +87,17 @@ public class OTPActivity extends AppCompatActivity {
                 })
                 .build();
         PhoneAuthProvider.verifyPhoneNumber(options);
-        VerifyOTP.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(OTP_Text.getText().toString().equals("1234"))
-                {
-                    OTP_Status.setImageResource(R.drawable.otp_success);
-                    MyPrefs = OTPActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-                    MyPrefsEditor = MyPrefs.edit();
-                    MyPrefsEditor.putString("MyContact", ContactID);
-                    MyPrefsEditor.putString("ContactName", ContactName);
-                    MyPrefsEditor.apply();
-                    MyPrefsEditor.commit();
-                    startActivity(new Intent(OTPActivity.this, HomeActivity.class));
-                }
+        VerifyOTP.setOnClickListener(view -> {
+            if(OTP_Text.getText().toString().equals("1234"))
+            {
+                OTP_Status.setImageResource(R.drawable.otp_success);
+                MyPrefs = OTPActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                MyPrefsEditor = MyPrefs.edit();
+                MyPrefsEditor.putString("MyContact", ContactID);
+                MyPrefsEditor.putString("ContactName", ContactName);
+                MyPrefsEditor.apply();
+                MyPrefsEditor.commit();
+                startActivity(new Intent(OTPActivity.this, HomeActivity.class));
             }
         });
     }

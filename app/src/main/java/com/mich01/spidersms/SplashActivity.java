@@ -54,9 +54,9 @@ public class SplashActivity extends AppCompatActivity {
         else {
             AlertDialog alertDialog = new AlertDialog.Builder(SplashActivity.this).create();
             alertDialog.setTitle("Error");
-            //alertDialog.setIcon(R.drawable.ic_stop_no_action);
-            alertDialog.setMessage("App Wont run on rooted Devices");
-            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "EXIT",
+            alertDialog.setIcon(R.drawable.ic_baseline_error_outline_24);
+            alertDialog.setMessage(getString(R.string.rooted_device_error));
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.exit_btn),
                     (dialog, which) -> {
                         dialog.dismiss();
                         finish();

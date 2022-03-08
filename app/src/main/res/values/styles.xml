@@ -14,4 +14,9 @@
         <item name="android:background">@color/gold</item>
         <item name="android:textColor">@color/darkblue</item>
     </style>
+    <style name="success_dialog" parent="Theme.AppCompat.Light">
+        <item name="android:background">@color/gold</item>
+        <item name="height">30dp</item>
+        <item name="android:textColor">@color/darkblue</item>
+    </style>
 </resources>

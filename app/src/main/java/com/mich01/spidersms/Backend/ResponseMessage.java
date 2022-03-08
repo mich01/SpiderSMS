@@ -20,18 +20,8 @@ public class ResponseMessage
         return MessageType;
     }
 
-    public void setTextMessage(String textMessage) {
-        TextMessage = textMessage;
-    }
-public void setMessageType(int messageType) {
-    MessageType = messageType;
-    }
-
     public boolean isSent() {
         return Sent;
     }
 
-    public void setSent(boolean sent) {
-        Sent = sent;
-    }
 }

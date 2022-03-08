@@ -4,17 +4,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/search"
         android:icon="@drawable/ic_baseline_search_24"
-        android:title="search"
-        app:showAsAction="always"
+        android:title="@string/search"
+        app:showAsAction="ifRoom"
         app:actionViewClass="android.widget.SearchView"/>
     <item android:id="@+id/add_contact"
         android:itemBackground="@color/darkblue"
-        android:title="Add Contact"
-        app:showAsAction="never"/>
-    <item android:id="@+id/reconfigure"
-        android:title="Settings"
+        android:title="@string/add_contact"
         app:showAsAction="never"/>
     <item android:id="@+id/share_contact"
-        android:title="Share Contact"
+        android:title="@string/share_my_contact"
+        app:showAsAction="never"/>
+    <item android:id="@+id/send_invite"
+        android:title="@string/send_invite"
+        app:showAsAction="never"/>
+    <item android:id="@+id/reconfigure"
+        android:title="@string/settings"
         app:showAsAction="never"/>
 </menu>

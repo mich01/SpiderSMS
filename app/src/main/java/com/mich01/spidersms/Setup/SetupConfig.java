@@ -1,18 +1,17 @@
 package com.mich01.spidersms.Setup;
 
-import static android.service.controls.ControlsProviderService.TAG;
-
-import static com.mich01.spidersms.Crypto.IDManagementProtocol.GenerateNewKey;
 import static com.mich01.spidersms.Crypto.IDManagementProtocol.ShareContact;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
+import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.mich01.spidersms.DB.DBManager;
+import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.HomeActivity;
 import com.mich01.spidersms.UI.UnlockActivity;
 
@@ -25,20 +24,7 @@ public class SetupConfig
         switch (Input.getString("Data"))
         {
             case "Config":
-                if(ConfigServer(context,Input.toString()))
-                {
-                    if(MyPrefs.getInt("DBExists",0)==0) {
-                        context.startActivity(new Intent(context, UnlockActivity.class));
-                        Toast.makeText(context, "Server Config Setup Successfull", Toast.LENGTH_LONG).show();
-                        //((SetupConfig) context).finish();
-                    }
-                    else
-                    {
-                        context.startActivity(new Intent(context, HomeActivity.class));
-                        Toast.makeText(context, "Server Config Setup Successfull", Toast.LENGTH_LONG).show();
-                        //((ScannerSetupActivity) context).finish();
-                    }
-                }
+                ConfirmUpdate(context, Input);
                 break;
             case "HelloContact":
                 if(new DBManager(context).AddContact(Input))
@@ -58,23 +44,46 @@ public class SetupConfig
     {
         try
         {
-            Log.i(TAG, String.valueOf(Data));
             JSONObject ConfigJson = new JSONObject(Data);
-            MyPrefsEditor.putString("SeverURL", String.valueOf(ConfigJson.get("ServerURL")));
-            MyPrefsEditor.putInt("Port",(Integer) ConfigJson.get("Port"));
-            MyPrefsEditor.putString("ServerUserName",String.valueOf(ConfigJson.get("ServerUserName")));
-            MyPrefsEditor.putString("OriginalID",String.valueOf(ConfigJson.get("ServerUserName")));
-            MyPrefsEditor.putString("Domain",String.valueOf(ConfigJson.get("Domain")));
-            MyPrefsEditor.putString("SetupDomain",String.valueOf(ConfigJson.get("SetupDomain")));
-            MyPrefsEditor.putString("ServerPassword",String.valueOf(ConfigJson.get("ServerPassword")));
-            MyPrefsEditor.putString("Secret", GenerateNewKey());
+            MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            MyPrefsEditor = MyPrefs.edit();
+            MyPrefsEditor.putString("SeverURL", ConfigJson.get("ServerURL").toString());
+            MyPrefsEditor.putString("ProxyNumber",ConfigJson.get("ProxyNumber").toString());
+            MyPrefsEditor.putString("ServerPublicKey",ConfigJson.get("ServerPublicKey").toString());
             MyPrefsEditor.apply();
             MyPrefsEditor.commit();
+            Toast.makeText(context , context.getResources().getString(R.string.config_update_success), Toast.LENGTH_LONG).show();
+            ((ScannerSetupActivity)context).finish();
             return true;
-        } catch (JSONException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             Toast.makeText(context, "Config Data Corrupted", Toast.LENGTH_LONG).show();
             return false;
         }
+    }
+    public static void ConfirmUpdate(Context context, JSONObject Input)
+    {
+        AlertDialog.Builder alert = new AlertDialog.Builder(context);
+        alert.setTitle("Are you sure you want to Change your App Settings?");
+        alert.setPositiveButton("Update", (dialog, whichButton) -> {
+            if(ConfigServer(context,Input.toString()))
+            {
+                if(MyPrefs.getInt("DBExists",0)==0)
+                {
+                    context.startActivity(new Intent(context, UnlockActivity.class));
+                    //((SetupConfig) context).finish();
+                }
+                else
+                {
+                    context.startActivity(new Intent(context, HomeActivity.class));
+                    //((ScannerSetupActivity) context).finish();
+                }
+                Toast.makeText(context, "Server Config Setup Successfull", Toast.LENGTH_LONG).show();
+            }
+        });
 
+        alert.setNegativeButton("Cancel",
+                (dialog, whichButton) -> ((ScannerSetupActivity)context).finish());
+        alert.show();
     }
 }

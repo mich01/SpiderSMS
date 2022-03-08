@@ -3,26 +3,25 @@ package com.mich01.spidersms.UI;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
-
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
-
 import com.mich01.spidersms.Crypto.IDManagementProtocol;
 import com.mich01.spidersms.R;
 
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 public class UnlockActivity extends AppCompatActivity {
@@ -44,15 +43,10 @@ public class UnlockActivity extends AppCompatActivity {
         UserPin = findViewById(R.id.txt_user_pin);
         UnlockStatus = findViewById(R.id.img_lock_status);
         executor = ContextCompat.getMainExecutor(this);
-        this.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        Objects.requireNonNull(this.getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.unclock_action_bar);
         getBiometrics();
-        UnlockStatus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getBiometrics();
-            }
-        });
+        UnlockStatus.setOnClickListener(view -> getBiometrics());
 
     }
     public void getBiometrics()
@@ -96,12 +90,7 @@ public class UnlockActivity extends AppCompatActivity {
         // Prompt appears when user clicks "Log in".
         // Consider integrating with the keystore to unlock cryptographic operations,
         // if needed by your app.
-        UnlockStatus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                biometricPrompt.authenticate(promptInfo);
-            }
-        });
+        UnlockStatus.setOnClickListener(view -> biometricPrompt.authenticate(promptInfo));
         UserPin.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {

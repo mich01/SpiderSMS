@@ -2,20 +2,18 @@ package com.mich01.spidersms.Data;
 
 public class LastChat
 {
-    private String ContactID;
-    private String ContactName;
-    private String LastMessage;
-    private String Timestamp;
-    private int Status;
-    private int ProfilePicture;
+    private final String ContactID;
+    private final String ContactName;
+    private final String LastMessage;
+    private final String Timestamp;
+    private final int Status;
 
-    public LastChat(String contactID, String contactName, String lastMessage, String timestamp, int status, int profilePicture) {
+    public LastChat(String contactID, String contactName, String lastMessage, String timestamp, int status) {
         ContactID = contactID;
         ContactName = contactName;
         LastMessage = lastMessage;
         Timestamp = timestamp;
         Status = status;
-        ProfilePicture = profilePicture;
     }
 
     public String getContactID() {
@@ -44,11 +42,4 @@ public class LastChat
         return Status;
     }
 
-    public void setLastMessage(String status) {
-        LastMessage = LastMessage;
-    }
-
-    public int getProfilePicture() {
-        return ProfilePicture;
-    }
 }

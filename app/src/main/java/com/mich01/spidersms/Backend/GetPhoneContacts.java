@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.provider.ContactsContract;
 
 import com.mich01.spidersms.DB.DBManager;
-import com.mich01.spidersms.R;
+import com.mich01.spidersms.Data.Contact;
 import com.mich01.spidersms.UI.ContactsActivity;
 
 import org.json.JSONObject;
@@ -25,7 +25,7 @@ public class GetPhoneContacts
                 null, null, null, null);
         //int Index =ContactsActivity.ContactNames.length;
         if ((cur != null ? cur.getCount() : 0) > 0) {
-            while (cur != null && cur.moveToNext())
+            while (cur.moveToNext())
             {
                 @SuppressLint("Range") String id = cur.getString(
                         cur.getColumnIndex(ContactsContract.Contacts._ID));
@@ -45,18 +45,17 @@ public class GetPhoneContacts
                         phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
                     }
-                    ContactsActivity.ContactNames.add(name);
-                    ContactsActivity.CID.add(phoneNo);
-                    ContactsActivity.ContactImgs.add(R.drawable.contact_icon);
-                    ContactsActivity.ContactStatus.add(phoneNo);
-                    ContactsActivity.CType.add(0);
+                    pCur.close();
+                    ContactsActivity.Contacts.add(new Contact(name,
+                            phoneNo, "000000", 0));
                     JSONObject ContactJSON = new JSONObject();
                     try {
                         ContactJSON.put("CID",phoneNo);
                         ContactJSON.put("ContactName",name);
                         new DBManager(ContactContext).UpdatePhoneBook(ContactJSON);
                     }
-                    catch (Exception e){}
+
+                    catch (Exception e){e.printStackTrace();}
                 }
             }
         }
@@ -67,30 +66,25 @@ public class GetPhoneContacts
     @SuppressLint("Range")
     public void getMyContacts(Context context)
     {
-        ContactsActivity.ContactNames.clear();
-        ContactsActivity.CID.clear();
-        ContactsActivity.ContactImgs.clear();
-        ContactsActivity.ContactStatus.clear();
-        int index=0;
+        ContactsActivity.Contacts.clear();
         Cursor cur = new DBManager(context).getContacts();
         while (cur != null && cur.moveToNext())
         {
             @SuppressLint("Range") String CID = cur.getString(cur.getColumnIndex("CID"));
             @SuppressLint("Range") String Name = cur.getString(cur.getColumnIndex("ContactName"));
-            String ContactStatus = CID;
-            ContactsActivity.ContactNames.add(Name);
-            ContactsActivity.CID.add(CID);
-            ContactsActivity.ContactImgs.add(R.drawable.contact_icon);
-            ContactsActivity.ContactStatus.add(ContactStatus);
+            int ContactType;
             if (cur.getString(cur.getColumnIndex("PubKey")).equals("000000"))
             {
-                ContactsActivity.CType.add(0);
+                ContactType =0;
             }else
             {
-                ContactsActivity.CType.add(1);
+                ContactType =1;
             }
-            index++;
+            ContactsActivity.Contacts.add(new Contact(CID,Name
+                    , cur.getString(cur.getColumnIndex("PubKey")), ContactType));
         }
+        assert cur != null;
         cur.close();
     }
+
 }

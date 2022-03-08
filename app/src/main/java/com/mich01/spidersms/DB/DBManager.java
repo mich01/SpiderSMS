@@ -1,5 +1,7 @@
 package com.mich01.spidersms.DB;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -44,19 +46,12 @@ public class DBManager extends SQLiteOpenHelper
         contentValues.put("UserName", UserName);
         contentValues.put("ServerURL", ServerURL);
         long result = DB.insert("UserProfile", null, contentValues);
-        if(result==-1)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return result != -1;
     }
     //Add Contacts
     public boolean insertNewContact(JSONObject ContactObject)
     {
-        boolean status = false;
+        boolean status;
         try
         {
             String CID = ContactObject.getString("CID");
@@ -102,7 +97,14 @@ public class DBManager extends SQLiteOpenHelper
             Cursor cursor = DB.rawQuery("select * from Contacts where CID=?", new String[] {CID});
             if(cursor.getCount()>0)
             {
-               insertNewContact(ContactObject);
+                AlertDialog.Builder alert = new AlertDialog.Builder(context);
+                alert.setTitle("Are you sure you want to Change This Contact's Information");
+                alert.setPositiveButton("Update", (dialog, whichButton) -> UpdateContact(CID,ContactObject));
+
+                alert.setNegativeButton("Cancel",
+                        (dialog, whichButton) -> {
+                        });
+                alert.show();
             }
             else
             {
@@ -116,6 +118,7 @@ public class DBManager extends SQLiteOpenHelper
                     status= true;
                 }
             }
+            cursor.close();
         }
         catch (JSONException e)
         {
@@ -134,7 +137,7 @@ public class DBManager extends SQLiteOpenHelper
     public boolean AddChatMessage(String CID, int InorOut, String ChatMessage, boolean Status)
     {
         int Status_Int;
-        if(Status==true)
+        if(Status)
         {
             Status_Int =1;
         }
@@ -166,9 +169,7 @@ public class DBManager extends SQLiteOpenHelper
     public int UpdateContact(String CID, JSONObject ContactDetails)
     {
         int result =0;
-        String OLD_CID = null;
-        String NEW_CID = null;
-            String Secret = null;
+        String OLD_CID;
         try
         {
             OLD_CID = ContactDetails.getString("OCID");
@@ -202,7 +203,7 @@ public class DBManager extends SQLiteOpenHelper
                         chatValues.put("CID",CID);
                         result = DBUpdateChats.update("EncryptedSMS", chatValues, "CID=?", new String[]{OLD_CID});
                         Toast.makeText(context.getApplicationContext(), ContactDetails.getString("CName")+" Has Updated their Contacts", Toast.LENGTH_LONG).show();
-
+                        cursor.close();
                 }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -212,14 +213,13 @@ public class DBManager extends SQLiteOpenHelper
     public Cursor getLastChatList()
     {
         SQLiteDatabase DB = this.getWritableDatabase();
-        Cursor cursor = DB.rawQuery("select LastChats.CID, " +
+        return DB.rawQuery("select LastChats.CID, " +
                 "LastChats.MessageText, " +
                 "LastChats.Timestamp, " +
                 "LastChats.ReadStatus, " +
                 "LastChats.inorout, " +
                 "Contacts.ContactName  " +
                 "from LastChats LEFT JOIN Contacts on  Contacts.CID = LastChats.CID Order By LastChats.Timestamp DESC",null);
-        return cursor;
     }
     public boolean updateLastMessage(String CID, String MessageText, int InOrOut, int ReadStatus)
     {
@@ -237,7 +237,6 @@ public class DBManager extends SQLiteOpenHelper
         if (ChatCursor.getCount() > 0) {
             long result = DB.update("LastChats", contentValues, "CID=?", new String[]{CID});
             if (result == -1) {
-                status = false;
             }
             else
             {
@@ -247,19 +246,14 @@ public class DBManager extends SQLiteOpenHelper
         else
         {
             long result = DB.insert("LastChats", null, contentValues);
-            if (result == -1) {
-                status =false;
-            }
-            else
-            {
-                status = true;
-            }
+            status = result != -1;
         }
+        ChatCursor.close();
         return status;
     }
     public boolean UpdatePhoneBook(JSONObject ContactObject)
     {
-        boolean status = false;
+        boolean status;
         try
         {
             String CID = ContactObject.getString("CID");
@@ -276,14 +270,8 @@ public class DBManager extends SQLiteOpenHelper
             if(cursor.getCount()<1)
             {
                 long result = DB.insert("Contacts", null, contentValues);
-                if(result==-1)
-                {
-                    status= false;
-                }
-                else
-                {
-                    status= true;
-                }
+                status= result != -1;
+                cursor.close();
             }
             else
             {
@@ -318,14 +306,7 @@ public class DBManager extends SQLiteOpenHelper
         ContentValues contentValues = new ContentValues();
         contentValues.put("ReadStatus", Status);
         long result = DB.update("LastChats", contentValues, "CID=?", new String[]{CID});
-        if (result == -1)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return result != -1;
     }
     public int DeleteAllContacts(String CID)
     {
@@ -334,12 +315,11 @@ public class DBManager extends SQLiteOpenHelper
         Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
         return result;
     }
-    public int DeleteAllChats(String CID)
+    public void DeleteAllChats(String CID)
     {
         SQLiteDatabase DB = this.getWritableDatabase();
         int result = DB.delete("EncryptedSMS", "CID=?", new String[]{CID});
         int result2 = DB.delete("LastChats", "CID=?", new String[]{CID});
         Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
-        return result;
     }
 }
