@@ -1,6 +1,5 @@
 package com.mich01.spidersms.Setup;
 
-import static com.mich01.spidersms.Crypto.IDManagementProtocol.ShareContact;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
@@ -31,7 +30,6 @@ public class SetupConfig
                 {
                     context.startActivity(new Intent(context, HomeActivity.class));
                     Toast.makeText(context.getApplicationContext(), "New Contact Added", Toast.LENGTH_LONG).show();
-                    ShareContact(context,Input.getString("CID"));
                     ((ScannerSetupActivity)context).finish();
                 }
                 break;
@@ -47,9 +45,10 @@ public class SetupConfig
             JSONObject ConfigJson = new JSONObject(Data);
             MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             MyPrefsEditor = MyPrefs.edit();
-            MyPrefsEditor.putString("SeverURL", ConfigJson.get("ServerURL").toString());
+            MyPrefsEditor.putString("ServerURL", ConfigJson.get("ServerURL").toString());
             MyPrefsEditor.putString("ProxyNumber",ConfigJson.get("ProxyNumber").toString());
-            MyPrefsEditor.putString("ServerPublicKey",ConfigJson.get("ServerPublicKey").toString());
+            MyPrefsEditor.putString("ServerUserName",ConfigJson.get("ServerUserName").toString());
+            MyPrefsEditor.putString("ApiKey",ConfigJson.get("ApiKey").toString());
             MyPrefsEditor.apply();
             MyPrefsEditor.commit();
             Toast.makeText(context , context.getResources().getString(R.string.config_update_success), Toast.LENGTH_LONG).show();

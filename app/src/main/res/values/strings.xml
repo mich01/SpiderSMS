@@ -35,4 +35,8 @@
     <string name="send_invite">Send Invite</string>
     <string name="settings">Settings</string>
     <string name="main_text">main text</string>
+    <string name="type_a_message">Type a message</string>
+    <string name="sendbutton">sendButton</string>
+    <string name="error">Error</string>
+    <string name="cannot_send_empty_message">You cannot Send an empty Message</string>
 </resources>

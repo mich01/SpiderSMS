@@ -20,6 +20,7 @@ public class PrefsMgr
         MyPrefs.getString("UserName",null);
         MyPrefs.getString("PhoneNumber",null);
         MyPrefs.getString("SeverURL","---");
+        MyPrefs.getString("ApiKey","---");
         MyPrefs.getString("ProxyNumber","---");
         MyPrefs.getString("ServerPublicKey","---");
         MyPrefsEditor.apply();
