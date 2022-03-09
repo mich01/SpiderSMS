@@ -8,8 +8,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.mich01.spidersms.Crypto.IDManagementProtocol;
 import com.mich01.spidersms.R;
 
@@ -57,9 +61,7 @@ public class UnlockActivity extends AppCompatActivity {
             public void onAuthenticationError(int errorCode,
                                               @NonNull CharSequence errString) {
                 super.onAuthenticationError(errorCode, errString);
-                Toast.makeText(getApplicationContext(),
-                        "Authentication Method Changed: " + errString, Toast.LENGTH_SHORT)
-                        .show();
+                SnackBarAlert("Authentication Method Changed: " );
             }
 
             @Override
@@ -74,9 +76,7 @@ public class UnlockActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationFailed() {
                 super.onAuthenticationFailed();
-                Toast.makeText(getApplicationContext(), "Authentication failed",
-                        Toast.LENGTH_SHORT)
-                        .show();
+                SnackBarAlertError("Authentication failed");
             }
         });
 
@@ -110,8 +110,29 @@ public class UnlockActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-
             }
         });
+    }
+
+    private void SnackBarAlertError(String authentication_failed) {
+
+            Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), authentication_failed, Snackbar.LENGTH_LONG);
+            TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
+            SnackBarView.setTextColor(ContextCompat.getColor(UnlockActivity.this, R.color.white));
+            SnackBarView.setBackgroundColor(ContextCompat.getColor(UnlockActivity.this, R.color.error));
+            SnackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            SnackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
+            mSnackBar.show();
+    }
+
+    public void SnackBarAlert(String AlertMessage)
+    {
+        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
+        TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
+        SnackBarView.setTextColor(ContextCompat.getColor(UnlockActivity.this, R.color.white));
+        SnackBarView.setBackgroundColor(ContextCompat.getColor(UnlockActivity.this, R.color.darkblue));
+        SnackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        SnackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
+        mSnackBar.show();
     }
 }

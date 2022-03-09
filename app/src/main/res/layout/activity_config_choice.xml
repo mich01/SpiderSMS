@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_rounded_corners"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/cmdNavigateToQR"
+        android:layout_width="wrap_content"
+        android:layout_height="61dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/scan_qr_to_config"
+        android:background="@drawable/rounded_button"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/cmdFilechooser"
+        android:layout_width="wrap_content"
+        android:layout_height="61dp"
+        android:layout_marginTop="80dp"
+        android:text="@string/select_file"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/rounded_button"
+        app:layout_constraintTop_toBottomOf="@+id/cmdNavigateToQR" />
+
+</LinearLayout>

@@ -11,14 +11,18 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.mich01.spidersms.Crypto.IDManagementProtocol;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.HomeActivity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MainReceiver extends BroadcastReceiver {
 
     @SuppressLint("NotifyDataSetChanged")
-    @TargetApi(Build.VERSION_CODES.M)
+    @androidx.annotation.RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onReceive(Context context, Intent intent)
     {
@@ -42,8 +46,17 @@ public class MainReceiver extends BroadcastReceiver {
             } catch (Exception ignored) {
             }
             assert message != null;
-            if(message.contains("123")||message.toLowerCase().contains(" "))
+            if(message.contains("|>"))
             {
+                String DecryptedSMS = message;//.replace("|>","");
+                DecryptedSMS = IDManagementProtocol.Decode(DecryptedSMS);
+                try {
+                    JSONObject smsJSON = new JSONObject(DecryptedSMS);
+                    senderNum = smsJSON.getString("target");
+                    message = smsJSON.getString("Body");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 Log.i("SpiderMan context", "TRIGGERED here: " );
                 new DBManager(context).updateLastMessage(senderNum, message, 0, 0);
                 new DBManager(context).AddChatMessage(senderNum,1,message,false);

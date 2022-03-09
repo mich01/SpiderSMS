@@ -7,9 +7,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -17,6 +19,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -42,7 +45,6 @@ public class ContactsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
         ContactListView = findViewById(R.id.contacts_list);
@@ -51,10 +53,15 @@ public class ContactsActivity extends AppCompatActivity {
         SwipeRefreshLayout swipeRefreshLayout;
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.contactRefreshLayout);
         new GetPhoneContacts().getMyContacts(ContactsActivity.this);
+        if(Contacts.size()==0)
+        {
+            SnackBarAlert("Drag the contact list down to update your contact lost");
+        }
         Log.i("Contact Count", String.valueOf(Contacts.size()));
         adapter = new ContactAdapter(ContactsActivity.this,R.layout.contact_item,Contacts);
         ContactListView.setAdapter(adapter);
-        Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.contacts_view_title);
+
+        Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.contacts_view_title)+ " ("+Contacts.size()+")");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ContactListView.setOnItemClickListener((parent, view, position, id) -> {
         });
@@ -73,8 +80,10 @@ public class ContactsActivity extends AppCompatActivity {
                         PopulateContacts(ContactsActivity.this);
                         synchronized(this)
                         {
-                            dialog = ProgressDialog.show(ContactsActivity.this, "",
+                            dialog = ProgressDialog.show(ContactsActivity.this, "Updating Contacts",
                                     "Updating Contacts. Please wait...", true);
+                            dialog.setIcon(R.drawable.update_24);
+
                         }
                     }
                 });
@@ -132,28 +141,34 @@ public class ContactsActivity extends AppCompatActivity {
     public void PopulateContacts(Context context)
     {
         Contacts = new ArrayList<>();
-        Handler h = new Handler(context.getMainLooper());
-        h.post(new Runnable()
-        {
-            @SuppressLint("Range")
-            @Override
-            public void run()
+        try {
+            Handler h = new Handler(context.getMainLooper());
+            h.post(new Runnable()
             {
-                new GetPhoneContacts().getPhoneContacts(context);
-                synchronized(this)
+                @SuppressLint("Range")
+                @Override
+                public void run()
                 {
-                    new GetPhoneContacts().getMyContacts(context);
-                    dialog.dismiss();
-                    adapter = new ContactAdapter(context, R.layout.contact_item,Contacts);
-                    ContactListView.setAdapter(adapter);
-                    adapter.notifyDataSetChanged();
-                    Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(Color.GREEN);
-                    snackbar.setTextColor(Color.BLACK);
-                    snackbar.show();
+                    new GetPhoneContacts().getPhoneContacts(context);
+                    synchronized(this)
+                    {
+                        new GetPhoneContacts().getMyContacts(context);
+                        dialog.dismiss();
+                        adapter = new ContactAdapter(context, R.layout.contact_item,Contacts);
+                        ContactListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
+                        Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
+                        snackbar.setBackgroundTint(Color.GREEN);
+                        snackbar.setTextColor(Color.BLACK);
+                        snackbar.show();
+                    }
                 }
-            }
-        });
+            });
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
 
     }
     public void FilterContacts(String SearchString)
@@ -171,6 +186,15 @@ public class ContactsActivity extends AppCompatActivity {
         ContactAdapter Filteredadapter = new ContactAdapter(getApplicationContext(),R.layout.contact_item, FilteredContacts);
         ContactListView.setAdapter(Filteredadapter);
         Filteredadapter.notifyDataSetChanged();
-
+    }
+    public void SnackBarAlert(String AlertMessage)
+    {
+        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
+        TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
+        SnackBarView.setTextColor(ContextCompat.getColor(ContactsActivity.this, R.color.white));
+        SnackBarView.setBackgroundColor(ContextCompat.getColor(ContactsActivity.this, R.color.error));
+        SnackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        SnackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
+        mSnackBar.show();
     }
 }

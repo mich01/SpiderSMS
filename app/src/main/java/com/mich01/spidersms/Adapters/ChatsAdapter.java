@@ -33,11 +33,13 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
     static ArrayList<LastChat> chatsList;
     @SuppressLint("StaticFieldLeak")
     static TextView LastText;
+    Context context;
 
     public ChatsAdapter(@NonNull Context c, int resource, ArrayList<LastChat> chatsList)
     {
         super(c, resource, chatsList);
        ChatsAdapter.chatsList = chatsList;
+       context =c;
        //Log.i("Chat Lists: ","Construct---- and count: "+chatsList.size());
     }
 
@@ -112,8 +114,8 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
             getContext().startActivity(ChatIntent);
         });
         convertView.setOnLongClickListener(view -> {
-            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
-            alert.setTitle("Are you sure you want to delete this conversation");
+            AlertDialog.Builder alert = new AlertDialog.Builder(context);
+            alert.setTitle(R.string.do_you_want_to_delete);
             alert.setPositiveButton("Ok", (dialog, whichButton) -> {
                 new DBManager(getContext()).DeleteAllChats(chatsList.get(position).getContactID());
                 HomeActivity.PopulateChats(getContext());
@@ -122,6 +124,7 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
 
             alert.setNegativeButton("Cancel",
                     (dialog, whichButton) -> {
+                dialog.cancel();
                     });
             alert.show();
             return false;

@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../Android/Sdk/platforms/android-32/data/res/layout/auto_complete_list.xml" value="0.1" />
         <entry key="app/src/main/res/drawable-v24/background_gradient.xml" value="0.1" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_light.xml" value="0.1" />
@@ -25,6 +26,9 @@
         <entry key="app/src/main/res/drawable/input_text_design.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/last_chat_bg.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/rounded_button.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/rounded_dialog.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/toast_error.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/update_24.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/user_icon_design.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_chat.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_config_choice.xml" value="0.1" />
@@ -66,7 +70,7 @@
   <component name="VisualizationToolProject">
     <option name="state">
       <ProjectState>
-        <option name="scale" value="0.9" />
+        <option name="scale" value="0.1" />
       </ProjectState>
     </option>
   </component>

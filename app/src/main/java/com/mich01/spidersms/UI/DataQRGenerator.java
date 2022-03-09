@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
@@ -104,7 +103,6 @@ public class DataQRGenerator extends AppCompatActivity {
             startActivity(Intent.createChooser(shareIntent, ContactName.toString()));
         });
         DeleteContact.setOnClickListener(v -> {
-            Log.i("Contact..",inputValue);
             new DBManager(getApplicationContext()).DeleteContact(ContactID);
             {
                 startActivity(new Intent(getApplicationContext(), ContactsActivity.class));

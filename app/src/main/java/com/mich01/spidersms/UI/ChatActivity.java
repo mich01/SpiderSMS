@@ -1,17 +1,20 @@
 package com.mich01.spidersms.UI;
 
 
+import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
+import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -40,10 +43,12 @@ public class ChatActivity extends AppCompatActivity {
     public static String ContactID;
     Context context;
     ImageButton sendButton;
+    private String MessageText;
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         context = this;
@@ -60,48 +65,73 @@ public class ChatActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.sendButton);
         getSupportActionBar().setTitle(bundle.getString("ContactName"));
         PopulateChatView(context);
-        sendButton.setOnClickListener(view -> {
-            Button Option1, Option2, Option3;
-            AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
-            ViewGroup viewGroup = findViewById(android.R.id.content);
-            View dialogView = LayoutInflater.from(view.getContext()).inflate(R.layout.send_options_modal, viewGroup, false);
-            builder.setView(dialogView);
-            String SendTo = getString(R.string.send_option1) + " " + bundle.getString("ContactName");
-            Option1 = dialogView.findViewById(R.id.send_option_1);
-            Option2 = dialogView.findViewById(R.id.send_option_2);
-            Option3 = dialogView.findViewById(R.id.send_option_3);
-            Option1.setText(SendTo);
-            AlertDialog alertDialog = builder.create();
-            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            alertDialog.show();
-            Option1.setOnClickListener(view1 -> {
-                ResponseMessage message = new ResponseMessage(userInput.getText().toString(), true, 1);
-                new SMSHandler(context).sendEncryptedSMS(bundle.getString("ContactID"), userInput.getText().toString());
-                Log.i("Spider MS: ", "MESSAGE SENT to: " + bundle.getString("ContactID"));
-                Log.i("sending msg: ", userInput.getText().toString());
-                responseMessageList.add(message);
-                messageAdapter.notifyDataSetChanged();
-                UpdateChatPosition();
-                userInput.setText("");
-                HomeActivity.PopulateChats(context);
-                if (isLastVisible()) {
-                    recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
+        sendButton.setOnClickListener(view ->
+        {
+            if(userInput.getText().toString().isEmpty())
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+                AlertDialog alertDialog = builder.create();
+                alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                alertDialog.setIcon(R.drawable.ic_baseline_error_outline_24);
+                alertDialog.setTitle(getString(R.string.error));
+                alertDialog.setMessage(getString(R.string.cannot_send_empty_message));
+                alertDialog.show();
+            }
+            else
+            {
+                MessageText = userInput.getText().toString();
+                Button Option1, Option2, Option3;
+                AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+                ViewGroup viewGroup = findViewById(android.R.id.content);
+                View dialogView = LayoutInflater.from(view.getContext()).inflate(R.layout.send_options_modal, viewGroup, false);
+                builder.setView(dialogView);
+                String SendTo = getString(R.string.send_option1) + " " + bundle.getString("ContactName");
+                Option1 = dialogView.findViewById(R.id.send_option_1);
+                Option2 = dialogView.findViewById(R.id.send_option_2);
+                Option3 = dialogView.findViewById(R.id.send_option_3);
+                MyPrefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                Option1.setText(SendTo);
+                AlertDialog alertDialog = builder.create();
+                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                alertDialog.show();
+                if(MyPrefs.getString("ProxyNumber", "---").equals("---"))
+                {
+                    Option2.setEnabled(false);
                 }
-                alertDialog.cancel();
-            });
-            Option2.setOnClickListener(view12 -> alertDialog.cancel());
-            Option3.setOnClickListener(view13 -> alertDialog.cancel());
+                if(MyPrefs.getString("SeverURL", "---").equals("---"))
+                {
+                    Option3.setEnabled(false);
+                }
+                Option1.setOnClickListener(view1 ->
+                {
+                    MessageText =userInput.getText().toString();
+                    ResponseMessage message = new ResponseMessage(userInput.getText().toString(), true, 1);
+                    new SMSHandler(context).sendEncryptedSMS(ContactID, MessageText);
+                    responseMessageList.add(message);
+                    messageAdapter.notifyDataSetChanged();
+                    UpdateChatPosition();
+                    userInput.setText("");
+                    HomeActivity.PopulateChats(context);
+                    if (isLastVisible()) {
+                        recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
+                    }
+                    alertDialog.cancel();
+                });
+                Option2.setOnClickListener(view12 -> alertDialog.cancel());
+                Option3.setOnClickListener(view13 -> {
+                    new SMSHandler(context).SendSMSOnline(ContactID, MessageText);
+                    alertDialog.cancel();});
+            }
+            userInput.setText("");
         });
     }
 
     @SuppressLint({"Range", "NotifyDataSetChanged"})
     public static void PopulateChatView(Context c) {
-
         Cursor cur = new DBManager(c.getApplicationContext()).getCIDChats(ContactID);
         responseMessageList.clear();
         while (cur != null && cur.moveToNext())
         {
-            Log.i("here here", cur.getString(cur.getColumnIndex("MessageBody")));
             if (cur.getInt(cur.getColumnIndex("inorout")) == 0)
             {
                 responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), true, 2));
@@ -136,16 +166,20 @@ public class ChatActivity extends AppCompatActivity {
             if (ChatActivity.isLastVisible()) {
                 ChatActivity.recyclerView.smoothScrollToPosition(ChatActivity.messageAdapter.getItemCount() - 1);
             }
-
         });
 
     }
-
+    @Override
+    public void onStop() {
+        super.onStop();
+        finish();
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         new DBManager(ChatActivity.this).UpdateMessageStatus(ContactID, 1);        HomeActivity.PopulateChats(context);
         HomeActivity.adapter.notifyDataSetChanged();
+        finish();
     }
 
 
@@ -157,4 +191,9 @@ public class ChatActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
+
 }
