@@ -171,6 +171,8 @@ public class SMSHandler {
         PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
         manager.sendTextMessage(PhoneNo, null, SMSText, piSend, piDelivered);
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void SendSMSOnline(String PhoneNo, String SMSText)
     {
         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
