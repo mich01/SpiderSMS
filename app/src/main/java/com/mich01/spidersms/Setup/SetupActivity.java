@@ -17,7 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.mich01.spidersms.Crypto.IDManagementProtocol;
+import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
 
@@ -107,9 +107,9 @@ public class SetupActivity extends AppCompatActivity {
     private boolean SetKeyPin(String Pin)
     {
         boolean completed;
-        String PinHash = IDManagementProtocol.ComputeHash(Pin);
+        String PinHash = PKI_Cipher.ComputeHash(Pin);
         new DBManager(SetupActivity.this);
-        JSONObject KeyJSON = IDManagementProtocol.PKI_CURVE_25519();
+        JSONObject KeyJSON = PKI_Cipher.PKI_CURVE_25519();
         MyPrefs = SetupActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         MyPrefsEditor = MyPrefs.edit();
         MyPrefsEditor.putString("MyPinHash", PinHash);

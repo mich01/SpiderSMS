@@ -117,12 +117,15 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     alertDialog.cancel();
                 });
-                Option2.setOnClickListener(view12 -> alertDialog.cancel());
+                Option2.setOnClickListener(view12 ->{
+                    userInput.setText("");
+                    new SMSHandler(context).proxyEncryptedSMS(ContactID, MessageText);
+                        alertDialog.cancel();});
                 Option3.setOnClickListener(view13 -> {
+                    userInput.setText("");
                     new SMSHandler(context).SendSMSOnline(ContactID, MessageText);
                     alertDialog.cancel();});
             }
-            userInput.setText("");
         });
     }
 
@@ -178,11 +181,8 @@ public class ChatActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         new DBManager(ChatActivity.this).UpdateMessageStatus(ContactID, 1);        HomeActivity.PopulateChats(context);
-        HomeActivity.adapter.notifyDataSetChanged();
         finish();
     }
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

@@ -40,4 +40,12 @@
     <string name="updating_contacts">Updating Contacts. Please wait...</string>
     <string name="contacts_updated">Contacts Updated</string>
     <string name="do_you_want_to_delete">Are you sure you want to delete this conversation</string>
+    <string name="api_updated_success">API Updated Successfully</string>
+    <string name="proxy_number_updated">Proxy Number Updated</string>
+    <string name="server_setup_complete">Server Config Setup Successfull</string>
+    <string name="are_you_sure_app_settings">Are you sure you want to Change your App Settings?</string>
+    <string name="error_invalid_data">Config Invalid Data or Data is Corrupted</string>
+    <string name="are_you_sure_proxy_update">Are you sure you want to Update the ProxyNumber?</string>
+    <string name="are_you_sure_api">Are you sure you want to Change your Proxy API Settings?</string>
+    <string name="are_you_sure_update_contact">Are you sure you want to Change This Contact\'s Information</string>
 </resources>

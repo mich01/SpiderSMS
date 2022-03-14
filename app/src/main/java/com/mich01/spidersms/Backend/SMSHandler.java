@@ -10,22 +10,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Handler;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
-
-import com.mich01.spidersms.Crypto.IDManagementProtocol;
+import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.DB.DBManager;
+import com.mich01.spidersms.UI.ChatActivity;
+import com.mich01.spidersms.UI.HomeActivity;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import okhttp3.Call;
@@ -107,16 +107,30 @@ public class SMSHandler {
                 }
             }
         }, new IntentFilter(SMS_DELIVERED));
-
-        Log.i("SMS Handler: ", "Message sent to " + PhoneNo + " Message: " + SMSText);
         SmsManager manager = SmsManager.getDefault();
         PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
         PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
-        manager.sendTextMessage(PhoneNo, null, SMSText, piSend, piDelivered);
-
+        if(SMSText.length()>=MAX_SMS_MESSAGE_LENGTH)
+        {
+            ArrayList<String> parts =manager.divideMessage(AppTrigger+new PKI_Cipher().Encode(SMSText));
+            int numParts = parts.size();
+            Log.i("ssss","multipart here "+numParts);
+            ArrayList<PendingIntent> sentIntents = new ArrayList<PendingIntent>();
+            ArrayList<PendingIntent> deliveryIntents = new ArrayList<PendingIntent>();
+            for (int i = 0; i < numParts; i++)
+            {
+                sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), 0));
+                deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0));
+            }
+            manager.sendMultipartTextMessage(PhoneNo,null, parts, sentIntents, deliveryIntents);
+        }
+        else
+        {
+            manager.sendTextMessage(PhoneNo, null, AppTrigger+new PKI_Cipher().Encode(SMSText), piSend, piDelivered);
+        }
     }
 
-    public void proxyEncryptedSMS(String PhoneNo, String Target, String SMSText) {
+    public void proxyEncryptedSMS(String PhoneNo, String SMSText) {
         new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
         new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, false);
         //---when the SMS has been sent---
@@ -147,7 +161,6 @@ public class SMSHandler {
                 }
             }
         }, new IntentFilter(SMS_SENT));
-
         //---when the SMS has been delivered---
         context.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -164,15 +177,40 @@ public class SMSHandler {
                 }
             }
         }, new IntentFilter(SMS_DELIVERED));
-
+        MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String ProxyNumber =MyPrefs.getString("ProxyNumber", "---");
+        JSONObject SMSBody = new JSONObject();
+        try {
+            SMSBody.put("target",PhoneNo);
+            SMSBody.put("Body",SMSText);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         Log.i("SMS Handler: ", "Message sent to " + PhoneNo + " Message: " + SMSText);
         SmsManager manager = SmsManager.getDefault();
-        PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
-        PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
-        manager.sendTextMessage(PhoneNo, null, SMSText, piSend, piDelivered);
+        if(SMSText.length()>158) {
+            ArrayList<String> parts = manager.divideMessage(SMSText);
+            int numParts = parts.size();
+
+            ArrayList<PendingIntent> sentIntents = new ArrayList<PendingIntent>();
+            ArrayList<PendingIntent> deliveryIntents = new ArrayList<PendingIntent>();
+
+            for (int i = 0; i < numParts; i++) {
+                PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
+                PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
+            }
+
+            manager.sendMultipartTextMessage(ProxyNumber, null, parts, sentIntents, deliveryIntents);
+        }
+        else
+        {
+            PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
+            PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
+            manager.sendTextMessage(ProxyNumber, null, AppTrigger+new PKI_Cipher().Encode(SMSBody.toString()), piSend, piDelivered);
+
+        }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void SendSMSOnline(String PhoneNo, String SMSText)
     {
         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -187,11 +225,17 @@ public class SMSHandler {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
+        new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, false);
+        ChatActivity.PopulateChatView(context);
+        ChatActivity.messageAdapter.notifyDataSetChanged();
+        HomeActivity.PopulateChats(context);
+        HomeActivity.adapter.notifyDataSetChanged();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("username", API_UserName)
                 .addFormDataPart("to", PhoneNo)
-                .addFormDataPart("message", AppTrigger+new IDManagementProtocol().Encode(SMSBody.toString()))
+                .addFormDataPart("message", AppTrigger+new PKI_Cipher().Encode(SMSBody.toString()))
                 .build();
         Request request = new Request.Builder()
                 .url(url)

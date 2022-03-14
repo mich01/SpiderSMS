@@ -64,7 +64,6 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
     @Override
     public View getView(int position, View convertView, ViewGroup parent)
     {
-        Log.i("Chat Lists: ","Called here---- "+position);
         if(convertView ==null)
         {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.chat_list_item,parent,false);
@@ -80,7 +79,6 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         TimeStamp.setText(niceDateStr);
         if(chatsList.get(position).getContactID().equalsIgnoreCase(chatsList.get(position).getContactName()))
         {
-            Log.i("Contact: ", chatsList.get(position).getContactID() + " -- " + chatsList.get(position).getContactName());
             contactID.setTypeface(null, Typeface.BOLD_ITALIC);
             //contactID.setTextColor(Color.GRAY);
         }

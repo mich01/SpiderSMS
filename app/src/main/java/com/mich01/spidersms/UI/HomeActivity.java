@@ -1,5 +1,6 @@
 package com.mich01.spidersms.UI;
 
+import static com.mich01.spidersms.Crypto.PKI_Cipher.TestCrypto;
 import static com.mich01.spidersms.Setup.SetupConfig.ReadScan;
 
 import android.Manifest;
@@ -49,6 +50,7 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.mich01.spidersms.Adapters.ChatsAdapter;
+import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
@@ -107,6 +109,7 @@ public class HomeActivity extends AppCompatActivity {
                     SnackBarAlert("Cannot open file");
                 }
             });
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,6 +117,7 @@ public class HomeActivity extends AppCompatActivity {
         ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
         StatusText = findViewById(R.id.lbl_contact_Status);
+        //TestCrypto();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(new Intent(this, MainService.class));
         }else

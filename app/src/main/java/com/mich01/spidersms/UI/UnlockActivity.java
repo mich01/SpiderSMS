@@ -1,5 +1,6 @@
 package com.mich01.spidersms.UI;
 
+import static com.mich01.spidersms.Crypto.PKI_Cipher.TestCrypto;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
@@ -13,7 +14,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -22,7 +22,7 @@ import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.mich01.spidersms.Crypto.IDManagementProtocol;
+import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.R;
 
 import java.util.Objects;
@@ -47,6 +47,7 @@ public class UnlockActivity extends AppCompatActivity {
         UserPin = findViewById(R.id.txt_user_pin);
         UnlockStatus = findViewById(R.id.img_lock_status);
         executor = ContextCompat.getMainExecutor(this);
+        //TestCrypto();
         Objects.requireNonNull(this.getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.unclock_action_bar);
         getBiometrics();
@@ -100,7 +101,7 @@ public class UnlockActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 MyPrefs = UnlockActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-                if(!UserPin.getText().toString().isEmpty() & IDManagementProtocol.ComputeHash(UserPin.getText().toString()).equals(MyPrefs.getString("MyPinHash", "0")))
+                if(!UserPin.getText().toString().isEmpty() & PKI_Cipher.ComputeHash(UserPin.getText().toString()).equals(MyPrefs.getString("MyPinHash", "0")))
                 {
                     UnlockStatus.setImageResource(R.drawable.ic_unlocked_fingerprint_24);
                     startActivity(new Intent(UnlockActivity.this, HomeActivity.class));

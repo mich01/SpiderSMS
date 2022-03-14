@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.mich01.spidersms.R;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -98,7 +100,7 @@ public class DBManager extends SQLiteOpenHelper
             if(cursor.getCount()>0)
             {
                 AlertDialog.Builder alert = new AlertDialog.Builder(context);
-                alert.setTitle("Are you sure you want to Change This Contact's Information");
+                alert.setTitle(R.string.are_you_sure_update_contact);
                 alert.setPositiveButton("Update", (dialog, whichButton) -> UpdateContact(CID,ContactObject));
 
                 alert.setNegativeButton("Cancel",
@@ -223,7 +225,6 @@ public class DBManager extends SQLiteOpenHelper
     }
     public boolean updateLastMessage(String CID, String MessageText, int InOrOut, int ReadStatus)
     {
-        Log.i("Spiderman: ",CID);
         boolean status = false;
         SQLiteDatabase DB = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -232,7 +233,6 @@ public class DBManager extends SQLiteOpenHelper
         contentValues.put("inorout", InOrOut);
         contentValues.put("ReadStatus", ReadStatus);
         contentValues.put("Timestamp", System.currentTimeMillis());
-        Log.i("Current ID: ",CID);
         Cursor ChatCursor = DB.rawQuery("select * from LastChats where CID=?", new String[]{CID});
         if (ChatCursor.getCount() > 0) {
             long result = DB.update("LastChats", contentValues, "CID=?", new String[]{CID});
