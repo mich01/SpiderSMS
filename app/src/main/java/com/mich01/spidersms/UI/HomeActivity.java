@@ -15,6 +15,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,6 +51,8 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.mich01.spidersms.Adapters.ChatsAdapter;
+import com.mich01.spidersms.Adapters.ContactAdapter;
+import com.mich01.spidersms.Backend.GetPhoneContacts;
 import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
@@ -129,8 +132,8 @@ public class HomeActivity extends AppCompatActivity {
         this.getSupportActionBar().setCustomView(R.layout.main_action_bar);
         adapter = new ChatsAdapter(HomeActivity.this,R.layout.chat_list_item,ChatsList);
         //new DBManager(getApplicationContext()).DeleteAllContacts("06");
-        Handler h = new Handler(getMainLooper());
-        h.post(() -> PopulateChats(HomeActivity.this));
+        PopulateChats populateChats = new PopulateChats();
+        populateChats.execute();
         fab = findViewById(R.id.fab_chat);
         fab.setOnClickListener(view -> {
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)  != PackageManager.PERMISSION_GRANTED)
@@ -257,7 +260,42 @@ public class HomeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    public static void PopulateChats(Context context)
+    public class PopulateChats extends AsyncTask<Void, Void, String> {
+        @SuppressLint("Range")
+        @Override protected String doInBackground(Void... params)
+        {
+            ChatsList = new ArrayList<>();
+            Cursor cur = new DBManager(HomeActivity.this).getLastChatList();
+            while (cur != null && cur.moveToNext()) {
+                if (cur.getString(cur.getColumnIndex("ContactName")) == null) {
+                    ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
+                            cur.getString(cur.getColumnIndex("CID")),
+                            cur.getString(cur.getColumnIndex("MessageText")),
+                            cur.getString(cur.getColumnIndex("Timestamp")),
+                            cur.getInt(cur.getColumnIndex("ReadStatus"))));
+                } else {
+                    ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
+                            cur.getString(cur.getColumnIndex("ContactName")),
+                            cur.getString(cur.getColumnIndex("MessageText")),
+                            cur.getString(cur.getColumnIndex("Timestamp")),
+                            cur.getInt(cur.getColumnIndex("ReadStatus"))));
+                }
+            }
+            return "Processing";
+        }
+        @Override
+            protected void onPostExecute(String result)
+        {
+                ChatsAdapter UpdatedChats =new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item,ChatsList);
+            try {
+                ChatListView.setAdapter(UpdatedChats);
+            }catch (NullPointerException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+    public static void RePopulateChats(Context context)
     {
         ChatsList = new ArrayList<>();
         Handler h = new Handler(context.getMainLooper());

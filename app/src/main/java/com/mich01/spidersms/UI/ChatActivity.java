@@ -9,6 +9,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -19,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -45,6 +47,7 @@ public class ChatActivity extends AppCompatActivity {
     ImageButton sendButton;
     private String MessageText;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("NotifyDataSetChanged")
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -111,7 +114,7 @@ public class ChatActivity extends AppCompatActivity {
                     messageAdapter.notifyDataSetChanged();
                     UpdateChatPosition();
                     userInput.setText("");
-                    HomeActivity.PopulateChats(context);
+                    HomeActivity.RePopulateChats(context);
                     if (isLastVisible()) {
                         recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
                     }
@@ -123,7 +126,9 @@ public class ChatActivity extends AppCompatActivity {
                         alertDialog.cancel();});
                 Option3.setOnClickListener(view13 -> {
                     userInput.setText("");
-                    new SMSHandler(context).SendSMSOnline(ContactID, MessageText);
+                    try {
+                        new SMSHandler(context).SendSMSOnline(ContactID, MessageText);
+                    }catch (Exception e){e.printStackTrace();}
                     alertDialog.cancel();});
             }
         });
@@ -180,7 +185,8 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        new DBManager(ChatActivity.this).UpdateMessageStatus(ContactID, 1);        HomeActivity.PopulateChats(context);
+        new DBManager(ChatActivity.this).UpdateMessageStatus(ContactID, 1);
+        HomeActivity.RePopulateChats(context);
         finish();
     }
     @Override

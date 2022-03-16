@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -55,12 +56,11 @@ public class ContactsActivity extends AppCompatActivity {
         new GetPhoneContacts().getMyContacts(ContactsActivity.this);
         if(Contacts.size()==0)
         {
-            SnackBarAlert("Drag the contact list down to update your contact lost");
+            SnackBarAlert(getString(R.string.drag_to_update_contact));
         }
         Log.i("Contact Count", String.valueOf(Contacts.size()));
         adapter = new ContactAdapter(ContactsActivity.this,R.layout.contact_item,Contacts);
         ContactListView.setAdapter(adapter);
-
         Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.contacts_view_title)+ " ("+Contacts.size()+")");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ContactListView.setOnItemClickListener((parent, view, position, id) -> {
@@ -70,23 +70,12 @@ public class ContactsActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 swipeRefreshLayout.setRefreshing(false);
+                dialog = ProgressDialog.show(ContactsActivity.this, "Updating Contacts",
+                        getString(R.string.updating_contacts), true);
+                dialog.setIcon(R.drawable.update_24);
                 // User defined method to shuffle the array list items
-                Handler h = new Handler(getMainLooper());
-                h.post(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        PopulateContacts(ContactsActivity.this);
-                        synchronized(this)
-                        {
-                            dialog = ProgressDialog.show(ContactsActivity.this, "Updating Contacts",
-                                    "Updating Contacts. Please wait...", true);
-                            dialog.setIcon(R.drawable.update_24);
-
-                        }
-                    }
-                });
+                PopulateContacts runningTask = new PopulateContacts();
+                runningTask.execute();
             }
         });
     }
@@ -138,39 +127,26 @@ public class ContactsActivity extends AppCompatActivity {
         });
         return super.onCreateOptionsMenu(menu);
     }
-    public void PopulateContacts(Context context)
-    {
-        Contacts = new ArrayList<>();
-        try {
-            Handler h = new Handler(context.getMainLooper());
-            h.post(new Runnable()
-            {
-                @SuppressLint("Range")
-                @Override
-                public void run()
-                {
-                    new GetPhoneContacts().getPhoneContacts(context);
-                    synchronized(this)
-                    {
-                        new GetPhoneContacts().getMyContacts(context);
-                        dialog.dismiss();
-                        adapter = new ContactAdapter(context, R.layout.contact_item,Contacts);
-                        ContactListView.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
-                        Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
-                        snackbar.setBackgroundTint(Color.GREEN);
-                        snackbar.setTextColor(Color.BLACK);
-                        snackbar.show();
-                    }
-                }
-            });
-        }catch (Exception e)
+    public class PopulateContacts extends AsyncTask<Void, Void, String> {
+        @Override protected String doInBackground(Void... params)
         {
-            e.printStackTrace();
+            new GetPhoneContacts().getPhoneContacts(ContactsActivity.this);
+            return "Processing";
         }
-
-
+        @Override protected void onPostExecute(String result)
+        {
+            new GetPhoneContacts().getMyContacts(ContactsActivity.this);
+            dialog.dismiss();
+            adapter = new ContactAdapter(ContactsActivity.this, R.layout.contact_item,Contacts);
+            ContactListView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+            Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
+            snackbar.setBackgroundTint(Color.GREEN);
+            snackbar.setTextColor(Color.BLACK);
+            snackbar.show();
+        }
     }
+
     public void FilterContacts(String SearchString)
     {
         ArrayList<Contact> FilteredContacts = new ArrayList<>();

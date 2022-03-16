@@ -1,11 +1,11 @@
 package com.mich01.spidersms.UI;
 
-import static com.mich01.spidersms.Crypto.PKI_Cipher.TestCrypto;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
@@ -39,6 +40,7 @@ public class UnlockActivity extends AppCompatActivity {
     public UnlockActivity() {
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -47,7 +49,6 @@ public class UnlockActivity extends AppCompatActivity {
         UserPin = findViewById(R.id.txt_user_pin);
         UnlockStatus = findViewById(R.id.img_lock_status);
         executor = ContextCompat.getMainExecutor(this);
-        //TestCrypto();
         Objects.requireNonNull(this.getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.unclock_action_bar);
         getBiometrics();

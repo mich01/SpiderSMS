@@ -23,6 +23,7 @@ import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ChatActivity;
+import com.mich01.spidersms.UI.ContactsActivity;
 import com.mich01.spidersms.UI.HomeActivity;
 
 import java.util.ArrayList;
@@ -104,7 +105,7 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         LastText.setText(chatsList.get(position).getLastMessage());
 
         convertView.setOnClickListener(v -> {
-            Intent ChatIntent = new Intent(getContext(), ChatActivity.class);
+            Intent ChatIntent = new Intent(v.getRootView().getContext(), ChatActivity.class);
             ChatIntent.putExtra("ContactID", chatsList.get(position).getContactID());
             ChatIntent.putExtra("ContactName", chatsList.get(position).getContactName());
             ChatIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
@@ -112,11 +113,11 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
             getContext().startActivity(ChatIntent);
         });
         convertView.setOnLongClickListener(view -> {
-            AlertDialog.Builder alert = new AlertDialog.Builder(context);
+            AlertDialog.Builder alert = new AlertDialog.Builder(view.getRootView().getContext());
             alert.setTitle(R.string.do_you_want_to_delete);
             alert.setPositiveButton("Ok", (dialog, whichButton) -> {
                 new DBManager(getContext()).DeleteAllChats(chatsList.get(position).getContactID());
-                HomeActivity.PopulateChats(getContext());
+                HomeActivity.RePopulateChats(view.getRootView().getContext());
                 HomeActivity.adapter.notifyDataSetChanged();
             });
 
@@ -124,7 +125,7 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
                     (dialog, whichButton) -> {
                 dialog.cancel();
                     });
-            alert.show();
+                alert.show();
             return false;
         });
         return convertView;

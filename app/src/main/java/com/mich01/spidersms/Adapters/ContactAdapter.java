@@ -128,6 +128,7 @@ public class ContactAdapter extends ArrayAdapter<Contact>
             status.setTypeface(null, Typeface.NORMAL);
             contactID.setTextColor(context.getResources().getColor(R.color.white));
             status.setTextColor(Color.GRAY);
+            convertView.setBackgroundResource(R.color.not_in_app);
             images.setBackground(context.getResources().getDrawable(R.drawable.background_gradient));
         }
         else

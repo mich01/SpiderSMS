@@ -106,7 +106,7 @@ public class DataQRGenerator extends AppCompatActivity {
             new DBManager(getApplicationContext()).DeleteContact(ContactID);
             {
                 startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
-                HomeActivity.PopulateChats(DataQRGenerator.this);
+                HomeActivity.RePopulateChats(DataQRGenerator.this);
                 HomeActivity.adapter.notifyDataSetChanged();
                 finish();
             }

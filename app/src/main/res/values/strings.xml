@@ -48,4 +48,6 @@
     <string name="are_you_sure_proxy_update">Are you sure you want to Update the ProxyNumber?</string>
     <string name="are_you_sure_api">Are you sure you want to Change your Proxy API Settings?</string>
     <string name="are_you_sure_update_contact">Are you sure you want to Change This Contact\'s Information</string>
+    <string name="conversation_deleted">\"Conversation Deleted: \"</string>
+    <string name="drag_to_update_contact">Drag the contact list down to update your contact lost</string>
 </resources>

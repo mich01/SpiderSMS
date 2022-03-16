@@ -62,7 +62,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
             alert.setTitle("Are you sure you want to delete this conversation");
             alert.setPositiveButton("Ok", (dialog, whichButton) -> {
                 new DBManager(view.getContext()).DeleteMessage(String.valueOf(pos));
-                HomeActivity.PopulateChats(view.getContext());
+                HomeActivity.RePopulateChats(view.getContext());
                 HomeActivity.adapter.notifyDataSetChanged();
             });
 

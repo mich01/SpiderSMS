@@ -36,7 +36,6 @@
     <string name="cannot_send_empty_message">You cannot Send an empty Message</string>
     <string name="select_file">Select Config File</string>
     <string name="scan_qr_to_config">Scan QR to Config</string>
-    <string name="updating_contacts">Updating Contacts. Please wait...</string>
     <string name="contacts_updated">Contacts Updated</string>
     <string name="do_you_want_to_delete">Are you sure you want to delete this conversation</string>
     <string name="api_updated_success">API Updated Successfully</string>
@@ -47,4 +46,7 @@
     <string name="are_you_sure_proxy_update">Are you sure you want to Update the ProxyNumber?</string>
     <string name="are_you_sure_api">Are you sure you want to Change your Proxy API Settings?</string>
     <string name="are_you_sure_update_contact">Are you sure you want to Change This Contact\'s Information</string>
+    <string name="conversation_deleted">\"Conversation Deleted: \"</string>
+    <string name="drag_to_update_contact">Drag the contact list down to update your contact lost</string>
+    <string name="updating_contacts">Updating Contacts. Please wait...</string>
 </resources>

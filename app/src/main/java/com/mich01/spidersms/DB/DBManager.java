@@ -27,7 +27,7 @@ public class DBManager extends SQLiteOpenHelper
     public void onCreate(SQLiteDatabase db)
     {
         db.execSQL("create Table UserProfile(CID TEXT primary key, PhoneNo TEXT, UserName TEXT, ServerURL TEXT)");
-        db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, CryptoAlg TEXT, StegKey TEXT, Secret TEXT, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
+        db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, CryptoAlg TEXT, Secret TEXT, Confirmed TEXT, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
         db.execSQL("create Table EncryptedSMS(MessageID INTEGER primary key AUTOINCREMENT NOT NULL,CID TEXT, MessageBody  TEXT,inorout INTEGER, Status INTEGER,Timestamp)");
         db.execSQL("create Table LastChats(CID TEXT primary key,MessageText TEXT,inorout INTEGER,ReadStatus INEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
@@ -318,8 +318,8 @@ public class DBManager extends SQLiteOpenHelper
     public void DeleteAllChats(String CID)
     {
         SQLiteDatabase DB = this.getWritableDatabase();
-        int result = DB.delete("EncryptedSMS", "CID=?", new String[]{CID});
-        int result2 = DB.delete("LastChats", "CID=?", new String[]{CID});
-        Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
+        DB.delete("EncryptedSMS", "CID=?", new String[]{CID});
+        DB.delete("LastChats", "CID=?", new String[]{CID});
+        Toast.makeText(context,context.getString(R.string.conversation_deleted)+CID, Toast.LENGTH_LONG).show();
     }
 }

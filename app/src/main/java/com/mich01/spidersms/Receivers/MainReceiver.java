@@ -39,33 +39,36 @@ public class MainReceiver extends BroadcastReceiver {
                     assert pdusObj != null;
                     for (Object aPdusObj : pdusObj)
                     {
-                        SmsMessage currentMessage = SmsMessage.createFromPdu((byte[]) aPdusObj);
+                        SmsMessage currentMessage = SmsMessage.createFromPdu((byte[]) aPdusObj );
                         senderNum = currentMessage.getDisplayOriginatingAddress();
-                        messageChunk.append(currentMessage.getDisplayMessageBody());
+                        Log.i("ssssr",currentMessage.getMessageBody());
+                        messageChunk.append(currentMessage.getMessageBody());
                     } // end for loop
                     message =messageChunk.toString();
-                    Log.i("Total Msg",message);
+                   // Log.i("Total Msg",message);
                 } // bundle is null
             } catch (Exception ignored) {
             }
             assert message != null;
             if(message.contains("|>"))
             {
-                String DecryptedSMS = message;
+                String DecryptedSMS = new PKI_Cipher().Decrypt(message.replace( "|>",""),"1234567890QWERTY");
+                //Log.i("Total Msg",DecryptedSMS);
                 try {
-                    DecryptedSMS = PKI_Cipher.Decode(DecryptedSMS);
                     JSONObject smsJSON = new JSONObject(DecryptedSMS);
                     senderNum = smsJSON.getString("target");
                     message = smsJSON.getString("Body");
-                } catch (Exception e) {
-                    //DecryptedSMS = PKI_Cipher.Decode(DecryptedSMS);
+                } catch (Exception e)
+                {
+                    //DecryptedSMS = new PKI_Cipher().Decrypt(DecryptedSMS,"1234567890QWERTY");
                     message =DecryptedSMS;
                 }
+                //Log.i("Total Msg",message);
                 new DBManager(context).updateLastMessage(senderNum, message, 0, 0);
                 new DBManager(context).AddChatMessage(senderNum,1,message,false);
                 ChatActivity.PopulateChatView(context);
                 ChatActivity.messageAdapter.notifyDataSetChanged();
-                HomeActivity.PopulateChats(context);
+                HomeActivity.RePopulateChats(context);
                 HomeActivity.adapter.notifyDataSetChanged();
                 Toast.makeText(context, "Message from: "+senderNum,Toast.LENGTH_LONG).show();
             }

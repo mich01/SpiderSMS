@@ -109,17 +109,17 @@ public class SetupActivity extends AppCompatActivity {
         boolean completed;
         String PinHash = PKI_Cipher.ComputeHash(Pin);
         new DBManager(SetupActivity.this);
-        JSONObject KeyJSON = PKI_Cipher.PKI_CURVE_25519();
+        //JSONObject KeyJSON = PKI_Cipher.PKI_CURVE_25519();
         MyPrefs = SetupActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         MyPrefsEditor = MyPrefs.edit();
         MyPrefsEditor.putString("MyPinHash", PinHash);
-        try {
+      /*  try {
             MyPrefsEditor.putString("PublicKey",KeyJSON.getString("PublicKey"));
             MyPrefsEditor.putString("PrivateKey",KeyJSON.getString("PrivateKey"));
             MyPrefsEditor.putString("KeyPair",KeyJSON.getString("KeyPair"));
         } catch (JSONException e) {
             e.printStackTrace();
-        }
+        }*/
 
         MyPrefsEditor.putInt("SetupComplete", 1);
         MyPrefsEditor.apply();
