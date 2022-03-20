@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.telephony.SmsManager;
@@ -20,8 +21,7 @@ import androidx.annotation.RequiresApi;
 
 import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.DB.DBManager;
-import com.mich01.spidersms.UI.ChatActivity;
-import com.mich01.spidersms.UI.HomeActivity;
+import com.mich01.spidersms.Prefs.PrefsMgr;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -32,7 +32,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Objects;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -51,9 +50,9 @@ public class SMSHandler {
     private static final int MAX_SMS_MESSAGE_LENGTH = 160;
     private static final String SMS_SENT = "SMS_SENT";
     private static final String SMS_DELIVERED = "SMS_DELIVERED";
-    String AppTrigger = "|>";
-
-    public SMSHandler(Context context) {
+    String AppTrigger = ">";
+    public SMSHandler(Context context)
+    {
         this.context = context;
     }
 
@@ -62,17 +61,15 @@ public class SMSHandler {
         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
         new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, false);
-        Log.i("SMS Handler: ", "Message sent to " + PhoneNo + " Message: " + SMSText);
         SmsManager manager = SmsManager.getDefault();
-        PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
+        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
+        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
         manager.sendTextMessage(PhoneNo, null, SMSText, piSend, piDelivered);
     }
 
-    public void sendEncryptedSMS(String PhoneNo, String SMSText) {
+    @SuppressLint("UnspecifiedImmutableFlag")
+    public void sendEncryptedSMS(String PhoneNo, String SMSText, String EncryptionKey) {
         String SMS;
-        new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
-        new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, false);
         //---when the SMS has been sent---
         context.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -119,27 +116,20 @@ public class SMSHandler {
             }
         }, new IntentFilter(SMS_DELIVERED));
         SmsManager manager = SmsManager.getDefault();
-        PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
-        PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
-        JSONObject SMSBody = new JSONObject();
-        try {
-            SMSBody.put("target",PhoneNo);
-            SMSBody.put("Body",SMSText);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        SMS =AppTrigger+new PKI_Cipher().Encrypt(SMSBody.toString(),"1234567890QWERTY");
+        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
+        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
+
+        SMS =AppTrigger+new PKI_Cipher().Encrypt(SMSText, EncryptionKey);
         if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)
         {
             ArrayList<String> parts =manager.divideMessage(SMS);
             int numParts = parts.size();
-            ArrayList<PendingIntent> sentIntents = new ArrayList<PendingIntent>();
-            ArrayList<PendingIntent> deliveryIntents = new ArrayList<PendingIntent>();
+            ArrayList<PendingIntent> sentIntents = new ArrayList<>();
+            ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
             for (int i = 0; i < numParts; i++)
             {
-                Log.i("ssssr",parts.get(i));
-                sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), 0));
-                deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0));
+                sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT));
+                deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT));
             }
             manager.sendMultipartTextMessage(PhoneNo,null, parts, sentIntents, deliveryIntents);
         }
@@ -147,12 +137,13 @@ public class SMSHandler {
         {
             manager.sendTextMessage(PhoneNo, null, SMS, piSend, piDelivered);
         }
+        Log.i("SMS Handler: ", "Message sent to " + PhoneNo + " Message: " + SMS);
+
     }
 
-    public void proxyEncryptedSMS(String PhoneNo, String SMSText)
+    @SuppressLint("UnspecifiedImmutableFlag")
+    public void proxyEncryptedSMS(String SMSText, String EncryptionKey)
     {
-        new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
-        new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, false);
         //---when the SMS has been sent---
         context.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -199,62 +190,42 @@ public class SMSHandler {
         }, new IntentFilter(SMS_DELIVERED));
         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String ProxyNumber =MyPrefs.getString("ProxyNumber", "---");
-        JSONObject SMSBody = new JSONObject();
-        try {
-            SMSBody.put("target",PhoneNo);
-            SMSBody.put("Body",SMSText);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        Log.i("SMS Handler: ", "Message sent to " + PhoneNo + " Message: " + SMSText);
         SmsManager manager = SmsManager.getDefault();
-        if(SMSText.length()>158) {
-            ArrayList<String> parts = manager.divideMessage(AppTrigger+new PKI_Cipher().Encrypt(SMSBody.toString(),"1234567890QWERTY"));
+        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
+        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
+        String SMS = AppTrigger.concat(new PKI_Cipher().Encrypt(SMSText,EncryptionKey));
+        Log.i("SMS Handler: ", "Message sent to " + ProxyNumber + " Message: " + SMSText);
+        if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)
+        {
+            ArrayList<String> parts =manager.divideMessage(SMS);
             int numParts = parts.size();
-
-            ArrayList<PendingIntent> sentIntents = new ArrayList<PendingIntent>();
-            ArrayList<PendingIntent> deliveryIntents = new ArrayList<PendingIntent>();
-
-            for (int i = 0; i < numParts; i++) {
-                PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
-                PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
+            ArrayList<PendingIntent> sentIntents = new ArrayList<>();
+            ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
+            for (int i = 0; i < numParts; i++)
+            {
+                sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT));
+                deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT));
             }
-            manager.sendMultipartTextMessage(ProxyNumber, null, parts, sentIntents, deliveryIntents);
+            manager.sendMultipartTextMessage(ProxyNumber,null, parts, sentIntents, deliveryIntents);
         }
         else
         {
-            PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), 0);
-            PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), 0);
-            manager.sendTextMessage(ProxyNumber, null, AppTrigger+new PKI_Cipher().Encrypt(SMSBody.toString(),"1234567890QWERTY"), piSend, piDelivered);
-
+            manager.sendTextMessage(ProxyNumber, null, SMS, piSend, piDelivered);
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void SendSMSOnline(String PhoneNo, String SMSText) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+    public void SendSMSOnline(String PhoneNo, String SMSText, String EncryptionKey) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         final OkHttpClient client = new OkHttpClient();
         String url = MyPrefs.getString("ServerURL","---");
         String API_UserName = MyPrefs.getString("ServerUserName","---");
         String API_Key = MyPrefs.getString("ApiKey","---");
-        JSONObject SMSBody = new JSONObject();
-        try {
-            SMSBody.put("target",PhoneNo);
-            SMSBody.put("Body",SMSText);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
-        new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, false);
-        ChatActivity.PopulateChatView(context);
-        ChatActivity.messageAdapter.notifyDataSetChanged();
-        HomeActivity.RePopulateChats(context);
-        HomeActivity.adapter.notifyDataSetChanged();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("username", API_UserName)
                 .addFormDataPart("to", PhoneNo)
-                .addFormDataPart("message", AppTrigger+new PKI_Cipher().Encrypt(SMSBody.toString(),"1234567890QWERTY"))
+                .addFormDataPart("message", AppTrigger+new PKI_Cipher().Encrypt(SMSText,EncryptionKey))
                 .build();
         Request request = new Request.Builder()
                 .url(url)
@@ -271,10 +242,10 @@ public class SMSHandler {
             }
 
             @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+            public void onResponse(@NotNull Call call, @NotNull Response response){
+                response.close();
                 //Toast.makeText(context, "Message Sent",Toast.LENGTH_SHORT).show();
             }
         }));
-
     }
 }

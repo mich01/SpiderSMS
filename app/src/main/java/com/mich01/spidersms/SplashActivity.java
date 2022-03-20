@@ -1,6 +1,8 @@
 package com.mich01.spidersms;
 
 
+import static com.mich01.spidersms.Crypto.PKI_Cipher.GenerateNewKey;
+import static com.mich01.spidersms.Crypto.PKI_Cipher.TestCrypto;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.Manifest;
@@ -38,20 +40,22 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
-        new PKI_Cipher().Decrypt("|>"+new PKI_Cipher().Encrypt("{target\":\"+254724724008\",\"Body\":\"QCE1OCQ559 Confirmed. Ksh10.00 sent to SAFARICOM POSTPAID BUNDLES for account 254 on 14\\/3\\/22 at 6:26 PM New M-PESA balance is Ksh1,618.33. Transaction cost, Ksh0.00.Amount you can transact within the day is 299,990.00.Separate personal and business funds through Pochi la Biashara on *334#.}","1234567890QWERTY"),"1234567890QWERTY");
-        //Log.i("Process",new PKI_Cipher().decrypt(new PKI_Cipher().encrypt("Hello Mike...","MySecretKey"),"MySecretKey"));
-        Objects.requireNonNull(getSupportActionBar()).hide();
+        TestCrypto();
+        setContentView(R.layout.activity_splash); Objects.requireNonNull(getSupportActionBar()).hide();
         if (!BackendFunctions.CheckRoot())
         {
             preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             if (preferences.getLong("InstalledTimestamp", 0) == 0)
             {
+                String SharedKeys =GenerateNewKey();
                 SharedPreferences.Editor PrefEditor;
                 PrefEditor = preferences.edit();
                 PrefEditor.putLong("InstalledTimestamp", System.currentTimeMillis());
-                PrefEditor.putBoolean("Licensed", false);
+                PrefEditor.putString("PublicKey", SharedKeys);
+                PrefEditor.putString("PrivateKey", SharedKeys);
+                //PrefEditor.putBoolean("Licensed", false);
                 PrefEditor.apply();
+                PrefEditor.commit();
             }
             {
                 CheckPermissions();

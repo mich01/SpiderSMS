@@ -28,6 +28,7 @@ public class ScannerSetupActivity extends AppCompatActivity {
     CodeScanner codeScanner;
     CodeScannerView Scannerview;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {

@@ -7,11 +7,14 @@ import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -25,6 +28,7 @@ import org.json.JSONObject;
 
 public class SetupConfig
 {
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public static void ReadScan(Context context, JSONObject Input) throws JSONException {
         switch (Input.getString("Data"))
         {
@@ -38,11 +42,12 @@ public class SetupConfig
                 ConfirmOnlineAPI(context, Input);
                 break;
             case "HelloContact":
+                Log.i("Key Step 1","Contact Scanned");
                 if(new DBManager(context).AddContact(Input))
                 {
                     context.startActivity(new Intent(context, HomeActivity.class));
                     Toast.makeText(context.getApplicationContext(), "New Contact Added", Toast.LENGTH_LONG).show();
-                    //((ScannerSetupActivity)context).finish();
+                    ((ScannerSetupActivity)context).finish();
                 }
                 break;
             default:

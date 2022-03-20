@@ -11,11 +11,13 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -32,6 +34,9 @@ import com.mich01.spidersms.Backend.SMSHandler;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -46,18 +51,33 @@ public class ChatActivity extends AppCompatActivity {
     Context context;
     ImageButton sendButton;
     private String MessageText;
-
+    JSONObject ContactJSON;
+    private static String EncryptionKey;
     @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("NotifyDataSetChanged")
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_chat);
         context = this;
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         Bundle bundle = getIntent().getExtras();
         ContactID = bundle.getString("ContactID");
+        ContactJSON = new DBManager(context).GetContact(ContactID);
+        try {
+            if(ContactJSON.getString("Confirmed").equals("1"))
+            {
+                EncryptionKey =ContactJSON.getString("PrivKey");
+            }
+            else
+            {
+                EncryptionKey = ContactJSON.getString("PubKey");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         new DBManager(ChatActivity.this).UpdateMessageStatus(ContactID, 1);
         userInput = findViewById(R.id.userInput);
         recyclerView = findViewById(R.id.chat_conversation);
@@ -92,6 +112,8 @@ public class ChatActivity extends AppCompatActivity {
                 Option1 = dialogView.findViewById(R.id.send_option_1);
                 Option2 = dialogView.findViewById(R.id.send_option_2);
                 Option3 = dialogView.findViewById(R.id.send_option_3);
+                Option3.setEnabled(false);
+                Option2.setEnabled(false);
                 MyPrefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
                 Option1.setText(SendTo);
                 AlertDialog alertDialog = builder.create();
@@ -101,39 +123,60 @@ public class ChatActivity extends AppCompatActivity {
                 {
                     Option2.setEnabled(false);
                 }
-                if(MyPrefs.getString("SeverURL", "---").equals("---"))
+                if(!MyPrefs.getString("ServerURL", "---").equals("---"))
                 {
-                    Option3.setEnabled(false);
+                    Option3.setEnabled(true);
                 }
                 Option1.setOnClickListener(view1 ->
                 {
                     MessageText =userInput.getText().toString();
-                    ResponseMessage message = new ResponseMessage(userInput.getText().toString(), true, 1);
-                    new SMSHandler(context).sendEncryptedSMS(ContactID, MessageText);
-                    responseMessageList.add(message);
-                    messageAdapter.notifyDataSetChanged();
-                    UpdateChatPosition();
-                    userInput.setText("");
-                    HomeActivity.RePopulateChats(context);
-                    if (isLastVisible()) {
-                        recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
+                    JSONObject SMSBody = new JSONObject();
+                    try {
+                        SMSBody.put("x","1");
+                        SMSBody.put("Body",MessageText);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                    UpdateChatMessages(ContactID,MessageText);
+                    new SMSHandler(context).sendEncryptedSMS(ContactID, SMSBody.toString(),EncryptionKey);
                     alertDialog.cancel();
                 });
                 Option2.setOnClickListener(view12 ->{
-                    userInput.setText("");
-                    new SMSHandler(context).proxyEncryptedSMS(ContactID, MessageText);
-                        alertDialog.cancel();});
-                Option3.setOnClickListener(view13 -> {
-                    userInput.setText("");
+                    JSONObject SMSBody = new JSONObject();
                     try {
-                        new SMSHandler(context).SendSMSOnline(ContactID, MessageText);
+                        SMSBody.put("x","2");
+                        SMSBody.put("target",ContactID);
+                        SMSBody.put("Body",MessageText);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        EncryptionKey = ContactJSON.getString("PubKey");
+                        UpdateChatMessages(ContactID,MessageText);
+                        new SMSHandler(context).proxyEncryptedSMS(SMSBody.toString(),EncryptionKey);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                       alertDialog.cancel();});
+                Option3.setOnClickListener(view13 ->
+                {
+                    JSONObject SMSBody = new JSONObject();
+                    try {
+                        SMSBody.put("x","2");
+                        SMSBody.put("target",ContactID);
+                        SMSBody.put("Body",MessageText);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    UpdateChatMessages(ContactID,MessageText);
+                    try {
+                        EncryptionKey = ContactJSON.getString("PubKey");
+                        new SMSHandler(context).SendSMSOnline(ContactID, SMSBody.toString(),EncryptionKey);
                     }catch (Exception e){e.printStackTrace();}
                     alertDialog.cancel();});
             }
         });
     }
-
     @SuppressLint({"Range", "NotifyDataSetChanged"})
     public static void PopulateChatView(Context c) {
         Cursor cur = new DBManager(c.getApplicationContext()).getCIDChats(ContactID);
@@ -169,6 +212,8 @@ public class ChatActivity extends AppCompatActivity {
 
     @SuppressLint("NotifyDataSetChanged")
     public void UpdateChatPosition() {
+        ResponseMessage message = new ResponseMessage(userInput.getText().toString(), true, 1);
+        responseMessageList.add(message);
         runOnUiThread(() -> {
             ChatActivity.messageAdapter.notifyDataSetChanged();
             if (ChatActivity.isLastVisible()) {
@@ -182,6 +227,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onStop();
         finish();
     }
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -202,4 +248,15 @@ public class ChatActivity extends AppCompatActivity {
         finish();
     }
 
+    public void UpdateChatMessages(String Recepient, String SMS)
+    {
+        new DBManager(context).updateLastMessage(Recepient, SMS, 1, 1);
+        new DBManager(context).AddChatMessage(Recepient, 0, SMS, false);
+        UpdateChatPosition();
+        userInput.setText("");
+        HomeActivity.RePopulateChats(context);
+        if (isLastVisible()) {
+            recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
+        }
+    }
 }

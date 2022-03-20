@@ -113,6 +113,8 @@ public class SetupActivity extends AppCompatActivity {
         MyPrefs = SetupActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         MyPrefsEditor = MyPrefs.edit();
         MyPrefsEditor.putString("MyPinHash", PinHash);
+        MyPrefsEditor.putString("PrivateKey","123456789033333");
+        MyPrefsEditor.putString("PublicKey","1234567890QWERT");
       /*  try {
             MyPrefsEditor.putString("PublicKey",KeyJSON.getString("PublicKey"));
             MyPrefsEditor.putString("PrivateKey",KeyJSON.getString("PrivateKey"));

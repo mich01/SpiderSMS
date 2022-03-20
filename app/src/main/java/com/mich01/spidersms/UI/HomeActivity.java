@@ -1,6 +1,5 @@
 package com.mich01.spidersms.UI;
 
-import static com.mich01.spidersms.Crypto.PKI_Cipher.TestCrypto;
 import static com.mich01.spidersms.Setup.SetupConfig.ReadScan;
 
 import android.Manifest;
@@ -26,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -68,6 +68,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 
+@RequiresApi(api = Build.VERSION_CODES.M)
 public class HomeActivity extends AppCompatActivity {
     //Temp
     @SuppressLint("StaticFieldLeak")
@@ -91,7 +92,7 @@ public class HomeActivity extends AppCompatActivity {
                     InputStream inputStream = getContentResolver().openInputStream(uri);
                     Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                     if (bitmap == null) {
-                        SnackBarAlert( "You haven't selected any file");
+                        SnackBarAlert("You haven't selected any file");
                         return;
                     }
                     int width = bitmap.getWidth(), height = bitmap.getHeight();
@@ -104,7 +105,7 @@ public class HomeActivity extends AppCompatActivity {
                     try {
                         Result results = reader.decode(bBitmap);
                         JSONObject ResultsJSON = new JSONObject(results.getText());
-                        ReadScan(HomeActivity.this,ResultsJSON);
+                        ReadScan(HomeActivity.this, ResultsJSON);
                     } catch (NotFoundException | JSONException e) {
                         SnackBarAlert("You need to select a QR Code bitmap");
                     }
@@ -112,10 +113,12 @@ public class HomeActivity extends AppCompatActivity {
                     SnackBarAlert("Cannot open file");
                 }
             });
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_home);
         ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
@@ -123,45 +126,37 @@ public class HomeActivity extends AppCompatActivity {
         //TestCrypto();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(new Intent(this, MainService.class));
-        }else
-        {
+        } else {
             startService(new Intent(this, MainService.class));
 
         }
         Objects.requireNonNull(this.getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.main_action_bar);
-        adapter = new ChatsAdapter(HomeActivity.this,R.layout.chat_list_item,ChatsList);
+        adapter = new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item, ChatsList);
         //new DBManager(getApplicationContext()).DeleteAllContacts("06");
         PopulateChats populateChats = new PopulateChats();
         populateChats.execute();
         fab = findViewById(R.id.fab_chat);
         fab.setOnClickListener(view -> {
-            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)  != PackageManager.PERMISSION_GRANTED)
-            {
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},1111);
+                    requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 1111);
                 }
-            }
-            else
-            {
+            } else {
                 startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
             }
         });
     }
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECEIVE_SMS)  != PackageManager.PERMISSION_GRANTED)
-        {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            {
-                requestPermissions(new String[]{Manifest.permission.RECEIVE_SMS},1111);
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.RECEIVE_SMS}, 1111);
             }
-        }
-        else
-        {
+        } else {
             MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
                 @Override
                 public boolean onMenuItemActionExpand(MenuItem item) {
@@ -174,12 +169,11 @@ public class HomeActivity extends AppCompatActivity {
                 }
             };
             menu.findItem(R.id.search).setOnActionExpandListener(onActionExpandListener);
-            SearchView searchView= (SearchView) menu.findItem(R.id.search).getActionView();
+            SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
             searchView.setQueryHint("Search Contact..");
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
-                public boolean onQueryTextSubmit(String query)
-                {
+                public boolean onQueryTextSubmit(String query) {
                     return false;
                 }
 
@@ -197,8 +191,7 @@ public class HomeActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId())
-        {
+        switch (item.getItemId()) {
             case R.id.send_invite:
                 Intent sendIntent = new Intent();
                 sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -209,7 +202,7 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(shareIntent);
                 break;
             case R.id.add_contact:
-            case  R.id.reconfigure:
+            case R.id.reconfigure:
                 Button ScanQRButton;
                 Button SelectFileButton;
                 AlertDialog.Builder builder = new AlertDialog.Builder(HomeActivity.this);
@@ -227,12 +220,9 @@ public class HomeActivity extends AppCompatActivity {
                     alertDialog.dismiss();
                 });
                 SelectFileButton.setOnClickListener(v -> {
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)  != PackageManager.PERMISSION_GRANTED)
-                    {
-                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1111);
-                    }
-                    else
-                    {
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1111);
+                    } else {
                         Intent intent = new Intent();
                         intent.setType("image/*");
                         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -241,14 +231,14 @@ public class HomeActivity extends AppCompatActivity {
                     }
                 });
                 break;
-            case  R.id.share_contact:
+            case R.id.share_contact:
                 SharedPreferences preferences = this.getSharedPreferences("global", Context.MODE_PRIVATE);
                 JSONObject ContactJson = new JSONObject();
                 try {
-                    ContactJson.put("Data","HelloContact");
-                    ContactJson.put("CID", "+"+preferences.getString("MyContact",null));
-                    ContactJson.put("CName", preferences.getString("ContactName",null));
-                    ContactJson.put("PubKey", preferences.getString("PublicKey",null));
+                    ContactJson.put("Data", "HelloContact");
+                    ContactJson.put("CID", "+" + preferences.getString("MyContact", null));
+                    ContactJson.put("CName", preferences.getString("ContactName", null));
+                    ContactJson.put("PubKey", new PKI_Cipher().GeneratePublicKey());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -260,10 +250,11 @@ public class HomeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     public class PopulateChats extends AsyncTask<Void, Void, String> {
         @SuppressLint("Range")
-        @Override protected String doInBackground(Void... params)
-        {
+        @Override
+        protected String doInBackground(Void... params) {
             ChatsList = new ArrayList<>();
             Cursor cur = new DBManager(HomeActivity.this).getLastChatList();
             while (cur != null && cur.moveToNext()) {
@@ -283,40 +274,34 @@ public class HomeActivity extends AppCompatActivity {
             }
             return "Processing";
         }
+
         @Override
-            protected void onPostExecute(String result)
-        {
-                ChatsAdapter UpdatedChats =new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item,ChatsList);
+        protected void onPostExecute(String result) {
+            ChatsAdapter UpdatedChats = new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item, ChatsList);
             try {
                 ChatListView.setAdapter(UpdatedChats);
-            }catch (NullPointerException e)
-            {
+            } catch (NullPointerException e) {
                 e.printStackTrace();
             }
         }
     }
-    public static void RePopulateChats(Context context)
-    {
+
+    public static void RePopulateChats(Context context) {
         ChatsList = new ArrayList<>();
         Handler h = new Handler(context.getMainLooper());
-        h.post(new Runnable()
-        {
+        h.post(new Runnable() {
             @SuppressLint("Range")
             @Override
-            public void run()
-            {
+            public void run() {
                 Cursor cur = new DBManager(context).getLastChatList();
-                while (cur != null && cur.moveToNext())
-                {
-                    if(cur.getString(cur.getColumnIndex("ContactName"))==null)
-                    {
+                while (cur != null && cur.moveToNext()) {
+                    if (cur.getString(cur.getColumnIndex("ContactName")) == null) {
                         ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("MessageText")),
                                 cur.getString(cur.getColumnIndex("Timestamp")),
                                 cur.getInt(cur.getColumnIndex("ReadStatus"))));
-                    }
-                    else {
+                    } else {
                         ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
                                 cur.getString(cur.getColumnIndex("ContactName")),
                                 cur.getString(cur.getColumnIndex("MessageText")),
@@ -324,13 +309,11 @@ public class HomeActivity extends AppCompatActivity {
                                 cur.getInt(cur.getColumnIndex("ReadStatus"))));
                     }
                 }
-                synchronized(this)
-                {
-                    ChatsAdapter UpdatedChats =new ChatsAdapter(context, R.layout.chat_list_item,ChatsList);
+                synchronized (this) {
+                    ChatsAdapter UpdatedChats = new ChatsAdapter(context, R.layout.chat_list_item, ChatsList);
                     try {
                         ChatListView.setAdapter(UpdatedChats);
-                    }catch (NullPointerException e)
-                    {
+                    } catch (NullPointerException e) {
                         e.printStackTrace();
                     }
                 }
@@ -338,13 +321,11 @@ public class HomeActivity extends AppCompatActivity {
         });
 
     }
-    public void FilterChats(String SearchString)
-    {
+
+    public void FilterChats(String SearchString) {
         ArrayList<LastChat> FilteredChatList = new ArrayList<>();
-        for(int i=0;i<ChatsList.size();i++)
-        {
-            if(ChatsList.get(i).getContactName().toLowerCase().contains(SearchString.toLowerCase()) | ChatsList.get(i).getLastMessage().toLowerCase().contains(SearchString.toLowerCase()))
-            {
+        for (int i = 0; i < ChatsList.size(); i++) {
+            if (ChatsList.get(i).getContactName().toLowerCase().contains(SearchString.toLowerCase()) | ChatsList.get(i).getLastMessage().toLowerCase().contains(SearchString.toLowerCase())) {
                 FilteredChatList.add(new LastChat(ChatsList.get(i).getContactID(),
                         ChatsList.get(i).getContactName(),
                         ChatsList.get(i).getLastMessage(),
@@ -352,11 +333,11 @@ public class HomeActivity extends AppCompatActivity {
                         ChatsList.get(i).getStatus()));
             }
         }
-        ChatsAdapter UpdatedChats =new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item,FilteredChatList);
+        ChatsAdapter UpdatedChats = new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item, FilteredChatList);
         ChatListView.setAdapter(UpdatedChats);
     }
-    public void SnackBarAlert(String AlertMessage)
-    {
+
+    public void SnackBarAlert(String AlertMessage) {
         Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
         TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
         SnackBarView.setTextColor(ContextCompat.getColor(HomeActivity.this, R.color.white));

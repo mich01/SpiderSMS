@@ -21,11 +21,13 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -36,6 +38,8 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -53,44 +57,7 @@ public class PKI_Cipher
     private static PublicKey publicKey;
     private static PrivateKey privateKey;
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public static void TestCrypto()
-    {
-        String Cyphertext =null;
-        KeyPairGenerator keyPairGenerator;
-        try
-        {
-            keyPairGenerator = KeyPairGenerator.getInstance(
-                    KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
-            keyPairGenerator.initialize(
-                    new KeyGenParameterSpec.Builder(
-                            "SpiderSMS",
-                            KeyProperties.PURPOSE_DECRYPT)
-                            .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
-                            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_OAEP)
-                            .build());
-            KeyPair keyPair = keyPairGenerator.generateKeyPair();
-            publicKey =keyPair.getPublic();
-            privateKey =keyPair.getPrivate();
-            //Cyphertext =new PKI_Cipher().Encrypt("Hi there mr Michael", publicKey);
-           // Log.i("Encrypt"," This is the Public Key "+publicKey);
-            //Log.i("Encrypt"," This is the Private Key "+privateKey);
-           // Log.i("Encrypt"," This is the Ciphertext "+ Cyphertext);
-            //Log.i("Encrypt","\n--------------------------------------\n");
-            //String PlainText = new PKI_Cipher().Decrypt(Cyphertext,keyPair.getPrivate());
-            //Log.i("Encrypt"," This is the Plaintext "+ PlainText);
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | NoSuchProviderException e) {
-            e.printStackTrace();
-        }
 
-            //Log.i("TAG"," This is the CipherText "+Cyphertext);
-        //PrivateKey privateKey;
-        //String publicKey = Base64.encodeToString(keyPair.getPublic().getEncoded(), Base64.DEFAULT);
-        //String privateKey = Base64.encodeToString(keyPair.getPrivate().getEncoded(), Base64.DEFAULT);
-        //String privateKey = keyPair.getPrivate().toString();
-        //PrivateKey PrivKey =new PKI_Cipher().getPrivateKey(privateKey);
-        //String KeyPair=  Base64.encodeToString(keyPair.getPrivate().getEncoded(), Base64.DEFAULT);\
-
-    }
     public static String ComputeHash(String input)
     {
         MessageDigest digest = null;
@@ -161,4 +128,144 @@ public class PKI_Cipher
         return new byte[0];
     }
 
+    public static String GenerateNewKey()
+    {
+        int n =16;
+        // length is bounded by 256 Character
+        byte[] array = new byte[256];
+        new Random().nextBytes(array);
+        String randomString
+                = new String(array, Charset.forName("UTF-8"));
+        // Create a StringBuffer to store the result
+        StringBuffer r = new StringBuffer();
+        // remove all spacial char
+        String  AlphaNumericString
+                = randomString
+                .replaceAll("[^A-Za-z0-9]", "");
+        // Append first 20 alphanumeric characters
+        // from the generated random String into the result
+        for (int k = 0; k < AlphaNumericString.length(); k++) {
+            if (Character.isLetter(AlphaNumericString.charAt(k))
+                    && (n > 0)
+                    || Character.isDigit(AlphaNumericString.charAt(k))
+                    && (n > 0)) {
+                r.append(AlphaNumericString.charAt(k));
+                n--;
+            }
+        }
+        // return the resultant string
+        return r.toString();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public static void TestCrypto()
+    {
+        KeyPairGenerator keyPairGenerator;
+        try {
+            keyPairGenerator = KeyPairGenerator.getInstance(
+                    KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
+            keyPairGenerator.initialize(
+                    new KeyGenParameterSpec.Builder(
+                            "SpiderSMS",
+                            KeyProperties.PURPOSE_DECRYPT)
+                            .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+                            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_OAEP)
+                            .build());
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            byte[] PublicKey = keyPair.getPublic().getEncoded();
+            String PublicString = Base64.encodeToString(PublicKey,Base64.DEFAULT);
+            Log.i("PKI"," This is the Key "+PublicString);
+            byte[] publicBytes = Base64.decode(PublicString,Base64.DEFAULT);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PublicKey pubKey = keyFactory.generatePublic(keySpec);
+            String Cyphertext =new PKI_Cipher().EncryptPKI("Hi there mr Michael", PublicString);
+            Log.i("PKI","\n----------------------------- \n");
+            PrivateKey PrivKey =keyPair.getPrivate();
+            String PLainText = new PKI_Cipher().DecryptPKI(Cyphertext,PrivKey);
+            Log.i("PKI"," This is the Plaintext "+ PLainText);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public String GeneratePublicKey()
+    {
+        String PublicKey =null;
+        KeyPairGenerator keyPairGenerator;
+        try {
+            keyPairGenerator = KeyPairGenerator.getInstance(
+                    KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
+            keyPairGenerator.initialize(
+                    new KeyGenParameterSpec.Builder(
+                            "SpiderSMS",
+                            KeyProperties.PURPOSE_DECRYPT)
+                            .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+                            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_OAEP)
+                            .build());
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            byte[] PubKey = keyPair.getPublic().getEncoded();
+            PublicKey = Base64.encodeToString(PubKey,Base64.DEFAULT);
+            Log.i("PKI"," This is the Key "+PublicKey);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        }
+        return PublicKey;
+    }
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public PrivateKey GeneratePrivateKey()
+    {
+        PrivateKey privateKey = null;
+        KeyPairGenerator keyPairGenerator;
+        try {
+            keyPairGenerator = KeyPairGenerator.getInstance(
+                    KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
+            keyPairGenerator.initialize(
+                    new KeyGenParameterSpec.Builder(
+                            "SpiderSMS",
+                            KeyProperties.PURPOSE_DECRYPT)
+                            .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+                            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_OAEP)
+                            .build());
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            privateKey =keyPair.getPrivate();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        }
+            return privateKey;
+    }
+    public String EncryptPKI(String data, String pubKey) throws NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+        String CipherText = null;
+        byte[] publicBytes = Base64.decode(pubKey,Base64.DEFAULT);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PublicKey public_Key = keyFactory.generatePublic(keySpec);
+        OAEPParameterSpec spec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, public_Key,spec);
+            CipherText =  Base64.encodeToString(cipher.doFinal(data.getBytes(StandardCharsets.UTF_8)), Base64.DEFAULT);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return CipherText;
+    }
+
+    public String DecryptPKI(String data, PrivateKey PrivKey)
+    {
+        String PlainText = null;
+        OAEPParameterSpec spec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+            cipher.init(Cipher.DECRYPT_MODE, PrivKey,spec);
+            byte[] PlainBytes= cipher.doFinal(Base64.decode(data.getBytes(),Base64.DEFAULT));
+            PlainText =new String(PlainBytes);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+        return PlainText;
+    }
 }
