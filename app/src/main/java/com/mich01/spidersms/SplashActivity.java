@@ -2,7 +2,7 @@ package com.mich01.spidersms;
 
 
 import static com.mich01.spidersms.Crypto.PKI_Cipher.GenerateNewKey;
-import static com.mich01.spidersms.Crypto.PKI_Cipher.TestCrypto;
+import static com.mich01.spidersms.Crypto.PKI_Cipher.GeneratePrivateKey;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.Manifest;
@@ -40,13 +40,14 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TestCrypto();
+        ///TestCrypto();
         setContentView(R.layout.activity_splash); Objects.requireNonNull(getSupportActionBar()).hide();
         if (!BackendFunctions.CheckRoot())
         {
             preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             if (preferences.getLong("InstalledTimestamp", 0) == 0)
             {
+                GeneratePrivateKey();
                 String SharedKeys =GenerateNewKey();
                 SharedPreferences.Editor PrefEditor;
                 PrefEditor = preferences.edit();

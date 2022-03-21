@@ -9,6 +9,7 @@
         <entry key="app/src/main/res/drawable/background_light.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_received.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_sent.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/background_status.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/bg_edit_text.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/chat_bg_gradient.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/contact_icon.xml" value="0.1" />
@@ -55,6 +56,7 @@
         <entry key="app/src/main/res/layout/receiver_bubble.xml" value="0.1" />
         <entry key="app/src/main/res/layout/send_options_modal.xml" value="0.15" />
         <entry key="app/src/main/res/layout/sender_bubble.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/status_bubble.xml" value="0.1" />
         <entry key="app/src/main/res/layout/unclock_action_bar.xml" value="0.1" />
         <entry key="app/src/main/res/menu/contact_menu.xml" value="0.1" />
         <entry key="app/src/main/res/menu/main_menu.xml" value="0.1" />

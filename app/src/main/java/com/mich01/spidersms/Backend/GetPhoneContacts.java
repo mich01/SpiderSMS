@@ -86,5 +86,4 @@ public class GetPhoneContacts
         assert cur != null;
         cur.close();
     }
-
 }

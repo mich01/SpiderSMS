@@ -51,6 +51,7 @@ public class SMSHandler {
     private static final String SMS_SENT = "SMS_SENT";
     private static final String SMS_DELIVERED = "SMS_DELIVERED";
     String AppTrigger = ">";
+    String KeyTrigger = "+";
     public SMSHandler(Context context)
     {
         this.context = context;
@@ -60,7 +61,7 @@ public class SMSHandler {
     {
         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
-        new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, false);
+        new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, 0);
         SmsManager manager = SmsManager.getDefault();
         @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
         @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
@@ -119,7 +120,7 @@ public class SMSHandler {
         @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
         @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
 
-        SMS =AppTrigger+new PKI_Cipher().Encrypt(SMSText, EncryptionKey);
+        SMS =AppTrigger+new PKI_Cipher(context).Encrypt(SMSText, EncryptionKey);
         if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)
         {
             ArrayList<String> parts =manager.divideMessage(SMS);
@@ -193,7 +194,7 @@ public class SMSHandler {
         SmsManager manager = SmsManager.getDefault();
         @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
         @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
-        String SMS = AppTrigger.concat(new PKI_Cipher().Encrypt(SMSText,EncryptionKey));
+        String SMS = AppTrigger.concat(new PKI_Cipher(context).Encrypt(SMSText,EncryptionKey));
         Log.i("SMS Handler: ", "Message sent to " + ProxyNumber + " Message: " + SMSText);
         if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)
         {
@@ -225,7 +226,7 @@ public class SMSHandler {
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("username", API_UserName)
                 .addFormDataPart("to", PhoneNo)
-                .addFormDataPart("message", AppTrigger+new PKI_Cipher().Encrypt(SMSText,EncryptionKey))
+                .addFormDataPart("message", AppTrigger+new PKI_Cipher(context).EncryptPKI(SMSText,EncryptionKey))
                 .build();
         Request request = new Request.Builder()
                 .url(url)

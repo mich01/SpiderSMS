@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.mich01.spidersms.DB.DBManager;
@@ -60,6 +62,7 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         return super.getPosition(item);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("ResourceType")
     @NonNull
     @Override
@@ -81,7 +84,6 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         if(chatsList.get(position).getContactID().equalsIgnoreCase(chatsList.get(position).getContactName()))
         {
             contactID.setTypeface(null, Typeface.BOLD_ITALIC);
-            //contactID.setTextColor(Color.GRAY);
         }
         else
         {

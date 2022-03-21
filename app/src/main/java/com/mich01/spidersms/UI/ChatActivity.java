@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mich01.spidersms.Adapters.MessageAdapter;
+import com.mich01.spidersms.Backend.BackendFunctions;
 import com.mich01.spidersms.Backend.ResponseMessage;
 import com.mich01.spidersms.Backend.SMSHandler;
 import com.mich01.spidersms.DB.DBManager;
@@ -123,7 +124,7 @@ public class ChatActivity extends AppCompatActivity {
                 {
                     Option2.setEnabled(false);
                 }
-                if(!MyPrefs.getString("ServerURL", "---").equals("---"))
+                if(!MyPrefs.getString("ServerURL", "---").equals("---") && BackendFunctions.isConnectedOnline(context))
                 {
                     Option3.setEnabled(true);
                 }
@@ -183,12 +184,17 @@ public class ChatActivity extends AppCompatActivity {
         responseMessageList.clear();
         while (cur != null && cur.moveToNext())
         {
-            if (cur.getInt(cur.getColumnIndex("inorout")) == 0)
+            if (cur.getInt(cur.getColumnIndex("inorout")) == 0 && cur.getInt(cur.getColumnIndex("Status")) <3)
             {
                 responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), true, 2));
-            } else
+            }
+            else if (cur.getInt(cur.getColumnIndex("inorout")) == 1 && cur.getInt(cur.getColumnIndex("Status"))<3 )
             {
                 responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), false, 2));
+            }
+            else
+            {
+                responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), false, 3));
             }
         }
         if (cur != null) {
@@ -248,10 +254,11 @@ public class ChatActivity extends AppCompatActivity {
         finish();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public void UpdateChatMessages(String Recepient, String SMS)
     {
         new DBManager(context).updateLastMessage(Recepient, SMS, 1, 1);
-        new DBManager(context).AddChatMessage(Recepient, 0, SMS, false);
+        new DBManager(context).AddChatMessage(Recepient, 0, SMS, 0);
         UpdateChatPosition();
         userInput.setText("");
         HomeActivity.RePopulateChats(context);

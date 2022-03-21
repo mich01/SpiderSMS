@@ -1,12 +1,14 @@
 package com.mich01.spidersms.Adapters;
 
 import android.app.AlertDialog;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mich01.spidersms.Backend.ResponseMessage;
@@ -37,13 +39,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
     @Override
     public int getItemViewType(int position)
     {
-        if(responseMessageList.get(position).isSent())
+        if(responseMessageList.get(position).isSent() && responseMessageList.get(position).getMessageType()<3)
         {
             return R.layout.sender_bubble;
         }
-        else
+        else if(!responseMessageList.get(position).isSent() && responseMessageList.get(position).getMessageType()<3)
         {
             return R.layout.receiver_bubble;
+        }
+        else
+        {
+            return R.layout.status_bubble;
         }
     }
 
@@ -53,6 +59,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
         return new CustomViewHolder(LayoutInflater.from(parent.getContext()).inflate(viewType, parent, false));
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onBindViewHolder(@NonNull @NotNull MessageAdapter.CustomViewHolder holder, int pos)
     {

@@ -1,9 +1,12 @@
 package com.mich01.spidersms.UI;
 
+import static com.mich01.spidersms.Crypto.PKI_Cipher.SharePublicKey;
 import static com.mich01.spidersms.Setup.SetupConfig.ReadScan;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,6 +16,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -40,6 +44,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -51,14 +56,12 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.mich01.spidersms.Adapters.ChatsAdapter;
-import com.mich01.spidersms.Adapters.ContactAdapter;
-import com.mich01.spidersms.Backend.GetPhoneContacts;
-import com.mich01.spidersms.Crypto.PKI_Cipher;
+
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
+import com.mich01.spidersms.Receivers.AlarmReceiver;
 import com.mich01.spidersms.Setup.ScannerSetupActivity;
-import com.mich01.spidersms.services.MainService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,7 +73,6 @@ import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class HomeActivity extends AppCompatActivity {
-    //Temp
     @SuppressLint("StaticFieldLeak")
     public static ListView ChatListView;
     @SuppressLint("StaticFieldLeak")
@@ -123,17 +125,14 @@ public class HomeActivity extends AppCompatActivity {
         ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
         StatusText = findViewById(R.id.lbl_contact_Status);
-        //TestCrypto();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(new Intent(this, MainService.class));
-        } else {
-            startService(new Intent(this, MainService.class));
-
-        }
+        Intent AlarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, 0);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
+                + (60  * 1000), pendingIntent);
         Objects.requireNonNull(this.getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.main_action_bar);
         adapter = new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item, ChatsList);
-        //new DBManager(getApplicationContext()).DeleteAllContacts("06");
         PopulateChats populateChats = new PopulateChats();
         populateChats.execute();
         fab = findViewById(R.id.fab_chat);
@@ -238,7 +237,7 @@ public class HomeActivity extends AppCompatActivity {
                     ContactJson.put("Data", "HelloContact");
                     ContactJson.put("CID", "+" + preferences.getString("MyContact", null));
                     ContactJson.put("CName", preferences.getString("ContactName", null));
-                    ContactJson.put("PubKey", new PKI_Cipher().GeneratePublicKey());
+                    ContactJson.put("PubKey", SharePublicKey());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

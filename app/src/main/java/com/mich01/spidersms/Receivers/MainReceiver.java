@@ -4,27 +4,49 @@ import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
+
+import com.google.android.material.snackbar.Snackbar;
+import com.mich01.spidersms.Backend.BackendFunctions;
 import com.mich01.spidersms.Crypto.KeyExchange;
 import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.DB.DBManager;
+import com.mich01.spidersms.R;
+import com.mich01.spidersms.SplashActivity;
 import com.mich01.spidersms.UI.ChatActivity;
+import com.mich01.spidersms.UI.ContactsActivity;
 import com.mich01.spidersms.UI.HomeActivity;
 
 import org.json.JSONObject;
 
 public class MainReceiver extends BroadcastReceiver {
-
+    public static Uri notificationMessageSound;
+    public static NotificationManager manager;
+    public static NotificationCompat.Builder notificationBuilder;
+    public static Notification notification;
     @SuppressLint("NotifyDataSetChanged")
     @androidx.annotation.RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -46,7 +68,6 @@ public class MainReceiver extends BroadcastReceiver {
                     {
                         SmsMessage currentMessage = SmsMessage.createFromPdu((byte[]) aPdusObj );
                         senderNum = currentMessage.getDisplayOriginatingAddress();
-                        Log.i("sentSMS",currentMessage.getMessageBody());
                         messageChunk.append(currentMessage.getMessageBody());
                     } // end for loop
                     message =messageChunk.toString();
@@ -66,25 +87,24 @@ public class MainReceiver extends BroadcastReceiver {
                         Log.i("OPT Msg", "Using Confirmed Key");
                         DecryptionKey = contactJSON.getString("PrivKey");
                         Log.i("Key Encr",DecryptionKey);
-                        DecryptedSMS = new PKI_Cipher().Decrypt(message.replace( ">",""),DecryptionKey);
+                        DecryptedSMS = new PKI_Cipher(context).Decrypt(message.replace( ">",""),DecryptionKey);
                     }
                     else
                     {
                         Log.i("OPT 2","here here");
                         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-                        DecryptionKey = MyPrefs.getString("PrivateKey","1234567890QWERT");
-                        DecryptedSMS = new PKI_Cipher().Decrypt(message.replace( ">",""),DecryptionKey);
-                        //Log.i("OPT 2",DecryptedSMS);
+                        DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
+                        Log.i("OPT 2",DecryptedSMS);
                     }
                     Log.i("Message Arrived",DecryptedSMS);
                     JSONObject smsJSON = new JSONObject(DecryptedSMS);
                     if(smsJSON.getString("x").equals("1"))
                     {
-                        UpdateMessage(context, senderNum, smsJSON.getString("Body"));
+                        new BackendFunctions().UpdateMessage(context, senderNum, smsJSON.getString("Body"));
                     }
                     else if(smsJSON.getString("x").equals("2"))
                     {
-                        UpdateMessage(context, smsJSON.getString("target"), smsJSON.getString("Body"));
+                        new BackendFunctions().UpdateMessage(context, smsJSON.getString("target"), smsJSON.getString("Body"));
                     }
                     else if(smsJSON.getString("x").equals("3"))
                     {
@@ -94,7 +114,6 @@ public class MainReceiver extends BroadcastReceiver {
                         smsJSON.getString("Secret");
                         smsJSON.put("KeyStage","2");
                         new DBManager(context).UpdateContactSpec(smsJSON);
-                        //Toast.makeText(context, "Contact Key Update ",Toast.LENGTH_LONG).show();
                     }
                     else if(smsJSON.getString("x").equals("4"))
                     {
@@ -117,55 +136,13 @@ public class MainReceiver extends BroadcastReceiver {
                         smsJSON.getString("target");
                         smsJSON.put("KeyStage","");
                         smsJSON.getString("Secret");
-                        //new DBManager(context).VerifyContactPK(smsJSON.getString("target"),smsJSON.getString("Secret"));
                     }
                 } catch (Exception e)
                 {
                     Log.i("OPT Error",e.getMessage());
-                    //DecryptedSMS = new PKI_Cipher().Decrypt(DecryptedSMS,"1234567890QWERTY");
-                    //message =DecryptedSMS;
                 }
                 //
             }
-        }
-    }
-
-    public boolean UpdateMessage(Context context, String Sender, String MessageReceived)
-    {
-        try {
-            new DBManager(context).updateLastMessage(Sender, MessageReceived, 0, 0);
-            new DBManager(context).AddChatMessage(Sender,1,MessageReceived,false);
-            ChatActivity.PopulateChatView(context);
-            ChatActivity.messageAdapter.notifyDataSetChanged();
-            HomeActivity.RePopulateChats(context);
-            HomeActivity.adapter.notifyDataSetChanged();
-            Toast.makeText(context, "Message from: "+Sender,Toast.LENGTH_LONG).show();
-            return true;
-        }catch (Exception e){
-            return false;
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public boolean UpdateContactACK(Context context, JSONObject MessageReceived)
-    {
-        try {
-            new DBManager(context).UpdateContactSpec(MessageReceived);
-            Toast.makeText(context, "Contact Key Update ACK ",Toast.LENGTH_LONG).show();
-            return true;
-        }catch (Exception e){
-            return false;
-        }
-    }
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public boolean UpdateContactACK_SYN(Context context, JSONObject MessageReceived)
-    {
-        try {
-            new DBManager(context).UpdateContactSpec(MessageReceived);
-            Toast.makeText(context, "Contact First Key Update from: ",Toast.LENGTH_LONG).show();
-            return true;
-        }catch (Exception e){
-            return false;
         }
     }
 }

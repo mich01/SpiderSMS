@@ -49,7 +49,7 @@ public class KeyExchange
             ContactKeyJSON.put("SecretKey",SecretKey);
             ContactKeyJSON.put("CName",preferences.getString("ContactName","NewContact"));
             ContactKeyJSON.put("Secret",SharedSecret);
-            ContactKeyJSON.put("PubKey",PublicKey);
+            //ContactKeyJSON.put("PubKey",PublicKey);
             new SMSHandler(context).SendSMSOnline(ContactID,ContactKeyJSON.toString(),PublicKey);
             Log.i("Key Step 3","Key Sent ");
         } catch (JSONException | NoSuchPaddingException | InvalidKeyException | InvalidKeySpecException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {

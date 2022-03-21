@@ -23,18 +23,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SpiderSMS">
-        <service
-            android:name=".services.MainService"
-            android:enabled="true"
-            android:exported="true"
-            tools:ignore="Instantiatable" />
         <activity
             android:name=".Setup.OTPActivity"
             android:exported="false" />
         <activity
             android:name=".UI.UnlockActivity"
             android:exported="false" />
-
+        <receiver
+            android:name=".Receivers.AlarmReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
         <receiver
             android:name=".Receivers.MainReceiver"
             android:enabled="true"
