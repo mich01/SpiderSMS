@@ -15,32 +15,28 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.mich01.spidersms.Backend.BackendFunctions;
-import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.Setup.SetupActivity;
 import com.mich01.spidersms.UI.UnlockActivity;
-
-import org.json.JSONObject;
 
 import java.util.Objects;
 
 @SuppressLint("CustomSplashScreen")
-public class SplashActivity extends AppCompatActivity {
-
+public class SplashActivity extends AppCompatActivity
+{
     Handler h = new Handler();
     SharedPreferences preferences;
     int First_Run = 0;
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-        ///TestCrypto();
         setContentView(R.layout.activity_splash); Objects.requireNonNull(getSupportActionBar()).hide();
         if (!BackendFunctions.CheckRoot())
         {
@@ -56,7 +52,6 @@ public class SplashActivity extends AppCompatActivity {
                 PrefEditor.putString("PrivateKey", SharedKeys);
                 //PrefEditor.putBoolean("Licensed", false);
                 PrefEditor.apply();
-                PrefEditor.commit();
             }
             {
                 CheckPermissions();
@@ -105,7 +100,8 @@ public class SplashActivity extends AppCompatActivity {
     }
     public void RequestPermissions()
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
             requestPermissions(new String[]{Manifest.permission.SEND_SMS,Manifest.permission.READ_CONTACTS,Manifest.permission.CAMERA,Manifest.permission.RECEIVE_SMS,},1111);
         }
         CheckPermissions();

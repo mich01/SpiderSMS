@@ -20,4 +20,13 @@
     <item android:id="@+id/reconfigure"
         android:title="@string/settings"
         app:showAsAction="never"/>
+    <item android:id="@+id/terms_conditions"
+        android:title="@string/terms_and_conditions"
+        app:showAsAction="never"/>
+    <item android:id="@+id/license"
+        android:title="License"
+        app:showAsAction="never"/>
+    <item android:id="@+id/about_app"
+        android:title="@string/about_spidersms"
+        app:showAsAction="never"/>
 </menu>

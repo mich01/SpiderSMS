@@ -4,11 +4,13 @@ import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -32,6 +34,7 @@ public class SetupActivity extends AppCompatActivity {
     EditText txtPhoneNumber;
     String Pin_Number;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +107,7 @@ public class SetupActivity extends AppCompatActivity {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private boolean SetKeyPin(String Pin)
     {
         boolean completed;
@@ -113,17 +117,7 @@ public class SetupActivity extends AppCompatActivity {
         MyPrefs = SetupActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         MyPrefsEditor = MyPrefs.edit();
         MyPrefsEditor.putString("MyPinHash", PinHash);
-        MyPrefsEditor.putString("PrivateKey","123456789033333");
-        MyPrefsEditor.putString("PublicKey","1234567890QWERT");
-      /*  try {
-            MyPrefsEditor.putString("PublicKey",KeyJSON.getString("PublicKey"));
-            MyPrefsEditor.putString("PrivateKey",KeyJSON.getString("PrivateKey"));
-            MyPrefsEditor.putString("KeyPair",KeyJSON.getString("KeyPair"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }*/
-
-        MyPrefsEditor.putInt("SetupComplete", 1);
+        MyPrefsEditor.putInt("SetupComplete", 0);
         MyPrefsEditor.apply();
         completed = MyPrefsEditor.commit();
         return completed;

@@ -6,12 +6,14 @@ import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.FirebaseException;
@@ -37,6 +39,7 @@ public class OTPActivity extends AppCompatActivity {
     private String mVerificationId;
     private PhoneAuthProvider.ForceResendingToken mResendToken;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +56,6 @@ public class OTPActivity extends AppCompatActivity {
         String smsCode = "123456";
         // The test phone number and code should be whitelisted in the console.
 
-
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseAuthSettings firebaseAuthSettings = firebaseAuth.getFirebaseAuthSettings();
 
@@ -65,40 +67,39 @@ public class OTPActivity extends AppCompatActivity {
                 .setTimeout(120L, TimeUnit.SECONDS)
                 .setActivity(this)
                 .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    @RequiresApi(api = Build.VERSION_CODES.M)
                     @Override
                     public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
-                        OTP_Status.setImageResource(R.drawable.otp_success);
-                        MyPrefs = OTPActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-                        MyPrefsEditor = MyPrefs.edit();
-                        MyPrefsEditor.putString("MyContact", ContactID);
-                        MyPrefsEditor.putString("ContactName", ContactName);
-                        MyPrefsEditor.apply();
-                        MyPrefsEditor.commit();
-                        startActivity(new Intent(OTPActivity.this, HomeActivity.class));
-
+                        CompleteSetup();
                     }
 
                     @Override
                     public void onVerificationFailed(@NonNull FirebaseException e) {
-
+                        startActivity(new Intent(OTPActivity.this, SetupActivity.class));
+                        finish();
                     }
 
-                    // ...
                 })
                 .build();
         PhoneAuthProvider.verifyPhoneNumber(options);
         VerifyOTP.setOnClickListener(view -> {
             if(OTP_Text.getText().toString().equals("1234"))
             {
-                OTP_Status.setImageResource(R.drawable.otp_success);
-                MyPrefs = OTPActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-                MyPrefsEditor = MyPrefs.edit();
-                MyPrefsEditor.putString("MyContact", ContactID);
-                MyPrefsEditor.putString("ContactName", ContactName);
-                MyPrefsEditor.apply();
-                MyPrefsEditor.commit();
-                startActivity(new Intent(OTPActivity.this, HomeActivity.class));
+                CompleteSetup();
             }
         });
+    }
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void CompleteSetup()
+    {
+        OTP_Status.setImageResource(R.drawable.otp_success);
+        MyPrefs = OTPActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        MyPrefsEditor = MyPrefs.edit();
+        MyPrefsEditor.putString("MyContact", ContactID);
+        MyPrefsEditor.putString("ContactName", ContactName);
+        MyPrefsEditor.putInt("SetupComplete", 1);
+        MyPrefsEditor.apply();
+        MyPrefsEditor.commit();
+        startActivity(new Intent(OTPActivity.this, HomeActivity.class));
     }
 }

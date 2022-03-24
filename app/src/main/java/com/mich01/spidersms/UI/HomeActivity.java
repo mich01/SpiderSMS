@@ -9,6 +9,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -16,9 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,7 +43,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -56,12 +54,13 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.mich01.spidersms.Adapters.ChatsAdapter;
-
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.Receivers.AlarmReceiver;
+import com.mich01.spidersms.Receivers.MainReceiver;
 import com.mich01.spidersms.Setup.ScannerSetupActivity;
+import com.mich01.spidersms.services.MainService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -125,16 +124,16 @@ public class HomeActivity extends AppCompatActivity {
         ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
         StatusText = findViewById(R.id.lbl_contact_Status);
+        //new DBManager(HomeActivity.this).DeleteAllContacts("kj");
         Intent AlarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, PendingIntent.FLAG_MUTABLE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
-                + (60  * 1000), pendingIntent);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+ (60  * 1000), pendingIntent);
         Objects.requireNonNull(this.getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.main_action_bar);
         adapter = new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item, ChatsList);
-        PopulateChats populateChats = new PopulateChats();
-        populateChats.execute();
+        PopulateChats(this);
+        adapter.notifyDataSetChanged();
         fab = findViewById(R.id.fab_chat);
         fab.setOnClickListener(view -> {
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
@@ -145,8 +144,14 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
             }
         });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(new Intent(this, MainService.class));
+        }
+        else
+        {
+            startService(new Intent(this, MainService.class));
+        }
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -185,12 +190,13 @@ public class HomeActivity extends AppCompatActivity {
         }
         return super.onCreateOptionsMenu(menu);
     }
-
     @SuppressLint("NonConstantResourceId")
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
+        Intent BrowserIntent = new Intent(this,AboutActivity.class);
+        switch (item.getItemId())
+        {
             case R.id.send_invite:
                 Intent sendIntent = new Intent();
                 sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -243,48 +249,62 @@ public class HomeActivity extends AppCompatActivity {
                 }
                 Intent QRIntent = new Intent(this, DataQRGenerator.class);
                 QRIntent.putExtra("Contact", ContactJson.toString());
-                QRIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //QRIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(QRIntent);
+                break;
+            case R.id.terms_conditions:
+                BrowserIntent.putExtra("Section","SpiderSMS T&C");
+                BrowserIntent.putExtra("URL","https://www.example.com");
+                startActivity(BrowserIntent);
+                break;
+            case R.id.license:
+                BrowserIntent.putExtra("Section","SpiderSMS User License");
+                BrowserIntent.putExtra("URL","https://www.google.com");
+                startActivity(BrowserIntent);
+                break;
+            case R.id.about_app:
+                BrowserIntent.putExtra("Section","About SpiderSMS");
+                BrowserIntent.putExtra("URL","https://www.saftey.com");
+                startActivity(BrowserIntent);
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
-
-    public class PopulateChats extends AsyncTask<Void, Void, String> {
-        @SuppressLint("Range")
-        @Override
-        protected String doInBackground(Void... params) {
-            ChatsList = new ArrayList<>();
-            Cursor cur = new DBManager(HomeActivity.this).getLastChatList();
-            while (cur != null && cur.moveToNext()) {
-                if (cur.getString(cur.getColumnIndex("ContactName")) == null) {
-                    ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
-                            cur.getString(cur.getColumnIndex("CID")),
-                            cur.getString(cur.getColumnIndex("MessageText")),
-                            cur.getString(cur.getColumnIndex("Timestamp")),
-                            cur.getInt(cur.getColumnIndex("ReadStatus"))));
-                } else {
-                    ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
-                            cur.getString(cur.getColumnIndex("ContactName")),
-                            cur.getString(cur.getColumnIndex("MessageText")),
-                            cur.getString(cur.getColumnIndex("Timestamp")),
-                            cur.getInt(cur.getColumnIndex("ReadStatus"))));
+    public void PopulateChats(Context context) {
+        ChatsList = new ArrayList<>();
+        Handler h = new Handler(context.getMainLooper());
+        h.post(new Runnable() {
+            @SuppressLint("Range")
+            @Override
+            public void run() {
+                Cursor cur = new DBManager(context).getLastChatList();
+                while (cur != null && cur.moveToNext()) {
+                    if (cur.getString(cur.getColumnIndex("ContactName")) == null) {
+                        ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
+                                cur.getString(cur.getColumnIndex("CID")),
+                                cur.getString(cur.getColumnIndex("MessageText")),
+                                cur.getString(cur.getColumnIndex("Timestamp")),
+                                cur.getInt(cur.getColumnIndex("ReadStatus"))));
+                    } else {
+                        ChatsList.add(new LastChat(cur.getString(cur.getColumnIndex("CID")),
+                                cur.getString(cur.getColumnIndex("ContactName")),
+                                cur.getString(cur.getColumnIndex("MessageText")),
+                                cur.getString(cur.getColumnIndex("Timestamp")),
+                                cur.getInt(cur.getColumnIndex("ReadStatus"))));
+                    }
+                }
+                synchronized (this) {
+                    ChatsAdapter UpdatedChats = new ChatsAdapter(context, R.layout.chat_list_item, ChatsList);
+                    try {
+                        ChatListView.setAdapter(UpdatedChats);
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-            return "Processing";
-        }
+        });
 
-        @Override
-        protected void onPostExecute(String result) {
-            ChatsAdapter UpdatedChats = new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item, ChatsList);
-            try {
-                ChatListView.setAdapter(UpdatedChats);
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-        }
     }
-
     public static void RePopulateChats(Context context) {
         ChatsList = new ArrayList<>();
         Handler h = new Handler(context.getMainLooper());

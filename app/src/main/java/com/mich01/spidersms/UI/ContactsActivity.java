@@ -2,11 +2,9 @@ package com.mich01.spidersms.UI;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -52,13 +50,13 @@ public class ContactsActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.contacts_progressBar);
         StatusStext = findViewById(R.id.lbl_contact_Status);
         SwipeRefreshLayout swipeRefreshLayout;
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.contactRefreshLayout);
+        swipeRefreshLayout = findViewById(R.id.contactRefreshLayout);
+
         new GetPhoneContacts().getMyContacts(ContactsActivity.this);
         if(Contacts.size()==0)
         {
             SnackBarAlert(getString(R.string.drag_to_update_contact));
         }
-        Log.i("Contact Count", String.valueOf(Contacts.size()));
         adapter = new ContactAdapter(ContactsActivity.this,R.layout.contact_item,Contacts);
         ContactListView.setAdapter(adapter);
         Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.contacts_view_title)+ " ("+Contacts.size()+")");
@@ -66,17 +64,14 @@ public class ContactsActivity extends AppCompatActivity {
         ContactListView.setOnItemClickListener((parent, view, position, id) -> {
         });
         // Implementing setOnRefreshListener on SwipeRefreshLayout
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                swipeRefreshLayout.setRefreshing(false);
-                dialog = ProgressDialog.show(ContactsActivity.this, "Updating Contacts",
-                        getString(R.string.updating_contacts), true);
-                dialog.setIcon(R.drawable.update_24);
-                // User defined method to shuffle the array list items
-                PopulateContacts runningTask = new PopulateContacts();
-                runningTask.execute();
-            }
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            swipeRefreshLayout.setRefreshing(false);
+            dialog = ProgressDialog.show(ContactsActivity.this, "Updating Contacts",
+                    getString(R.string.updating_contacts), true);
+            dialog.setIcon(R.drawable.update_24);
+            // User defined method to shuffle the array list items
+            PopulateContacts runningTask = new PopulateContacts();
+            runningTask.execute();
         });
     }
 
@@ -93,7 +88,6 @@ public class ContactsActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        Log.i("onCreate", "menu");
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.contact_menu, menu);
         MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
@@ -127,6 +121,7 @@ public class ContactsActivity extends AppCompatActivity {
         });
         return super.onCreateOptionsMenu(menu);
     }
+    @SuppressLint("StaticFieldLeak")
     public class PopulateContacts extends AsyncTask<Void, Void, String> {
         @Override protected String doInBackground(Void... params)
         {
@@ -135,7 +130,6 @@ public class ContactsActivity extends AppCompatActivity {
         }
         @Override protected void onPostExecute(String result)
         {
-            new GetPhoneContacts().getMyContacts(ContactsActivity.this);
             dialog.dismiss();
             adapter = new ContactAdapter(ContactsActivity.this, R.layout.contact_item,Contacts);
             ContactListView.setAdapter(adapter);

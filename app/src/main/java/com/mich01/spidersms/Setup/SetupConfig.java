@@ -76,6 +76,7 @@ public class SetupConfig
             return false;
         }
     }
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public static void ConfirmUpdate(Context context, JSONObject Input)
     {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);

@@ -211,20 +211,15 @@ public class PKI_Cipher
         {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);
-            PrivateKey privateKey = (PrivateKey) keyStore.getKey("SpiderSMS", null);
             PublicKey publicKey = keyStore.getCertificate("SpiderSMS").getPublicKey();
             Public_Key = Base64.encodeToString(publicKey.getEncoded(), Base64.DEFAULT);
-            byte[] publicBytes = Base64.decode(Public_Key,Base64.DEFAULT);
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            PublicKey pub_Key = keyFactory.generatePublic(keySpec);
-            /*String Cyphertext =new PKI_Cipher(context).EncryptPKI("Hi there mr Michael", pub_Key);
-            Log.i("PKI"," This is the Public Key "+ Public_Key);
-            Log.i("PKI"," This is the CipherText "+ Cyphertext);
             Log.i("PKI","\n----------------------------- \n");
+            Log.i("PKI"," This is the Public Key "+ Public_Key);
+            /*String Cyphertext =new PKI_Cipher(context).EncryptPKI("Hi there mr Michael", pub_Key);
+            Log.i("PKI"," This is the CipherText "+ Cyphertext);
             String PLainText = new PKI_Cipher(context).DecryptPKI(Cyphertext);
             Log.i("PKI"," This is the Plaintext "+ PLainText);*/
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | KeyStoreException | CertificateException | IOException | UnrecoverableKeyException e) {
+        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
             e.printStackTrace();
         }
         return Public_Key;

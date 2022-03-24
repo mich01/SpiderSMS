@@ -93,15 +93,15 @@ public class BackendFunctions
         try {
             new DBManager(context).updateLastMessage(Sender, MessageReceived, 0, 0);
             new DBManager(context).AddChatMessage(Sender,1,MessageReceived,0);
-            ChatActivity.PopulateChatView(context);
+            ChatActivity.PopulateChatView(context.getApplicationContext());
             ChatActivity.messageAdapter.notifyDataSetChanged();
-            HomeActivity.RePopulateChats(context);
+            HomeActivity.RePopulateChats(context.getApplicationContext());
             HomeActivity.adapter.notifyDataSetChanged();
             Intent notifyIntent = new Intent(context, SplashActivity.class);
             notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent notifyPendingIntent = PendingIntent.getActivity(
-                    context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                    context, 0, notifyIntent, PendingIntent.FLAG_MUTABLE
             );
             notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID);
             notification = notificationBuilder
@@ -142,7 +142,7 @@ public class BackendFunctions
             notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent notifyPendingIntent = PendingIntent.getActivity(
-                    context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                    context, 0, notifyIntent, PendingIntent.FLAG_MUTABLE
             );
             notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID);
             notification = notificationBuilder
@@ -166,7 +166,7 @@ public class BackendFunctions
     {
         Handler h = new Handler(new Handler.Callback() {
             Intent AlarmIntent = new Intent(context, AlarmReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, AlarmIntent, 0);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, AlarmIntent, PendingIntent.FLAG_MUTABLE);
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
             @RequiresApi(api = Build.VERSION_CODES.M)
             @SuppressLint("Range")

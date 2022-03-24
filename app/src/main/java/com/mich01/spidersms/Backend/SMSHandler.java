@@ -63,13 +63,13 @@ public class SMSHandler {
         new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
         new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, 0);
         SmsManager manager = SmsManager.getDefault();
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE);
+        PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE);
         manager.sendTextMessage(PhoneNo, null, SMSText, piSend, piDelivered);
     }
 
     @SuppressLint("UnspecifiedImmutableFlag")
-    public void sendEncryptedSMS(String PhoneNo, String SMSText, String EncryptionKey) {
+    public void sendEncryptedSMS(String PhoneNo, String SMSText, String EncryptionKey, int CryptType) {
         String SMS;
         //---when the SMS has been sent---
         context.registerReceiver(new BroadcastReceiver() {
@@ -117,10 +117,16 @@ public class SMSHandler {
             }
         }, new IntentFilter(SMS_DELIVERED));
         SmsManager manager = SmsManager.getDefault();
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_IMMUTABLE);
+        if(CryptType==1) {
+            SMS =AppTrigger+new PKI_Cipher(context).EncryptPKI(SMSText, EncryptionKey);
+        }
+        else
+        {
+            SMS = AppTrigger + new PKI_Cipher(context).Encrypt(SMSText, EncryptionKey);
+        }
 
-        SMS =AppTrigger+new PKI_Cipher(context).Encrypt(SMSText, EncryptionKey);
         if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)
         {
             ArrayList<String> parts =manager.divideMessage(SMS);
@@ -129,8 +135,8 @@ public class SMSHandler {
             ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
             for (int i = 0; i < numParts; i++)
             {
-                sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT));
-                deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT));
+                sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE));
+                deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE));
             }
             manager.sendMultipartTextMessage(PhoneNo,null, parts, sentIntents, deliveryIntents);
         }
@@ -192,8 +198,8 @@ public class SMSHandler {
         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String ProxyNumber =MyPrefs.getString("ProxyNumber", "---");
         SmsManager manager = SmsManager.getDefault();
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_UPDATE_CURRENT);
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE);
+        PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE);
         String SMS = AppTrigger.concat(new PKI_Cipher(context).Encrypt(SMSText,EncryptionKey));
         Log.i("SMS Handler: ", "Message sent to " + ProxyNumber + " Message: " + SMSText);
         if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)

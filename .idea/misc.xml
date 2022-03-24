@@ -31,6 +31,7 @@
         <entry key="app/src/main/res/drawable/toast_error.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/update_24.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/user_icon_design.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_about.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_chat.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_config_choice.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_contacts.xml" value="0.1" />

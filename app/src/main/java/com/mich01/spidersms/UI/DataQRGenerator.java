@@ -1,6 +1,8 @@
 package com.mich01.spidersms.UI;
 
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -43,6 +45,7 @@ public class DataQRGenerator extends AppCompatActivity {
     QRGEncoder qrgEncoder;
     JSONObject ContactJSON;
     String ContactID;
+    Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -52,6 +55,7 @@ public class DataQRGenerator extends AppCompatActivity {
         DeleteContact = findViewById(R.id.cmdDeleteContact);
         QRImage = findViewById(R.id.img_contact_qr);
         ShareQRContact = findViewById(R.id.cmd_share_qr);
+        context = DataQRGenerator.this;
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         Bundle bundle = getIntent().getExtras();
         inputValue = bundle.getString("Contact");
@@ -103,13 +107,25 @@ public class DataQRGenerator extends AppCompatActivity {
             startActivity(Intent.createChooser(shareIntent, ContactName.toString()));
         });
         DeleteContact.setOnClickListener(v -> {
-            new DBManager(getApplicationContext()).DeleteContact(ContactID);
-            {
-                startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
-                HomeActivity.RePopulateChats(DataQRGenerator.this);
-                HomeActivity.adapter.notifyDataSetChanged();
-                finish();
-            }
+            AlertDialog.Builder alert = new AlertDialog.Builder(v.getRootView().getContext());
+            alert.setTitle(R.string.confirm_delete_contatc);
+            alert.setPositiveButton("Yes", (dialog, whichButton) -> {
+                new DBManager(getApplicationContext()).DeleteContact(ContactID);
+                {
+                    try {
+                        HomeActivity.RePopulateChats(DataQRGenerator.this);
+                        HomeActivity.adapter.notifyDataSetChanged();
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }finally {
+                        finish();
+                    }
+                }
+            });
+            alert.setNegativeButton("Cancel",
+                    (dialog, whichButton) -> dialog.cancel());
+            alert.show();
         });
     }
     @Override

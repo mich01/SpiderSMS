@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.PHONE_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -24,22 +25,29 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SpiderSMS">
         <activity
+            android:name=".UI.AboutActivity"
+            android:exported="false" />
+        <activity
             android:name=".Setup.OTPActivity"
             android:exported="false" />
         <activity
             android:name=".UI.UnlockActivity"
             android:exported="false" />
+        <service
+            android:name=".services.MainService"
+            android:enabled="true"
+            android:exported="true"
+            tools:ignore="Instantiatable" />
         <receiver
             android:name=".Receivers.AlarmReceiver"
             android:enabled="true"
-            android:exported="true"></receiver>
+            android:exported="true" />
         <receiver
             android:name=".Receivers.MainReceiver"
             android:enabled="true"
-            android:exported="true"
-            android:priority="999">
-            <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            android:exported="true">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
 
@@ -54,8 +62,7 @@
             android:exported="false" />
         <activity
             android:name=".UI.DataQRGenerator"
-            android:exported="false">
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".UI.ChatActivity"
             android:exported="false" />
@@ -67,6 +74,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

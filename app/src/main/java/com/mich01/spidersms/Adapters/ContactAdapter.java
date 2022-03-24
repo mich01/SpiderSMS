@@ -113,7 +113,7 @@ public class ContactAdapter extends ArrayAdapter<Contact>
                 QRIntent.putExtra("ContactName", MyContact.get(position).getContactNames());
                 QRIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(QRIntent);
-                //((ContactsActivity)context).finish();
+                ((ContactsActivity)context).finish();
             }
             else
             {

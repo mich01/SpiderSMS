@@ -53,6 +53,7 @@ public class ChatActivity extends AppCompatActivity {
     ImageButton sendButton;
     private String MessageText;
     JSONObject ContactJSON;
+    int CypherType;
     private static String EncryptionKey;
     @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("NotifyDataSetChanged")
@@ -67,13 +68,16 @@ public class ChatActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         ContactID = bundle.getString("ContactID");
         ContactJSON = new DBManager(context).GetContact(ContactID);
+        Log.i("This Confirm",ContactJSON.toString());
         try {
-            if(ContactJSON.getString("Confirmed").equals("1"))
+            if(ContactJSON.getString("Confirmed")!=null && ContactJSON.getString("Confirmed").equals("1"))
             {
+                CypherType=2;
                 EncryptionKey =ContactJSON.getString("PrivKey");
             }
             else
             {
+                CypherType=1;
                 EncryptionKey = ContactJSON.getString("PubKey");
             }
         } catch (JSONException e) {
@@ -139,14 +143,14 @@ public class ChatActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     UpdateChatMessages(ContactID,MessageText);
-                    new SMSHandler(context).sendEncryptedSMS(ContactID, SMSBody.toString(),EncryptionKey);
+                    new SMSHandler(context).sendEncryptedSMS(ContactID, SMSBody.toString(),EncryptionKey,CypherType);
                     alertDialog.cancel();
                 });
                 Option2.setOnClickListener(view12 ->{
                     JSONObject SMSBody = new JSONObject();
                     try {
                         SMSBody.put("x","2");
-                        SMSBody.put("target",ContactID);
+                        SMSBody.put("target","+"+MyPrefs.getString("MyContact","000000"));
                         SMSBody.put("Body",MessageText);
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -164,7 +168,7 @@ public class ChatActivity extends AppCompatActivity {
                     JSONObject SMSBody = new JSONObject();
                     try {
                         SMSBody.put("x","2");
-                        SMSBody.put("target",ContactID);
+                        SMSBody.put("target","+"+MyPrefs.getString("MyContact","000000"));
                         SMSBody.put("Body",MessageText);
                     } catch (JSONException e) {
                         e.printStackTrace();

@@ -66,6 +66,7 @@ public class UnlockActivity extends AppCompatActivity {
                 SnackBarAlert("Authentication Method Changed: " );
             }
 
+            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void onAuthenticationSucceeded(
                     @NonNull BiometricPrompt.AuthenticationResult result) {
@@ -78,7 +79,7 @@ public class UnlockActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationFailed() {
                 super.onAuthenticationFailed();
-                SnackBarAlertError("Authentication failed");
+                SnackBarAlertError();
             }
         });
 
@@ -99,6 +100,7 @@ public class UnlockActivity extends AppCompatActivity {
 
             }
 
+            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 MyPrefs = UnlockActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -116,9 +118,9 @@ public class UnlockActivity extends AppCompatActivity {
         });
     }
 
-    private void SnackBarAlertError(String authentication_failed) {
+    private void SnackBarAlertError() {
 
-            Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), authentication_failed, Snackbar.LENGTH_LONG);
+            Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), "Authentication failed", Snackbar.LENGTH_LONG);
             TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
             SnackBarView.setTextColor(ContextCompat.getColor(UnlockActivity.this, R.color.white));
             SnackBarView.setBackgroundColor(ContextCompat.getColor(UnlockActivity.this, R.color.error));

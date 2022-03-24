@@ -68,12 +68,13 @@ public class GetPhoneContacts
     {
         ContactsActivity.Contacts.clear();
         Cursor cur = new DBManager(context).getContacts();
+        assert cur!= null;
         while (cur != null && cur.moveToNext())
         {
             @SuppressLint("Range") String CID = cur.getString(cur.getColumnIndex("CID"));
             @SuppressLint("Range") String Name = cur.getString(cur.getColumnIndex("ContactName"));
             int ContactType;
-            if (cur.getString(cur.getColumnIndex("PubKey")).equals("000000"))
+            if (cur.getString(cur.getColumnIndex("PubKey"))!=null && cur.getString(cur.getColumnIndex("PubKey")).equals("000000"))
             {
                 ContactType =0;
             }else
