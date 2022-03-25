@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ASMSmaliIdeaPluginConfiguration">
+    <asm skipDebug="true" skipFrames="true" skipCode="false" expandFrames="false" />
+    <groovy codeStyle="LEGACY" />
+  </component>
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../Android/Sdk/platforms/android-32/data/res/layout/auto_complete_list.xml" value="0.1" />
         <entry key="app/src/main/res/drawable-v24/background_gradient.xml" value="0.1" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/add_contact.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_light.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_received.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/background_sent.xml" value="0.1" />

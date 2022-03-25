@@ -21,6 +21,7 @@ import androidx.annotation.RequiresApi;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.mich01.spidersms.Backend.SMSHandler;
+import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.Contact;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ChatActivity;
@@ -49,16 +50,21 @@ public class ContactAdapter extends ArrayAdapter<Contact>
 
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    @RequiresApi(api = Build.VERSION_CODES.R)
+    @RequiresApi(api = Build.VERSION_CODES.S)
     @NonNull
     @Override
     public View getView(int position, View convertView,  ViewGroup parent)
     {
+        char ContactInitials ='-';
         if(convertView ==null)
         {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.contact_item, parent, false);
         }
-        TextDrawable drawable = TextDrawable.builder().buildRect(String.valueOf(MyContact.get(position).getContactNames().charAt(0)), R.id.contact_img);
+        if(MyContact.get(position).getContactNames()!=null)
+        {
+            ContactInitials = MyContact.get(position).getContactNames().charAt(0);
+        }
+        TextDrawable drawable = TextDrawable.builder().buildRect(String.valueOf(ContactInitials), R.id.contact_img);
         ImageView images = convertView.findViewById(R.id.contact_img);
         TextView contactID = convertView.findViewById(R.id.contact_id);
         TextView status = convertView.findViewById(R.id.contact_status);
@@ -83,12 +89,19 @@ public class ContactAdapter extends ArrayAdapter<Contact>
             {
                 AlertDialog.Builder alert = new AlertDialog.Builder(v.getRootView().getContext());
                 alert.setTitle("Send Invite to "+MyContact.get(position).getContactNames());
-                alert.setPositiveButton("Send Invite", (dialog, whichButton) -> {
+                alert.setPositiveButton("INVITE", (dialog, whichButton) -> {
                     String AppURL = context.getString(R.string.share_app);
                     new SMSHandler(v.getRootView().getContext()).sendPlainSMS(MyContact.get(position).getCID(),AppURL);
                 });
 
-                alert.setNegativeButton("Cancel",
+                alert.setNeutralButton("DELETE",
+                        (dialog, whichButton) -> {
+                    new DBManager(context).DeleteContact(MyContact.get(position).getCID());
+                    ContactsActivity.adapter.notifyDataSetChanged();
+                    dialog.dismiss();
+                });
+                alert.show();
+                alert.setNegativeButton("CANCEL",
                         (dialog, whichButton) -> {
                         });
                 alert.show();

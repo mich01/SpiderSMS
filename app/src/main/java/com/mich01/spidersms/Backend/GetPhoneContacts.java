@@ -4,7 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.ContactsContract;
+
+import androidx.annotation.RequiresApi;
 
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.Contact;
@@ -16,6 +19,7 @@ import org.json.JSONObject;
 public class GetPhoneContacts
 {
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("Range")
     public void getPhoneContacts(Context ContactContext)
     {
@@ -46,8 +50,7 @@ public class GetPhoneContacts
 
                     }
                     pCur.close();
-                    ContactsActivity.Contacts.add(new Contact(name,
-                            phoneNo, "000000", 0));
+                    ContactsActivity.Contacts.add(new Contact(phoneNo,name, "000000", 0));
                     JSONObject ContactJSON = new JSONObject();
                     try {
                         ContactJSON.put("CID",phoneNo);
@@ -63,13 +66,14 @@ public class GetPhoneContacts
             cur.close();
         }
     }
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("Range")
     public void getMyContacts(Context context)
     {
         ContactsActivity.Contacts.clear();
         Cursor cur = new DBManager(context).getContacts();
         assert cur!= null;
-        while (cur != null && cur.moveToNext())
+        while (cur.moveToNext())
         {
             @SuppressLint("Range") String CID = cur.getString(cur.getColumnIndex("CID"));
             @SuppressLint("Range") String Name = cur.getString(cur.getColumnIndex("ContactName"));
@@ -84,7 +88,6 @@ public class GetPhoneContacts
             ContactsActivity.Contacts.add(new Contact(CID,Name
                     , cur.getString(cur.getColumnIndex("PubKey")), ContactType));
         }
-        assert cur != null;
         cur.close();
     }
 }

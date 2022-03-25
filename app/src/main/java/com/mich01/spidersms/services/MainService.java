@@ -66,7 +66,7 @@ public class MainService extends Service {
                 .build();
         startForeground(1337, notification);
         Intent AlarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
-        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, 0);
+        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, PendingIntent.FLAG_MUTABLE);
         SharedPreferences preferences = context.getSharedPreferences("global", Context.MODE_PRIVATE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()

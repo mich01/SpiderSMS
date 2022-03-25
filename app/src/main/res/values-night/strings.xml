@@ -49,7 +49,8 @@
     <string name="conversation_deleted">\"Conversation Deleted: \"</string>
     <string name="drag_to_update_contact">Drag the contact list down to update your contact lost</string>
     <string name="updating_contacts">Updating Contacts. Please wait...</string>
-    <string name="confirm_delete_contatc">Are yo sure they want to delete this contact?</string>
+    <string name="confirm_delete_contact">Are yo sure they want to delete this contact?</string>
     <string name="terms_and_conditions">Terms and Conditions</string>
     <string name="about_spidersms">About SpiderSMS</string>
+    <string name="empty_message_sent">Message Not sent as it was empty</string>
 </resources>

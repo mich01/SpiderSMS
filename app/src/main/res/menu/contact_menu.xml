@@ -6,4 +6,8 @@
         android:title="@string/search"
         app:showAsAction="always"
         app:actionViewClass="android.widget.SearchView"/>
+    <item android:id="@+id/add_contact"
+        android:icon="@drawable/add_contact"
+        android:title="@string/add_contact"
+        app:showAsAction="always"/>
 </menu>

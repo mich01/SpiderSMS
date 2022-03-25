@@ -108,7 +108,7 @@ public class DataQRGenerator extends AppCompatActivity {
         });
         DeleteContact.setOnClickListener(v -> {
             AlertDialog.Builder alert = new AlertDialog.Builder(v.getRootView().getContext());
-            alert.setTitle(R.string.confirm_delete_contatc);
+            alert.setTitle(R.string.confirm_delete_contact);
             alert.setPositiveButton("Yes", (dialog, whichButton) -> {
                 new DBManager(getApplicationContext()).DeleteContact(ContactID);
                 {

@@ -1,10 +1,6 @@
 package com.mich01.spidersms.Backend;
 
-import static android.app.AlarmManager.*;
-import static android.content.Context.ALARM_SERVICE;
-
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -12,35 +8,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
-import com.google.android.material.snackbar.Snackbar;
-import com.mich01.spidersms.Adapters.ContactAdapter;
 import com.mich01.spidersms.Crypto.KeyExchange;
 import com.mich01.spidersms.DB.DBManager;
-import com.mich01.spidersms.Data.Contact;
 import com.mich01.spidersms.R;
-import com.mich01.spidersms.Receivers.AlarmReceiver;
 import com.mich01.spidersms.SplashActivity;
 import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.ContactsActivity;
 import com.mich01.spidersms.UI.HomeActivity;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class BackendFunctions
 {
@@ -73,21 +59,17 @@ public class BackendFunctions
 
     public static boolean isConnectedOnline(Context context)
     {
-        boolean connected = false;
+        boolean connected;
         ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-            //we are connected to a network
-            connected = true;
-        }
-        else {
-            connected = false;
-        }
+        //we are connected to a network
+        connected = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED;
         return connected;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public boolean UpdateMessage(Context context, String Sender, String MessageReceived)
+    @SuppressLint("NotifyDataSetChanged")
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    public void UpdateMessage(Context context, String Sender, String MessageReceived)
     {
         String CHANNEL_ID = "1337";
         try {
@@ -116,10 +98,8 @@ public class BackendFunctions
             NotificationManager mNotificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.notify(1, notificationBuilder.build());
-            return true;
         }catch (Exception e){
             e.printStackTrace();
-            return false;
         }
     }
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -133,6 +113,7 @@ public class BackendFunctions
             return false;
         }
     }
+    @RequiresApi(api = Build.VERSION_CODES.S)
     public void NotifyDecryptionError(Context context)
     {
         Log.i("OPT 2","FAIL TRIGGER");
@@ -165,9 +146,6 @@ public class BackendFunctions
     public void UpdateContactPrivateKeys(Context context)
     {
         Handler h = new Handler(new Handler.Callback() {
-            Intent AlarmIntent = new Intent(context, AlarmReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, AlarmIntent, PendingIntent.FLAG_MUTABLE);
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
             @RequiresApi(api = Build.VERSION_CODES.M)
             @SuppressLint("Range")
             @Override
@@ -177,7 +155,6 @@ public class BackendFunctions
                 Cursor cur = new DBManager(context).getAPPContacts();
                 while (cur != null && cur.moveToNext()) {
                     @SuppressLint("Range") String CID = cur.getString(cur.getColumnIndex("CID"));
-                    @SuppressLint("Range") String Name = cur.getString(cur.getColumnIndex("ContactName"));
                     new KeyExchange(context).FirstExchange(CID,cur.getString(cur.getColumnIndex("PubKey")),cur.getString(cur.getColumnIndex("PrivKey")),cur.getString(cur.getColumnIndex("Secret")));
                 }
                 assert cur != null;

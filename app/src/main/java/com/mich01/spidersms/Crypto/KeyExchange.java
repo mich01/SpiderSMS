@@ -1,7 +1,6 @@
 package com.mich01.spidersms.Crypto;
 
 
-import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.content.Context;
@@ -36,15 +35,16 @@ public class KeyExchange
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void FirstExchange(String ContactID, String PublicKey, String SecretKey, String SharedSecret)
     {
+        Log.i("wer are here",SharedSecret);
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         JSONObject ContactKeyJSON = new JSONObject();
         try {
             ContactKeyJSON.put("x","3");
-            ContactKeyJSON.put("target",ContactID);
+            ContactKeyJSON.put("target","+"+preferences.getString("MyContact","NewContact"));
             ContactKeyJSON.put("SecretKey",SecretKey);
-            ContactKeyJSON.put("CName",preferences.getString("ContactName","NewContact"));
             ContactKeyJSON.put("Secret",SharedSecret);
-            MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            ContactKeyJSON.put("Confirmed","0");
+            ContactKeyJSON.put("CName",preferences.getString("ContactName","NewContact"));
             if(BackendFunctions.isConnectedOnline(context) && !preferences.getString("ServerURL","---").equals("---"))
             {
                 new SMSHandler(context).SendSMSOnline(ContactID, ContactKeyJSON.toString(), PublicKey);
@@ -61,15 +61,18 @@ public class KeyExchange
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void VerifyContact(JSONObject ContactObject)
     {
+        preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String MyContact = "+"+preferences.getString("MyContact","NewContact");
         String Contact;
         String ContactHash;
         String KeyHash;
         String PublicKey;
         JSONObject ContactKeyJSON = new JSONObject();
         JSONObject LocalContact;
-        Log.i("Key Step 6 ","Contact Verification Process Started");
+        Log.i("Key Step 4 ","Contact Verification Process Started");
         try
         {
+            Log.i("Key Stage: ",ContactObject.getString("x"));
             Contact =ContactObject.getString("target");
             LocalContact = new DBManager(context).GetContact(Contact);
             ContactHash = PKI_Cipher.ComputeHash(LocalContact.getString("Secret"));
@@ -79,12 +82,17 @@ public class KeyExchange
             if(ContactHash.equals(ContactObject.getString("Secret")) ||
                     KeyHash.equals(ContactObject.getString("SecretKey")))
             {
-                ContactKeyJSON.put("x","6");
-                ContactKeyJSON.put("target",Contact);
+                if(ContactObject.getString("x").equals("4"))
+                {
+                    ContactKeyJSON.put("x","5");
+                }
+                else if(ContactObject.getString("x").equals("5"))
+                {
+                    ContactKeyJSON.put("x","6");
+                }
+                ContactKeyJSON.put("target",MyContact);
                 ContactKeyJSON.put("Secret",ContactHash);
                 ContactKeyJSON.put("SecretKey",KeyHash);
-                ContactKeyJSON.put("ACK","1");
-                ContactKeyJSON.put("Confirmed","1");
                 Log.i("Key Step -->","Contact Key Verified "+ ContactKeyJSON);
                 new DBManager(context).VerifyContactPK(Contact,ContactHash);
                 if(BackendFunctions.isConnectedOnline(context) && !preferences.getString("ServerURL","---").equals("---"))
@@ -95,15 +103,15 @@ public class KeyExchange
                 else
                 {
                     Log.i("Key Step -->","AMA HAPA "+ ContactKeyJSON);
-                    new SMSHandler(context).sendEncryptedSMS(Contact, ContactKeyJSON.toString(), PublicKey,1);
+                    new SMSHandler(context).sendEncryptedSMS(Contact, ContactKeyJSON.toString(), PublicKey,3);
                 }
             }
             else
             {
-                Log.i("Key Step 6 Error","Doesn't Match");
+                Log.i("Key Step 4 Error","Doesn't Match");
             }
         } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
-            Log.i("Key Step 6 Error",e.getMessage());
+            Log.i("Key Step 4 Error",e.getMessage());
         }
     }
 
