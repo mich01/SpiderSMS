@@ -58,7 +58,6 @@ import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.Receivers.AlarmReceiver;
-import com.mich01.spidersms.Receivers.MainReceiver;
 import com.mich01.spidersms.Setup.ScannerSetupActivity;
 import com.mich01.spidersms.services.MainService;
 
@@ -124,7 +123,7 @@ public class HomeActivity extends AppCompatActivity {
         ChatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
         StatusText = findViewById(R.id.lbl_contact_Status);
-        //new DBManager(HomeActivity.this).DeleteAllContacts("kj");
+        //new DBManager(HomeActivity.this).DeleteAllContacts("000000");
         Intent AlarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, PendingIntent.FLAG_MUTABLE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
@@ -254,12 +253,12 @@ public class HomeActivity extends AppCompatActivity {
                 break;
             case R.id.terms_conditions:
                 BrowserIntent.putExtra("Section","SpiderSMS T&C");
-                BrowserIntent.putExtra("URL","https://www.example.com");
+                BrowserIntent.putExtra("URL","https://docs.google.com/document/d/e/2PACX-1vTKjP8cPaix2MmEFMvWMhatoGFVfjP3AfK0p7Kxfrr7uE-BmctXlE6xgalyjRzSFyXkrDaNKzm1QKFp/pub");
                 startActivity(BrowserIntent);
                 break;
             case R.id.license:
                 BrowserIntent.putExtra("Section","SpiderSMS User License");
-                BrowserIntent.putExtra("URL","https://www.google.com");
+                BrowserIntent.putExtra("URL","https://docs.google.com/document/d/e/2PACX-1vTKjP8cPaix2MmEFMvWMhatoGFVfjP3AfK0p7Kxfrr7uE-BmctXlE6xgalyjRzSFyXkrDaNKzm1QKFp/pub");
                 startActivity(BrowserIntent);
                 break;
             case R.id.about_app:

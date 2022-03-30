@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -29,12 +28,10 @@ import com.mich01.spidersms.Receivers.AlarmReceiver;
 public class MainService extends Service {
     private final String CHANNEL_ID = "1337";
     static Context context;
-    public static int messageCount =0;
     public static Uri notificationMessageSound;
     public static PendingIntent pendingIntent;
     public static long[] VibrationPattern ={100,300,300,300};
     public static NotificationManager manager;
-    BroadcastReceiver BR;
 
 
     @Override
@@ -50,7 +47,7 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        String channelName = "Android";
+        String channelName = "SpiderSMS";
         NotificationChannel chan = new NotificationChannel(CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
@@ -60,14 +57,13 @@ public class MainService extends Service {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID);
         Notification notification = notificationBuilder.setOngoing(true)
                 .setSmallIcon(R.drawable.spider)
-                .setContentText("SpiderSMS is Active")
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),
-                        R.drawable.spider))
+                .setContentTitle("App is active")
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
         startForeground(1337, notification);
         Intent AlarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
-        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, PendingIntent.FLAG_MUTABLE);
-        SharedPreferences preferences = context.getSharedPreferences("global", Context.MODE_PRIVATE);
+            pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, PendingIntent.FLAG_MUTABLE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
                 + (1 * 1000), pendingIntent);

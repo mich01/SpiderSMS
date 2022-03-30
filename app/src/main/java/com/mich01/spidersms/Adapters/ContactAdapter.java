@@ -88,7 +88,7 @@ public class ContactAdapter extends ArrayAdapter<Contact>
             else
             {
                 AlertDialog.Builder alert = new AlertDialog.Builder(v.getRootView().getContext());
-                alert.setTitle("Send Invite to "+MyContact.get(position).getContactNames());
+                alert.setTitle("SPerform Action "+MyContact.get(position).getContactNames());
                 alert.setPositiveButton("INVITE", (dialog, whichButton) -> {
                     String AppURL = context.getString(R.string.share_app);
                     new SMSHandler(v.getRootView().getContext()).sendPlainSMS(MyContact.get(position).getCID(),AppURL);
@@ -97,7 +97,8 @@ public class ContactAdapter extends ArrayAdapter<Contact>
                 alert.setNeutralButton("DELETE",
                         (dialog, whichButton) -> {
                     new DBManager(context).DeleteContact(MyContact.get(position).getCID());
-                    ContactsActivity.adapter.notifyDataSetChanged();
+                    HomeActivity.RePopulateChats(context);
+                    ContactsActivity.RepopulateContacts(context);
                     dialog.dismiss();
                 });
                 alert.show();

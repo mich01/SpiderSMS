@@ -33,25 +33,20 @@ public class KeyExchange
         this.context = context;
     }
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void FirstExchange(String ContactID, String PublicKey, String SecretKey, String SharedSecret)
+    public void FirstExchange(String ContactID, String PublicKey, JSONObject ContactKeyJSON)
     {
-        Log.i("wer are here",SharedSecret);
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        JSONObject ContactKeyJSON = new JSONObject();
         try {
-            ContactKeyJSON.put("x","3");
-            ContactKeyJSON.put("target","+"+preferences.getString("MyContact","NewContact"));
-            ContactKeyJSON.put("SecretKey",SecretKey);
-            ContactKeyJSON.put("Secret",SharedSecret);
-            ContactKeyJSON.put("Confirmed","0");
-            ContactKeyJSON.put("CName",preferences.getString("ContactName","NewContact"));
+            Log.i("Key Niks",ContactKeyJSON.toString());
+            ContactKeyJSON.put("t","+"+preferences.getString("MyContact","0"));
+            ContactKeyJSON.put("CName",preferences.getString("ContactName","--"));
             if(BackendFunctions.isConnectedOnline(context) && !preferences.getString("ServerURL","---").equals("---"))
             {
-                new SMSHandler(context).SendSMSOnline(ContactID, ContactKeyJSON.toString(), PublicKey);
+                new SMSHandler(context).SendSMSOnline(ContactID, ContactKeyJSON, PublicKey);
             }
             else
             {
-                new SMSHandler(context).sendEncryptedSMS(ContactID, ContactKeyJSON.toString(), PublicKey,1);
+                new SMSHandler(context).sendEncryptedSMS(ContactID, ContactKeyJSON, PublicKey,3);
             }
             Log.i("Key Step 3","Key Sent ");
         } catch (JSONException | NoSuchPaddingException | InvalidKeyException | InvalidKeySpecException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
@@ -73,8 +68,9 @@ public class KeyExchange
         try
         {
             Log.i("Key Stage: ",ContactObject.getString("x"));
-            Contact =ContactObject.getString("target");
+            Contact =ContactObject.getString("t");
             LocalContact = new DBManager(context).GetContact(Contact);
+            Log.i("Key Step -->","KEY SEMA HII "+ LocalContact.toString());
             ContactHash = PKI_Cipher.ComputeHash(LocalContact.getString("Secret"));
             KeyHash = PKI_Cipher.ComputeHash(LocalContact.getString("PrivKey"));
             PublicKey = LocalContact.getString("PubKey");
@@ -90,20 +86,21 @@ public class KeyExchange
                 {
                     ContactKeyJSON.put("x","6");
                 }
-                ContactKeyJSON.put("target",MyContact);
-                ContactKeyJSON.put("Secret",ContactHash);
+                Log.i("Key Step -->","KEY NDIO HII "+ ContactKeyJSON);
+                ContactKeyJSON.put("t","+"+preferences.getString("MyContact","NewContact"));
+                ContactKeyJSON.put("Secret",ContactObject.getString("Secret"));
                 ContactKeyJSON.put("SecretKey",KeyHash);
                 Log.i("Key Step -->","Contact Key Verified "+ ContactKeyJSON);
                 new DBManager(context).VerifyContactPK(Contact,ContactHash);
                 if(BackendFunctions.isConnectedOnline(context) && !preferences.getString("ServerURL","---").equals("---"))
                 {
                     Log.i("Key Step -->","NIKO HAPA "+ ContactKeyJSON);
-                    new SMSHandler(context).SendSMSOnline(Contact, ContactKeyJSON.toString(), PublicKey);
+                    new SMSHandler(context).SendSMSOnline(Contact, ContactKeyJSON, PublicKey);
                 }
                 else
                 {
                     Log.i("Key Step -->","AMA HAPA "+ ContactKeyJSON);
-                    new SMSHandler(context).sendEncryptedSMS(Contact, ContactKeyJSON.toString(), PublicKey,3);
+                    new SMSHandler(context).sendEncryptedSMS(Contact, ContactKeyJSON, PublicKey,3);
                 }
             }
             else

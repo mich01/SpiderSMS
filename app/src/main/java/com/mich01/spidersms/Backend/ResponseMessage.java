@@ -4,20 +4,41 @@ public class ResponseMessage
 {
  String TextMessage;
  boolean Sent;
- int MessageType;
+ String TimeStamp;
+ int MessageStatus;
 
+    public void setTextMessage(String textMessage) {
+        TextMessage = textMessage;
+    }
 
-    public ResponseMessage(String textMessage, boolean sent, int Type) {
+    public void setSent(boolean sent) {
+        Sent = sent;
+    }
+
+    public String getTimeStamp() {
+        return TimeStamp;
+    }
+
+    public void setTimeStamp(String timeStamp) {
+        TimeStamp = timeStamp;
+    }
+
+    public void setMessageStatus(int MessageStatus) {
+        MessageStatus = MessageStatus;
+    }
+
+    public ResponseMessage(String textMessage, boolean sent, int Status,String timeStamp) {
         TextMessage = textMessage;
         Sent = sent;
-        MessageType = Type;
+        MessageStatus = Status;
+        TimeStamp = timeStamp;
     }
 
     public String getTextMessage() {
         return TextMessage;
     }
-    public int getMessageType() {
-        return MessageType;
+    public int getMessageStatus() {
+        return MessageStatus;
     }
 
     public boolean isSent() {

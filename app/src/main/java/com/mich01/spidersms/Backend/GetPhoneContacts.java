@@ -28,7 +28,8 @@ public class GetPhoneContacts
         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
                 null, null, null, null);
         //int Index =ContactsActivity.ContactNames.length;
-        if ((cur != null ? cur.getCount() : 0) > 0) {
+        if ((cur != null ? cur.getCount() : 0) > 0)
+        {
             while (cur.moveToNext())
             {
                 @SuppressLint("Range") String id = cur.getString(
@@ -50,15 +51,20 @@ public class GetPhoneContacts
 
                     }
                     pCur.close();
-                    ContactsActivity.Contacts.add(new Contact(phoneNo,name, "000000", 0));
                     JSONObject ContactJSON = new JSONObject();
                     try {
-                        ContactJSON.put("CID",phoneNo);
+                        ContactJSON.put("CID",phoneNo.replace(" ",""));
                         ContactJSON.put("ContactName",name);
-                        new DBManager(ContactContext).UpdatePhoneBook(ContactJSON);
+                        if(new DBManager(ContactContext).GetContact(phoneNo.replace(" ","")).length()<1)
+                        {
+                            ContactsActivity.Contacts.add(new Contact(phoneNo, name, "000000", 0));
+                            new DBManager(ContactContext).UpdatePhoneBook(ContactJSON);
+                        }
                     }
-
                     catch (Exception e){e.printStackTrace();}
+                    finally {
+
+                    }
                 }
             }
         }

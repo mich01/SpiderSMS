@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -22,6 +23,10 @@ import com.mich01.spidersms.Crypto.KeyExchange;
 import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.Prefs.PrefsMgr;
 import com.mich01.spidersms.R;
+import com.mich01.spidersms.Setup.ScannerSetupActivity;
+import com.mich01.spidersms.UI.ChatActivity;
+import com.mich01.spidersms.UI.ContactsActivity;
+import com.mich01.spidersms.UI.HomeActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,7 +52,7 @@ public class DBManager extends SQLiteOpenHelper
     {
         db.execSQL("create Table UserProfile(CID TEXT primary key, PhoneNo TEXT, UserName TEXT, ServerURL TEXT)");
         db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, KeyStage TEXT, Secret TEXT, Confirmed TEXT, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
-        db.execSQL("create Table EncryptedSMS(MessageID INTEGER primary key AUTOINCREMENT NOT NULL,CID TEXT, MessageBody  TEXT,inorout INTEGER, Status INTEGER,Timestamp)");
+        db.execSQL("create Table EncryptedSMS(MessageID INTEGER primary key AUTOINCREMENT NOT NULL,CID TEXT, MessageBody  TEXT,inorout INTEGER, Status INTEGER,Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
         db.execSQL("create Table LastChats(CID TEXT primary key,MessageText TEXT,inorout INTEGER,ReadStatus INEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
     }
@@ -67,28 +72,24 @@ public class DBManager extends SQLiteOpenHelper
         String SharedSecret = PKI_Cipher.GenerateNewKey();
         try
         {
+            SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             Log.i("OPT",ContactObject.toString());
             String CID = ContactObject.getString("CID");
             SQLiteDatabase DB = this.getWritableDatabase();
+            final String PublicKey =ContactObject.getString("PubKey");
             ContentValues contentValues = new ContentValues();
             contentValues.put("PubKey", ContactObject.getString("PubKey"));
             contentValues.put("PrivKey", PrivateKey);
             contentValues.put("Secret", SharedSecret);
             contentValues.put("KeyStage", "1");
             contentValues.put("Confirmed", "0");
-            ContactObject.put("KeyStage", "1");
-            ContactObject.put("Confirmed", "0");
-            ContactObject.put("PubKey", ContactObject.getString("PubKey"));
-            ContactObject.put("PrivKey", PrivateKey);
-            ContactObject.put("Secret",SharedSecret);
-            ContactObject.put("SecretKey",PrivateKey);
+            ContactObject.remove("PubKey");
             Cursor cursor = DB.rawQuery("select * from Contacts where CID=?", new String[] {CID});
             if(cursor.getCount()>0)
             {
                 AlertDialog.Builder alert = new AlertDialog.Builder(context);
                 alert.setTitle(R.string.are_you_sure_update_contact);
-                alert.setPositiveButton("Update", (dialog, whichButton) -> UpdateContact(ContactObject));
-
+                alert.setPositiveButton("Update", (dialog, whichButton) -> UpdateContact(ContactObject,PublicKey));
                 alert.setNegativeButton("Cancel",
                         (dialog, whichButton) -> {
                         });
@@ -105,9 +106,14 @@ public class DBManager extends SQLiteOpenHelper
                 }
                 else
                 {
-                    Log.i("Key Step 2","Public Key "+ContactObject.getString("PubKey"));
-                    new KeyExchange(context).FirstExchange(CID,ContactObject.getString("PubKey"),PrivateKey,SharedSecret);
+                    //Log.i("Key Step 2","Public Key "+ContactObject.getString("PrivKey"));
+                    ContactObject.put("t", "+"+preferences.getString("MyContact","NewContact"));
+                    ContactObject.put("x", "3");
+                    ContactObject.put("SecretKey", PrivateKey);
+                    ContactObject.put("Secret", SharedSecret);
+                    new KeyExchange(context).FirstExchange(CID,PublicKey,ContactObject);
                     status= true;
+                    ((ScannerSetupActivity)context).finish();
                 }
             }
             cursor.close();
@@ -120,34 +126,66 @@ public class DBManager extends SQLiteOpenHelper
         return status;
     }
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public int UpdateContact(JSONObject ContactDetails)
+    public int UpdateContact(JSONObject ContactDetails, String PublicKey)
     {
         int result =0;
         String CID;
+        String PrivateKey = PKI_Cipher.GenerateNewKey();
+        String SharedSecret = PKI_Cipher.GenerateNewKey();
         try
         {
+            Log.i("ContactKey", ContactDetails.toString());
             CID = ContactDetails.getString("CID");
+            SQLiteDatabase DBUpdateContact = this.getWritableDatabase();
             ContentValues contentValues = new ContentValues();
+            contentValues.put("PubKey", PublicKey);
+            contentValues.put("PrivKey", PrivateKey);
+            contentValues.put("Secret", SharedSecret);
             contentValues.put("KeyStage", "1");
-            SQLiteDatabase DB = this.getWritableDatabase();
-            Cursor cursor = DB.rawQuery("select * from Contacts where CID=? LIMIT 1", new String[]{CID});
-            while (cursor != null && cursor.moveToNext())
+            contentValues.put("Confirmed", "0");
+            result = DBUpdateContact.update("Contacts", contentValues, "CID=?", new String[]{CID});
+            if(result==-1)
             {
-                SQLiteDatabase DBUpdateContact = this.getWritableDatabase();
-                SQLiteDatabase DBUpdateChats = this.getWritableDatabase();
-                result = DBUpdateContact.update("Contacts", contentValues, "CID=?", new String[]{CID});
-                ContentValues chatValues = new ContentValues();
-                chatValues.put("CID",CID);
-                result = DBUpdateChats.update("EncryptedSMS", chatValues, "CID=?", new String[]{CID});
-                Toast.makeText(context.getApplicationContext(), ContactDetails.getString("CName")+" Has Updated their Contacts", Toast.LENGTH_LONG).show();
-                cursor.close();
-                Log.i("Key Step 2","Public Key Updated "+ContactDetails.getString("PubKey"));
-                new KeyExchange(context).FirstExchange(CID,ContactDetails.getString("PubKey"),ContactDetails.getString("PrivKey"),ContactDetails.getString("Secret"));
+                Toast.makeText(context.getApplicationContext(), ContactDetails.getString("CName")+" Has Failed to Update", Toast.LENGTH_LONG).show();
             }
+            else
+            {
+                SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                ContactDetails.put("x", "3");
+                ContactDetails.put("SecretKey", PrivateKey);
+                ContactDetails.put("Secret", SharedSecret);
+                Log.i("Key Step 2","Public Key "+ContactDetails);
+                ContactDetails.remove("PubKey");
+                ContactDetails.put("t", "+"+preferences.getString("MyContact","NewContact"));
+                new KeyExchange(context).FirstExchange(CID,PublicKey,ContactDetails);
+                Toast.makeText(context.getApplicationContext(), ContactDetails.getString("CName")+" Has Updated their Contacts", Toast.LENGTH_LONG).show();
+                ((ScannerSetupActivity)context).finish();
+                HomeActivity.RePopulateChats(context);
+                ContactsActivity.RepopulateContacts(context);
+
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return result;
+    }
+    public void UpdateMessageStatus(String CID, JSONObject SMSMessage, int Status)
+    {
+        try {
+            if(!SMSMessage.getString("Body").isEmpty())
+            {
+                SQLiteDatabase DBUpdateChats = this.getWritableDatabase();
+                ContentValues chatValues = new ContentValues();
+                chatValues.put("Status",Status);
+                Log.i("HERE HERE", CID+" -- "+SMSMessage);
+                DBUpdateChats.update("EncryptedSMS", chatValues, "CID=? AND MessageBody=?", new String[]{CID,SMSMessage.getString("Body")});
+            }
+        } catch (JSONException e) {
+
+        }finally {
+        }
+
     }
     @SuppressLint("Range")
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -156,19 +194,14 @@ public class DBManager extends SQLiteOpenHelper
         String CID =null;
         String PublicKey=null;
         JSONObject ContactVerificationJSON = new JSONObject();
-        long result =0;
+        MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         boolean Status =false;
         try
         {
-            CID = ContactDetails.getString("target");
-            ContactVerificationJSON.put("x","4");
-            ContactVerificationJSON.put("target",ContactDetails.getString("target"));
-            ContactVerificationJSON.put("Secret",PKI_Cipher.ComputeHash(ContactDetails.getString("Secret")));
-            ContactVerificationJSON.put("SecretKey",PKI_Cipher.ComputeHash(ContactDetails.getString("SecretKey")));
-            ContactVerificationJSON.toString();
+            CID = ContactDetails.getString("t");
             ContentValues contentValues = new ContentValues();
             SQLiteDatabase DBUpdateContact = this.getWritableDatabase();
-            Cursor cursor = DBUpdateContact.rawQuery("select * from Contacts where CID=? AND PubKey !=?  LIMIT 1", new String[]{CID,"000000"});
+            Cursor cursor = DBUpdateContact.rawQuery("select * from Contacts where CID=?  LIMIT 1", new String[]{CID});
             if(cursor.getCount()>0 && cursor.moveToNext())
             {
                 Log.i("Key Step 3","Contact Updating "+cursor.getString(cursor.getColumnIndex("PubKey")));
@@ -187,6 +220,9 @@ public class DBManager extends SQLiteOpenHelper
                 contentValues.put("CID", CID);
                 contentValues.put("PrivKey", ContactDetails.getString("SecretKey"));
                 contentValues.put("PubKey", PublicKey);
+                contentValues.put("ContactName", ContactDetails.getString("CName"));
+                contentValues.put("KeyStage", "2");
+                contentValues.put("Confirmed", "0");
                 contentValues.put("KeyStage", "2");
                 contentValues.put("Secret", ContactDetails.getString("Secret"));
                 DBUpdateContact.insert("Contacts", null, contentValues);
@@ -194,14 +230,18 @@ public class DBManager extends SQLiteOpenHelper
                 Log.i("Key Step 3","Contact Added");
             }
             Log.i("Key Step Next 4","Sending Contact Verification for stage 4");
-            MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            ContactVerificationJSON.put("x","4");
+            ContactVerificationJSON.put("t","+"+MyPrefs.getString("MyContact","--"));
+            ContactVerificationJSON.put("Secret",PKI_Cipher.ComputeHash(ContactDetails.getString("Secret")));
+            ContactVerificationJSON.put("SecretKey",PKI_Cipher.ComputeHash(ContactDetails.getString("SecretKey")));
+            Log.i("Key Step Sending 4",ContactVerificationJSON.toString());
             if(BackendFunctions.isConnectedOnline(context) && !MyPrefs.getString("ServerURL","---").equals("---"))
             {
-                new SMSHandler(context).SendSMSOnline(CID, ContactVerificationJSON.toString(), PublicKey);
+                new SMSHandler(context).SendSMSOnline(CID, ContactVerificationJSON, PublicKey);
             }
             else
             {
-                new SMSHandler(context).sendEncryptedSMS(CID, ContactVerificationJSON.toString(), PublicKey,1);
+                new SMSHandler(context).sendEncryptedSMS(CID, ContactVerificationJSON, PublicKey,3);
             }
         } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
             Log.i("Key Step 3 Error",e.getLocalizedMessage());
@@ -231,6 +271,7 @@ public class DBManager extends SQLiteOpenHelper
         contentValues.put("MessageBody", ChatMessage);
         contentValues.put("inorout", InorOut);
         contentValues.put("Status",Status);
+        contentValues.put("Timestamp", System.currentTimeMillis());
         long result = DB.insert("EncryptedSMS", null, contentValues);
         if(result==-1)
         {
@@ -358,11 +399,11 @@ public class DBManager extends SQLiteOpenHelper
             }
         }catch (Exception e){}
     }
-    public int DeleteAllContacts(String CID)
+    public int DeleteAllContacts(String PublicKey)
     {
         SQLiteDatabase DB = this.getWritableDatabase();
-        int result = DB.delete("Contacts", "CID!=?", new String[]{CID});
-        Toast.makeText(context,"Contact Deleted: "+CID, Toast.LENGTH_LONG).show();
+        int result = DB.delete("Contacts", "PubKey==?", new String[]{PublicKey});
+        Toast.makeText(context,"Contact Deleted: "+PublicKey, Toast.LENGTH_LONG).show();
         return result;
     }
     public void DeleteAllChats(String CID)

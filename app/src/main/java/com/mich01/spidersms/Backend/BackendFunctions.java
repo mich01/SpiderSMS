@@ -28,6 +28,10 @@ import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.ContactsActivity;
 import com.mich01.spidersms.UI.HomeActivity;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class BackendFunctions
 {
     public static Uri notificationMessageSound;
@@ -155,12 +159,18 @@ public class BackendFunctions
                 Cursor cur = new DBManager(context).getAPPContacts();
                 while (cur != null && cur.moveToNext()) {
                     @SuppressLint("Range") String CID = cur.getString(cur.getColumnIndex("CID"));
-                    new KeyExchange(context).FirstExchange(CID,cur.getString(cur.getColumnIndex("PubKey")),cur.getString(cur.getColumnIndex("PrivKey")),cur.getString(cur.getColumnIndex("Secret")));
+                    //new KeyExchange(context).FirstExchange(CID,cur.getString(cur.getColumnIndex("PubKey")),cur.getString(cur.getColumnIndex("PrivKey")),cur.getString(cur.getColumnIndex("Secret")));
                 }
                 assert cur != null;
                 cur.close();
                 return true;
             }
         });
+    }
+    public String convertTime(long time)
+    {
+        Date date = new Date(time);
+        Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+        return format.format(date);
     }
 }

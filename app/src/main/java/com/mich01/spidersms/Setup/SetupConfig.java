@@ -47,7 +47,6 @@ public class SetupConfig
                 {
                     context.startActivity(new Intent(context, HomeActivity.class));
                     Toast.makeText(context.getApplicationContext(), "New Contact Added", Toast.LENGTH_LONG).show();
-                    ((ScannerSetupActivity)context).finish();
                 }
                 break;
             default:

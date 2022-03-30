@@ -20,8 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainReceiver extends BroadcastReceiver {
-    @SuppressLint("NotifyDataSetChanged")
-    @androidx.annotation.RequiresApi(api = Build.VERSION_CODES.O)
+    @androidx.annotation.RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     public void onReceive(Context context, Intent intent)
     {
@@ -78,7 +77,7 @@ public class MainReceiver extends BroadcastReceiver {
                 } catch (Exception e)
                 {
                     String DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
-                    Log.i("OPT Error",DecryptedSMS +""+e.toString());
+                    Log.i("OPT Error",DecryptedSMS +""+e.getLocalizedMessage());
                 }
                 //
             }
@@ -102,7 +101,7 @@ public class MainReceiver extends BroadcastReceiver {
             }
         }
     }
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    @RequiresApi(api = Build.VERSION_CODES.S)
     public void ProcessMessage(Context context, String senderNum, JSONObject smsJSON)
     {
         try {
@@ -112,12 +111,12 @@ public class MainReceiver extends BroadcastReceiver {
             }
             else if(smsJSON.getString("x").equals("2"))
             {
-                new BackendFunctions().UpdateMessage(context, smsJSON.getString("target"), smsJSON.getString("Body"));
+                new BackendFunctions().UpdateMessage(context, smsJSON.getString("t"), smsJSON.getString("Body"));
             }
             else if(smsJSON.getString("x").equals("3"))
             {
-                Log.i("Key Step 3","Message Received ");
-                smsJSON.getString("target");
+                Log.i("Key Step 3","Message Received "+smsJSON);
+                smsJSON.getString("t");
                 smsJSON.getString("SecretKey");
                 smsJSON.getString("Secret");
                 smsJSON.put("KeyStage","2");
@@ -131,12 +130,12 @@ public class MainReceiver extends BroadcastReceiver {
             else if(smsJSON.getString("x").equals("5"))
             {
                 smsJSON.getString("Secret");
-                Log.i("Key Step 5 ","Contact Verified by "+smsJSON.getString("target"));
-                new DBManager(context).VerifyContactPK(smsJSON.getString("target"), smsJSON.getString("Secret"));
+                Log.i("Key Step 5 ","Contact Verified by "+smsJSON.getString("t"));
+                new DBManager(context).VerifyContactPK(smsJSON.getString("t"), smsJSON.getString("Secret"));
             }
             else if(smsJSON.getString("x").equals("6"))
             {
-                smsJSON.getString("target");
+                smsJSON.getString("t");
                 smsJSON.put("KeyStage","5");
                 smsJSON.getString("Secret");
             }

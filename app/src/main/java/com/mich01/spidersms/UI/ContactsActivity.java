@@ -5,8 +5,10 @@ import static com.mich01.spidersms.Setup.SetupConfig.ReadScan;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -15,6 +17,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -46,9 +49,12 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
+import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.Adapters.ContactAdapter;
 import com.mich01.spidersms.Backend.GetPhoneContacts;
+import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.Contact;
+import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.Setup.ScannerSetupActivity;
 
@@ -219,16 +225,16 @@ public class ContactsActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
     @SuppressLint("StaticFieldLeak")
-    public class PopulateContacts extends AsyncTask<Void, Void, String> {
+    public static class PopulateContacts extends AsyncTask<Void, Void, String> {
         @Override protected String doInBackground(Void... params)
         {
-            new GetPhoneContacts().getPhoneContacts(ContactsActivity.this);
+            new GetPhoneContacts().getPhoneContacts(adapter.getContext());
             return "Processing";
         }
         @Override protected void onPostExecute(String result)
         {
             dialog.dismiss();
-            adapter = new ContactAdapter(ContactsActivity.this, R.layout.contact_item,Contacts);
+            adapter = new ContactAdapter(adapter.getContext(), R.layout.contact_item,Contacts);
             ContactListView.setAdapter(adapter);
             adapter.notifyDataSetChanged();
             Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
@@ -238,6 +244,26 @@ public class ContactsActivity extends AppCompatActivity {
         }
     }
 
+    public static void RepopulateContacts(Context context){
+        Handler h = new Handler(context.getMainLooper());
+        h.post(new Runnable() {
+            @SuppressLint("Range")
+            @Override
+            public void run() {
+                new GetPhoneContacts().getMyContacts(adapter.getContext());
+                synchronized (this) {
+                    adapter = new ContactAdapter(adapter.getContext(), R.layout.contact_item,Contacts);
+                    ContactListView.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
+                    Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(Color.GREEN);
+                    snackbar.setTextColor(Color.BLACK);
+                    snackbar.show();
+                }
+            }
+        });
+
+    }
     public void FilterContacts(String SearchString)
     {
         ArrayList<Contact> FilteredContacts = new ArrayList<>();

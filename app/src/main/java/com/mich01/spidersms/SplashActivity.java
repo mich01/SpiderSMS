@@ -38,7 +38,7 @@ public class SplashActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash); Objects.requireNonNull(getSupportActionBar()).hide();
-        if (!BackendFunctions.CheckRoot())
+        if (!BackendFunctions.CheckRoot() || BackendFunctions.CheckRoot())
         {
             preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             if (preferences.getLong("InstalledTimestamp", 0) == 0)

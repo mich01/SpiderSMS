@@ -75,8 +75,8 @@ public class OTPActivity extends AppCompatActivity {
 
                     @Override
                     public void onVerificationFailed(@NonNull FirebaseException e) {
-                        startActivity(new Intent(OTPActivity.this, SetupActivity.class));
-                        finish();
+                        //startActivity(new Intent(OTPActivity.this, SetupActivity.class));
+                        //finish();
                     }
 
                 })

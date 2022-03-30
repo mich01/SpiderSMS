@@ -3,20 +3,37 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/background_status"
+        android:orientation="vertical">
     <TextView
         android:id="@+id/textMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
         android:textAlignment="center"
-        android:background="@drawable/background_status"
         android:padding="4dp"
         android:textColor="@color/darkblue"
         android:textSize="10sp"
         tools:ignore="TextViewEdits" />
+    <TextView
+        android:id="@+id/text_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="textEnd"
+        android:paddingEnd="8dp"
+        android:layout_alignParentEnd="true"
+        android:text="Sub text"
+        android:textStyle="bold"
+        android:textColor="@color/darkblue"
+        app:layout_constraintTop_toBottomOf="@+id/textMessage"
+        android:textSize="10sp"/>
+    </LinearLayout>
 </RelativeLayout>

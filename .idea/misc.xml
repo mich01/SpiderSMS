@@ -55,7 +55,7 @@
         <entry key="app/src/main/res/layout/chat_item.xml" value="0.22" />
         <entry key="app/src/main/res/layout/chat_list_item.xml" value="0.33" />
         <entry key="app/src/main/res/layout/contact_action_bar.xml" value="0.1" />
-        <entry key="app/src/main/res/layout/contact_item.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/contact_item.xml" value="0.18" />
         <entry key="app/src/main/res/layout/custom_action_bar.xml" value="0.16757246376811594" />
         <entry key="app/src/main/res/layout/fragment_chat_list.xml" value="0.1" />
         <entry key="app/src/main/res/layout/main_action_bar.xml" value="0.1" />

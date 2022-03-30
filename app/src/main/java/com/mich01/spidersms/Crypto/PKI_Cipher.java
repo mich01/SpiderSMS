@@ -120,6 +120,7 @@ public class PKI_Cipher
         return CipherText;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.S)
     public String Decrypt(String CipherText, String Key)
     {
         String PlainText=null;
@@ -225,20 +226,6 @@ public class PKI_Cipher
         return Public_Key;
     }
 
-    public static PublicKey GetPublicKey(String ContactPublicKey)
-    {
-        PublicKey Public_Key = null;
-        try
-        {
-            byte[] publicBytes = Base64.decode(ContactPublicKey,Base64.DEFAULT);
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            Public_Key = keyFactory.generatePublic(keySpec);
-        } catch (NoSuchAlgorithmException |  InvalidKeySpecException e) {
-            e.printStackTrace();
-        }
-        return Public_Key;
-    }
 
     public String EncryptPKI(String data, String public_Key )
     {
