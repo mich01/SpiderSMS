@@ -14,11 +14,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.hbb20.CountryCodePicker;
 import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
@@ -33,6 +36,8 @@ public class SetupActivity extends AppCompatActivity {
     EditText txtUserName;
     EditText txtPhoneNumber;
     String Pin_Number;
+    CountryCodePicker ccp;
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -45,6 +50,8 @@ public class SetupActivity extends AppCompatActivity {
         txtConfirmPinNumber = findViewById(R.id.txt_confirm_pin);
         txtUserName = findViewById(R.id.txt_username);
         txtPhoneNumber = findViewById(R.id.txt_phone_number);
+        ccp = (CountryCodePicker) findViewById(R.id.country_code);
+        ccp.registerCarrierNumberEditText(txtPhoneNumber);
         txtPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_invalid_24, 0);
         txtConfirmPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_invalid_24, 0);
         txtConfirmPinNumber.addTextChangedListener(new TextWatcher()
@@ -59,8 +66,9 @@ public class SetupActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
             {
+                Log.i("PhoneNumber",ccp.getFullNumber());
                 if(!txtPinNumber.getText().toString().isEmpty() & !txtConfirmPinNumber.getText().toString().isEmpty() &
-                        txtPinNumber.getText().toString().equals(txtConfirmPinNumber.getText().toString()))
+                        txtPinNumber.getText().toString().equals(txtConfirmPinNumber.getText().toString()) & ccp.isValidFullNumber())
                 {
                     txtPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_match_24, 0);
                     txtConfirmPinNumber.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_match_24, 0);
@@ -76,6 +84,7 @@ public class SetupActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
+                Log.i("PhoneNumber",ccp.getFullNumber());
                 if(!txtPinNumber.getText().toString().isEmpty() & !txtConfirmPinNumber.getText().toString().isEmpty() &
                         txtPinNumber.getText().toString().equals(txtConfirmPinNumber.getText().toString()))
                 {
@@ -106,6 +115,7 @@ public class SetupActivity extends AppCompatActivity {
             }
         });
     }
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private boolean SetKeyPin(String Pin)
@@ -143,7 +153,7 @@ public class SetupActivity extends AppCompatActivity {
             snackbar.getView().setBackgroundColor(ContextCompat.getColor(SetupActivity.this, R.color.light_blue_600));
             snackbar.show();
             Intent i = new Intent(SetupActivity.this, OTPActivity.class);
-            i.putExtra("ContactID",txtPhoneNumber.getText().toString());
+            i.putExtra("ContactID","+"+ccp.getFullNumber());
             i.putExtra("ContactName",txtUserName.getText().toString());
             startActivity(i);
             finish();

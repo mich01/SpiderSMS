@@ -240,7 +240,7 @@ public class HomeActivity extends AppCompatActivity {
                 JSONObject ContactJson = new JSONObject();
                 try {
                     ContactJson.put("Data", "HelloContact");
-                    ContactJson.put("CID", "+" + preferences.getString("MyContact", null));
+                    ContactJson.put("CID", preferences.getString("MyContact", null));
                     ContactJson.put("CName", preferences.getString("ContactName", null));
                     ContactJson.put("PubKey", SharePublicKey());
                 } catch (JSONException e) {

@@ -19,6 +19,7 @@
         <entry key="app/src/main/res/drawable/chat_bg_gradient.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/contact_icon.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/contact_icon_design.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/country_code.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/dialog_rounded_corners.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_baseline_send_24.xml" value="0.1" />
@@ -31,6 +32,7 @@
         <entry key="app/src/main/res/drawable/img.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/input_text_design.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/last_chat_bg.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/phone_number_background.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/rounded_button.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/rounded_dialog.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/toast_error.xml" value="0.1" />
@@ -48,7 +50,7 @@
         <entry key="app/src/main/res/layout/activity_otpactivity.xml" value="0.12" />
         <entry key="app/src/main/res/layout/activity_qrscanner.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_scanner_setup.xml" value="0.1" />
-        <entry key="app/src/main/res/layout/activity_setup.xml" value="0.22" />
+        <entry key="app/src/main/res/layout/activity_setup.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_smsactivity.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_splash.xml" value="0.33" />
         <entry key="app/src/main/res/layout/activity_unlock.xml" value="0.1" />

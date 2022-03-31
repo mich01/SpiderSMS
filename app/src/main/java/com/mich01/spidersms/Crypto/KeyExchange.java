@@ -38,7 +38,7 @@ public class KeyExchange
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         try {
             Log.i("Key Niks",ContactKeyJSON.toString());
-            ContactKeyJSON.put("t","+"+preferences.getString("MyContact","0"));
+            ContactKeyJSON.put("t",preferences.getString("MyContact","0"));
             ContactKeyJSON.put("CName",preferences.getString("ContactName","--"));
             if(BackendFunctions.isConnectedOnline(context) && !preferences.getString("ServerURL","---").equals("---"))
             {
@@ -57,7 +57,6 @@ public class KeyExchange
     public void VerifyContact(JSONObject ContactObject)
     {
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        String MyContact = "+"+preferences.getString("MyContact","NewContact");
         String Contact;
         String ContactHash;
         String KeyHash;
@@ -87,7 +86,7 @@ public class KeyExchange
                     ContactKeyJSON.put("x","6");
                 }
                 Log.i("Key Step -->","KEY NDIO HII "+ ContactKeyJSON);
-                ContactKeyJSON.put("t","+"+preferences.getString("MyContact","NewContact"));
+                ContactKeyJSON.put("t",preferences.getString("MyContact","NewContact"));
                 ContactKeyJSON.put("Secret",ContactObject.getString("Secret"));
                 ContactKeyJSON.put("SecretKey",KeyHash);
                 Log.i("Key Step -->","Contact Key Verified "+ ContactKeyJSON);

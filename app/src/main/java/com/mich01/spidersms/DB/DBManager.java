@@ -107,7 +107,7 @@ public class DBManager extends SQLiteOpenHelper
                 else
                 {
                     //Log.i("Key Step 2","Public Key "+ContactObject.getString("PrivKey"));
-                    ContactObject.put("t", "+"+preferences.getString("MyContact","NewContact"));
+                    ContactObject.put("t", preferences.getString("MyContact","NewContact"));
                     ContactObject.put("x", "3");
                     ContactObject.put("SecretKey", PrivateKey);
                     ContactObject.put("Secret", SharedSecret);
@@ -156,7 +156,7 @@ public class DBManager extends SQLiteOpenHelper
                 ContactDetails.put("Secret", SharedSecret);
                 Log.i("Key Step 2","Public Key "+ContactDetails);
                 ContactDetails.remove("PubKey");
-                ContactDetails.put("t", "+"+preferences.getString("MyContact","NewContact"));
+                ContactDetails.put("t", preferences.getString("MyContact","NewContact"));
                 new KeyExchange(context).FirstExchange(CID,PublicKey,ContactDetails);
                 Toast.makeText(context.getApplicationContext(), ContactDetails.getString("CName")+" Has Updated their Contacts", Toast.LENGTH_LONG).show();
                 ((ScannerSetupActivity)context).finish();
@@ -231,7 +231,7 @@ public class DBManager extends SQLiteOpenHelper
             }
             Log.i("Key Step Next 4","Sending Contact Verification for stage 4");
             ContactVerificationJSON.put("x","4");
-            ContactVerificationJSON.put("t","+"+MyPrefs.getString("MyContact","--"));
+            ContactVerificationJSON.put("t",MyPrefs.getString("MyContact","--"));
             ContactVerificationJSON.put("Secret",PKI_Cipher.ComputeHash(ContactDetails.getString("Secret")));
             ContactVerificationJSON.put("SecretKey",PKI_Cipher.ComputeHash(ContactDetails.getString("SecretKey")));
             Log.i("Key Step Sending 4",ContactVerificationJSON.toString());
