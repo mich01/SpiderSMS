@@ -83,12 +83,12 @@ public class ChatActivity extends AppCompatActivity {
             sendButton.setVisibility(View.GONE);
         }
         try {
-            if(ContactJSON.getString("Confirmed")!=null && ContactJSON.getString("Confirmed").equals("1"))
+            if(ContactJSON.getInt("Confirmed")!=0 && ContactJSON.getInt("Confirmed")==1)
             {
                 CypherType=2;
                 EncryptionKey =ContactJSON.getString("PrivKey");
             }
-            else if(ContactJSON.getString("Confirmed")!=null && ContactJSON.getString("Confirmed").equals("0"))
+            else if(ContactJSON.getInt("Confirmed")!=0 && ContactJSON.getInt("Confirmed")==0)
             {
                 CypherType=1;
                 EncryptionKey = ContactJSON.getString("PubKey");
@@ -145,7 +145,7 @@ public class ChatActivity extends AppCompatActivity {
                     MessageText =userInput.getText().toString();
                     JSONObject SMSBody = new JSONObject();
                     try {
-                        SMSBody.put("x","1");
+                        SMSBody.put("x",1);
                         SMSBody.put("Body",MessageText);
                         UpdateChatMessages(ContactID,MessageText);
                         new SMSHandler(context).sendEncryptedSMS(ContactID, SMSBody,EncryptionKey,CypherType);
@@ -159,8 +159,8 @@ public class ChatActivity extends AppCompatActivity {
                 Option2.setOnClickListener(view12 ->{
                     JSONObject SMSBody = new JSONObject();
                     try {
-                        SMSBody.put("x","2");
-                        SMSBody.put("target","+"+MyPrefs.getString("MyContact","000000"));
+                        SMSBody.put("x",2);
+                        SMSBody.put("t","+"+MyPrefs.getString("MyContact","000000"));
                         SMSBody.put("Body",MessageText);
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -178,8 +178,8 @@ public class ChatActivity extends AppCompatActivity {
                 {
                     JSONObject SMSBody = new JSONObject();
                     try {
-                        SMSBody.put("x","2");
-                        SMSBody.put("target","+"+MyPrefs.getString("MyContact","000000"));
+                        SMSBody.put("x",2);
+                        SMSBody.put("t",MyPrefs.getString("MyContact","000000"));
                         SMSBody.put("Body",MessageText);
                     } catch (JSONException e) {
                         e.printStackTrace();

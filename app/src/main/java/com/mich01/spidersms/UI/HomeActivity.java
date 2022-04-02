@@ -54,6 +54,7 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.mich01.spidersms.Adapters.ChatsAdapter;
+import com.mich01.spidersms.Crypto.KeyExchange;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
@@ -65,6 +66,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Objects;

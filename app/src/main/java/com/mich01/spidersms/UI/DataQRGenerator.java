@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
@@ -98,13 +99,29 @@ public class DataQRGenerator extends AppCompatActivity {
             Toast.makeText(this, "Value Required ",Toast.LENGTH_LONG).show();
         }
         ShareQRContact.setOnClickListener(v -> {
-            String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,ContactID, null);
-            Uri bmpUri = Uri.parse(tempFile);
-            final Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
-            shareIntent.setType("image/png");
-            startActivity(Intent.createChooser(shareIntent, ContactName.toString()));
+            try {
+                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,ContactID, ContactID);
+                //Log.i("Url",tempFile);
+                Uri bmpUri = Uri.parse(tempFile);
+                final Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
+                shareIntent.setType("image/png");
+                startActivity(Intent.createChooser(shareIntent, ContactName.toString()));
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+            }finally {
+                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,"SpiderSMS-"+ContactID, ContactID);
+                Log.i("Url",tempFile);
+                Uri bmpUri = Uri.parse(tempFile);
+                final Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
+                shareIntent.setType("image/png");
+                startActivity(Intent.createChooser(shareIntent, ContactName.toString()));
+            }
+
         });
         DeleteContact.setOnClickListener(v -> {
             AlertDialog.Builder alert = new AlertDialog.Builder(v.getRootView().getContext());

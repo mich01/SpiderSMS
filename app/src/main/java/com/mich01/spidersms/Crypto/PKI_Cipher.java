@@ -10,6 +10,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.mich01.spidersms.Backend.BackendFunctions;
+import com.mich01.spidersms.UI.HomeActivity;
 
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
@@ -98,7 +99,6 @@ public class PKI_Cipher
     private static final int keySize = 128;
     private static final String cypherInstance = "AES/CBC/PKCS5Padding";
     private static final String secretKeyInstance = "PBKDF2WithHmacSHA1";
-    private static final String plainText = "sampleText";
     private static final String AESSalt = "ddddd";
     private static final String initializationVector = "8119745113154120";
 
@@ -216,10 +216,6 @@ public class PKI_Cipher
             Public_Key = Base64.encodeToString(publicKey.getEncoded(), Base64.DEFAULT);
             Log.i("PKI","\n----------------------------- \n");
             Log.i("PKI"," This is the Public Key "+ Public_Key);
-            /*String Cyphertext =new PKI_Cipher(context).EncryptPKI("Hi there mr Michael", pub_Key);
-            Log.i("PKI"," This is the CipherText "+ Cyphertext);
-            String PLainText = new PKI_Cipher(context).DecryptPKI(Cyphertext);
-            Log.i("PKI"," This is the Plaintext "+ PLainText);*/
         } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
             e.printStackTrace();
         }
