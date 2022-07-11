@@ -49,7 +49,7 @@ public class DBManager extends SQLiteOpenHelper
     public void onCreate(SQLiteDatabase db)
     {
         db.execSQL("create Table UserProfile(CID TEXT primary key, PhoneNo TEXT, UserName TEXT, ServerURL TEXT)");
-        db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, Secret TEXT, Salt TEXT, IV TEXT, Confirmed INTEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
+        db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, Secret TEXT, Salt TEXT, Confirmed INTEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
         db.execSQL("create Table EncryptedSMS(MessageID INTEGER primary key AUTOINCREMENT NOT NULL,CID TEXT, MessageBody  TEXT,inorout INTEGER, Status INTEGER,Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
         db.execSQL("create Table LastChats(CID TEXT primary key,MessageText TEXT,inorout INTEGER,ReadStatus INEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
@@ -69,7 +69,6 @@ public class DBManager extends SQLiteOpenHelper
         String PrivateKey = PKI_Cipher.GenerateNewKey();
         String SharedSecret = PKI_Cipher.GenerateNewKey();
         String Salt = PKI_Cipher.GenerateNewKey();
-        String IV = PKI_Cipher.GenerateNewKey();
         try
         {
             SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -81,7 +80,6 @@ public class DBManager extends SQLiteOpenHelper
             contentValues.put("PrivKey", PrivateKey);
             contentValues.put("Secret", SharedSecret);
             contentValues.put("Salt", Salt);
-            contentValues.put("IV", IV);
             contentValues.put("Confirmed", 0);
             ContactObject.remove("PubKey");
             Cursor cursor = DB.rawQuery("select * from Contacts where CID=?", new String[] {CID});
@@ -111,7 +109,6 @@ public class DBManager extends SQLiteOpenHelper
                     ContactObject.put("SecretKey", PrivateKey);
                     ContactObject.put("Secret", SharedSecret);
                     contentValues.put("Salt", Salt);
-                    contentValues.put("IV", IV);
                     new KeyExchange(context).FirstExchange(CID,PublicKey,ContactObject);
                     status= true;
                     ((ScannerSetupActivity)context).finish();
@@ -134,7 +131,6 @@ public class DBManager extends SQLiteOpenHelper
         String PrivateKey = PKI_Cipher.GenerateNewKey();
         String SharedSecret = PKI_Cipher.GenerateNewKey();
         String Salt = PKI_Cipher.GenerateNewKey();
-        String IV = PKI_Cipher.GenerateNewKey();
         try
         {
             CID = ContactDetails.getString("CID");
@@ -144,7 +140,6 @@ public class DBManager extends SQLiteOpenHelper
             contentValues.put("PrivKey", PrivateKey);
             contentValues.put("Secret", SharedSecret);
             contentValues.put("Salt", Salt);
-            contentValues.put("IV", IV);
             contentValues.put("Confirmed", 0);
             result = DBUpdateContact.update("Contacts", contentValues, "CID=?", new String[]{CID});
             if(result==-1)
@@ -402,7 +397,6 @@ public class DBManager extends SQLiteOpenHelper
                 ContactJSON.put("Secret",cursor.getString(cursor.getColumnIndex("Secret")));
                 ContactJSON.put("Confirmed",cursor.getInt(cursor.getColumnIndex("Confirmed")));
                 ContactJSON.put("Salt",cursor.getInt(cursor.getColumnIndex("Salt")));
-                ContactJSON.put("IV",cursor.getInt(cursor.getColumnIndex("IV")));
             }
         }catch (Exception e){e.printStackTrace();}
 
