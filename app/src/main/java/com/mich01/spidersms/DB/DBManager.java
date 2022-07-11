@@ -49,7 +49,7 @@ public class DBManager extends SQLiteOpenHelper
     public void onCreate(SQLiteDatabase db)
     {
         db.execSQL("create Table UserProfile(CID TEXT primary key, PhoneNo TEXT, UserName TEXT, ServerURL TEXT)");
-        db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, Secret TEXT, Confirmed INTEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
+        db.execSQL("create Table Contacts(CID TEXT primary key, ContactName TEXT, PubKey TEXT, PrivKey TEXT, Secret TEXT, Salt TEXT, IV TEXT, Confirmed INTEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
         db.execSQL("create Table EncryptedSMS(MessageID INTEGER primary key AUTOINCREMENT NOT NULL,CID TEXT, MessageBody  TEXT,inorout INTEGER, Status INTEGER,Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
         db.execSQL("create Table LastChats(CID TEXT primary key,MessageText TEXT,inorout INTEGER,ReadStatus INEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
@@ -68,10 +68,11 @@ public class DBManager extends SQLiteOpenHelper
         boolean status = false;
         String PrivateKey = PKI_Cipher.GenerateNewKey();
         String SharedSecret = PKI_Cipher.GenerateNewKey();
+        String Salt = PKI_Cipher.GenerateNewKey();
+        String IV = PKI_Cipher.GenerateNewKey();
         try
         {
             SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-            Log.i("OPT",ContactObject.toString());
             String CID = ContactObject.getString("CID");
             SQLiteDatabase DB = this.getWritableDatabase();
             final String PublicKey =ContactObject.getString("PubKey");
@@ -79,6 +80,8 @@ public class DBManager extends SQLiteOpenHelper
             contentValues.put("PubKey", ContactObject.getString("PubKey"));
             contentValues.put("PrivKey", PrivateKey);
             contentValues.put("Secret", SharedSecret);
+            contentValues.put("Salt", Salt);
+            contentValues.put("IV", IV);
             contentValues.put("Confirmed", 0);
             ContactObject.remove("PubKey");
             Cursor cursor = DB.rawQuery("select * from Contacts where CID=?", new String[] {CID});
@@ -103,11 +106,12 @@ public class DBManager extends SQLiteOpenHelper
                 }
                 else
                 {
-                    //Log.i("Key Step 2","Public Key "+ContactObject.getString("PrivKey"));
                     ContactObject.put("t", preferences.getString("MyContact","NewContact"));
                     ContactObject.put("x", 3);
                     ContactObject.put("SecretKey", PrivateKey);
                     ContactObject.put("Secret", SharedSecret);
+                    contentValues.put("Salt", Salt);
+                    contentValues.put("IV", IV);
                     new KeyExchange(context).FirstExchange(CID,PublicKey,ContactObject);
                     status= true;
                     ((ScannerSetupActivity)context).finish();
@@ -129,15 +133,18 @@ public class DBManager extends SQLiteOpenHelper
         String CID;
         String PrivateKey = PKI_Cipher.GenerateNewKey();
         String SharedSecret = PKI_Cipher.GenerateNewKey();
+        String Salt = PKI_Cipher.GenerateNewKey();
+        String IV = PKI_Cipher.GenerateNewKey();
         try
         {
-            Log.i("ContactKey", PublicKey);
             CID = ContactDetails.getString("CID");
             SQLiteDatabase DBUpdateContact = this.getWritableDatabase();
             ContentValues contentValues = new ContentValues();
             contentValues.put("PubKey", PublicKey);
             contentValues.put("PrivKey", PrivateKey);
             contentValues.put("Secret", SharedSecret);
+            contentValues.put("Salt", Salt);
+            contentValues.put("IV", IV);
             contentValues.put("Confirmed", 0);
             result = DBUpdateContact.update("Contacts", contentValues, "CID=?", new String[]{CID});
             if(result==-1)
@@ -150,7 +157,8 @@ public class DBManager extends SQLiteOpenHelper
                 ContactDetails.put("x", 3);
                 ContactDetails.put("SecretKey", PrivateKey);
                 ContactDetails.put("Secret", SharedSecret);
-                Log.i("Key Step 2","Public Key "+PublicKey);
+                contentValues.put("Secret", SharedSecret);
+                contentValues.put("Salt", Salt);
                 ContactDetails.remove("PubKey");
                 ContactDetails.put("t", preferences.getString("MyContact","NewContact"));
                 new KeyExchange(context).FirstExchange(CID,PublicKey,ContactDetails);
@@ -173,7 +181,6 @@ public class DBManager extends SQLiteOpenHelper
                 SQLiteDatabase DBUpdateChats = this.getWritableDatabase();
                 ContentValues chatValues = new ContentValues();
                 chatValues.put("Status",Status);
-                Log.i("HERE HERE", CID+" -- "+SMSMessage);
                 DBUpdateChats.update("EncryptedSMS", chatValues, "CID=? AND MessageBody=?", new String[]{CID,SMSMessage.getString("Body")});
             }
         } catch (JSONException ignored) {
@@ -197,7 +204,6 @@ public class DBManager extends SQLiteOpenHelper
             @SuppressLint("Recycle") Cursor cursor = DBUpdateContact.rawQuery("select * from Contacts where CID=?  LIMIT 1", new String[]{CID});
             if(cursor.getCount()>0 && cursor.moveToNext())
             {
-                Log.i("Key Step 3","Contact Updating "+cursor.getString(cursor.getColumnIndex("PubKey")));
                 PublicKey =cursor.getString(cursor.getColumnIndex("PubKey"));
                 contentValues.put("PrivKey", ContactDetails.getString("SecretKey"));
                 contentValues.put("PubKey", PublicKey);
@@ -205,7 +211,6 @@ public class DBManager extends SQLiteOpenHelper
                 contentValues.put("Secret", ContactDetails.getString("Secret"));
                 DBUpdateContact.update("Contacts", contentValues, "CID=?", new String[]{CID});
                 DBUpdateContact.close();
-                Log.i("Key Step 3","Contact Updated");
             }
             else
             {
@@ -217,32 +222,27 @@ public class DBManager extends SQLiteOpenHelper
                 contentValues.put("Secret", ContactDetails.getString("Secret"));
                 DBUpdateContact.insert("Contacts", null, contentValues);
                 DBUpdateContact.close();
-                Log.i("Key Step 3","Contact Added");
             }
             if(PublicKey!=null)
             {
-                Log.i("Key Step Next 4","Sending Contact Verification for stage 4");
                 ContactVerificationJSON.put("x",4);
                 ContactVerificationJSON.put("t",MyPrefs.getString("MyContact","--"));
                 ContactVerificationJSON.put("Secret",PKI_Cipher.ComputeHash(ContactDetails.getString("Secret")));
                 ContactVerificationJSON.put("SecretKey",PKI_Cipher.ComputeHash(ContactDetails.getString("SecretKey")));
-                Log.i("Key Step Sending 4",ContactVerificationJSON.toString());
                 if(BackendFunctions.isConnectedOnline(context) && !MyPrefs.getString("ServerURL","---").equals("---"))
                 {
                     new SMSHandler(context).SendSMSOnline(CID, ContactVerificationJSON, PublicKey);
                 }
                 else
                 {
-                    new SMSHandler(context).sendEncryptedSMS(CID, ContactVerificationJSON, PublicKey,3);
+                    new SMSHandler(context).sendEncryptedSMS(CID, ContactVerificationJSON, PublicKey, null,null,3);
                 }
             }
             else
             {
-                Log.i("Hapa hakuna kitu","Requesting Public Key");
                 new KeyExchange(context).RequestContact(CID);
             }
         } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
-            Log.i("Key Step 3 Error",e.getLocalizedMessage());
             e.printStackTrace();
         }
     }
@@ -353,7 +353,6 @@ public class DBManager extends SQLiteOpenHelper
     }
     public boolean UpdateMessageStatus(String CID, int Status)
     {
-        Log.i("Current ID: ",CID);
         SQLiteDatabase DB = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("ReadStatus", Status);
@@ -366,7 +365,6 @@ public class DBManager extends SQLiteOpenHelper
         try {
             JSONObject LocalContact = new DBManager(context).GetContact(CID);
             if(PKI_Cipher.ComputeHash(LocalContact.getString("Secret")).equals(SecretHash)) {
-                Log.i("Key step  Verified ", CID);
                 SQLiteDatabase DB = this.getWritableDatabase();
                 ContentValues contentValues = new ContentValues();
                 contentValues.put("Confirmed", 1);
@@ -403,6 +401,8 @@ public class DBManager extends SQLiteOpenHelper
                 ContactJSON.put("PubKey",cursor.getString(cursor.getColumnIndex("PubKey")));
                 ContactJSON.put("Secret",cursor.getString(cursor.getColumnIndex("Secret")));
                 ContactJSON.put("Confirmed",cursor.getInt(cursor.getColumnIndex("Confirmed")));
+                ContactJSON.put("Salt",cursor.getInt(cursor.getColumnIndex("Salt")));
+                ContactJSON.put("IV",cursor.getInt(cursor.getColumnIndex("IV")));
             }
         }catch (Exception e){e.printStackTrace();}
 
@@ -414,7 +414,6 @@ public class DBManager extends SQLiteOpenHelper
     {
         String CID = null;
         try {
-            Log.i("Contact Key ",smsJSON.getString("t")+smsJSON.getString("K"));
             smsJSON.put("CID", smsJSON.getString("t"));
             smsJSON.put("PubKey", smsJSON.getString("K"));
             UpdateContact(smsJSON,smsJSON.getString("K").replace("\n",""));
@@ -422,5 +421,8 @@ public class DBManager extends SQLiteOpenHelper
             e.printStackTrace();
         }
 
+    }
+
+    public void ResetPrivKey(JSONObject smsJSON) {
     }
 }

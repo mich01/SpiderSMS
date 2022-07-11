@@ -13,7 +13,6 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
 import android.telephony.SmsManager;
-import android.util.Log;
 import android.view.Window;
 import android.widget.Toast;
 
@@ -142,7 +141,7 @@ public class SMSHandler {
 
     @SuppressLint("InlinedApi")
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void sendEncryptedSMS(String PhoneNo, JSONObject SMSText, String EncryptionKey, int CryptType) throws JSONException {
+    public void sendEncryptedSMS(String PhoneNo, JSONObject SMSText, String EncryptionKey,String AES_Salt, String IV, int CryptType) throws JSONException {
         if(SMSText.toString().isEmpty() || PhoneNo.isEmpty() || EncryptionKey.isEmpty())
         {
             ErrorAlert();
@@ -216,7 +215,7 @@ public class SMSHandler {
             }
             else
             {
-                SMS = AppTrigger + new PKI_Cipher(context).Encrypt(SMSText.toString(), EncryptionKey);
+                SMS = AppTrigger + new PKI_Cipher(context).Encrypt(SMSText.toString(), EncryptionKey, AES_Salt, IV);
             }
             if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)
             {
@@ -235,11 +234,11 @@ public class SMSHandler {
             {
                 manager.sendTextMessage(PhoneNo, null, SMS, piSend, piDelivered);
             }
-            Log.i("SMS Handler: ", "Message sent to " + PhoneNo + " Message: " + SMS);}
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
-    public void proxyEncryptedSMS(JSONObject SMSText, String EncryptionKey) throws JSONException {
+    public void proxyEncryptedSMS(JSONObject SMSText, String EncryptionKey, String AES_Salt, String IV) throws JSONException {
         MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String ProxyNumber = MyPrefs.getString("ProxyNumber", "---");
         if(SMSText.toString().isEmpty() ||  EncryptionKey.isEmpty())
@@ -302,9 +301,8 @@ public class SMSHandler {
             SmsManager manager = SmsManager.getDefault();
             PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE);
             PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE);
-            String SMS = AppTrigger.concat(new PKI_Cipher(context).Encrypt(SMSText.toString(), EncryptionKey));
+            String SMS = AppTrigger.concat(new PKI_Cipher(context).Encrypt(SMSText.toString(), EncryptionKey, AES_Salt,IV));
             SMSText.put("R", new Random().nextInt(26) + 'a');
-            Log.i("SMS Handler: ", "Message sent to " + ProxyNumber + " Message: " + SMSText);
             if (SMS.length() >= MAX_SMS_MESSAGE_LENGTH) {
                 ArrayList<String> parts = manager.divideMessage(SMS);
                 int numParts = parts.size();
@@ -339,16 +337,12 @@ public class SMSHandler {
             String SMSBody= null;
             if(SMSText.getInt("x")==7 | SMSText.getInt("x")==8)
             {
-                Log.i("Key to send","we will use here");
-
                 SMSBody = KeyRequestTrigger+SMSText.toString();
             }
             else
             {
-                Log.i("Key to send","Landing here");
                 SMSBody =AppTrigger + new PKI_Cipher(context).EncryptPKI(SMSText.toString(), EncryptionKey);
             }
-            //SMSText.put("R", new Random().nextInt(26) + 'a');
             RequestBody requestBody = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
                     .addFormDataPart("username", API_UserName)
@@ -362,17 +356,18 @@ public class SMSHandler {
                     .addHeader("ApiKey", API_Key)
                     .post(requestBody)
                     .build();
+            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,1);
             Handler h = new Handler(context.getMainLooper());
             h.post(() -> client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     e.printStackTrace();
-                    new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,0);
+                    new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,1);
                 }
                 @Override
                 public void onResponse(@NotNull Call call, @NotNull Response response) {
-                    Log.i("The Response", response.toString());
                     response.close();
+                    new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,1);
                     //Toast.makeText(context, "Message Sent",Toast.LENGTH_SHORT).show();
                 }
             }));

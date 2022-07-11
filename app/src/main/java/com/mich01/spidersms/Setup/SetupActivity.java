@@ -1,5 +1,6 @@
 package com.mich01.spidersms.Setup;
 
+import static com.mich01.spidersms.Crypto.PKI_Cipher.GenerateNewKey;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
 import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
@@ -66,7 +67,6 @@ public class SetupActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
             {
-                Log.i("PhoneNumber",ccp.getFullNumber());
                 if(!txtPinNumber.getText().toString().isEmpty() & !txtConfirmPinNumber.getText().toString().isEmpty() &
                         txtPinNumber.getText().toString().equals(txtConfirmPinNumber.getText().toString()) & ccp.isValidFullNumber())
                 {
@@ -84,7 +84,6 @@ public class SetupActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                Log.i("PhoneNumber",ccp.getFullNumber());
                 if(!txtPinNumber.getText().toString().isEmpty() & !txtConfirmPinNumber.getText().toString().isEmpty() &
                         txtPinNumber.getText().toString().equals(txtConfirmPinNumber.getText().toString()))
                 {
@@ -128,6 +127,8 @@ public class SetupActivity extends AppCompatActivity {
         MyPrefsEditor = MyPrefs.edit();
         MyPrefsEditor.putString("MyPinHash", PinHash);
         MyPrefsEditor.putInt("SetupComplete", 0);
+        MyPrefsEditor.putString("Salt", GenerateNewKey());
+        MyPrefsEditor.putString("IV", GenerateNewKey());
         MyPrefsEditor.apply();
         completed = MyPrefsEditor.commit();
         return completed;

@@ -57,29 +57,24 @@ public class MainReceiver extends BroadcastReceiver {
                     JSONObject smsJSON;
                     if(contactJSON.length()>0 && contactJSON.getInt("Confirmed")==1)
                     {
-                        Log.i("OPT Msg", "Using Confirmed Key");
                         DecryptionKey = contactJSON.getString("PrivKey");
-                        Log.i("Key Encr",DecryptionKey);
-                        DecryptedSMS = new PKI_Cipher(context).Decrypt(message.replace( ">",""),DecryptionKey);
+                        String AES_Salt = contactJSON.getString("Salt");
+                        String IV = contactJSON.getString("IV");
+                        DecryptedSMS = new PKI_Cipher(context).Decrypt(message.replace( ">",""),DecryptionKey, AES_Salt,IV);
                         smsJSON = new JSONObject(DecryptedSMS);
                         ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
                     }
                     else
                     {
-                        Log.i("OPT 2","here here");
                         DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
-                        Log.i("OPT 2",DecryptedSMS);
                         smsJSON = new JSONObject(DecryptedSMS);
+                        Log.i("Decrypted SMS:",DecryptedSMS);
                         ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
                     }
-                    Log.i("Message Arrived",DecryptedSMS);
-
-                } catch (Exception e)
+                } catch (Exception ex)
                 {
-                    String DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
-                    Log.i("OPT Error",DecryptedSMS +""+e.getLocalizedMessage());
+                    //String DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
                 }
-                //
             }
             else if(message.startsWith("-"))
             {
@@ -87,16 +82,13 @@ public class MainReceiver extends BroadcastReceiver {
                 {
                     String DecryptedSMS;
                     JSONObject smsJSON;
-                        Log.i("Final Key Confirmation","here here");
                         DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( "-",""));
-                        Log.i("OPT 2",DecryptedSMS);
                         smsJSON = new JSONObject(DecryptedSMS);
                         ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
 
                 } catch (Exception e)
                 {
                     String DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
-                    Log.i("OPT Error",DecryptedSMS +""+e.toString());
                 }
             }
             else if(message.startsWith("*"))
@@ -104,7 +96,6 @@ public class MainReceiver extends BroadcastReceiver {
                 JSONObject smsJSON = null;
                 try {
                     smsJSON = new JSONObject(message.replace( "*",""));
-                    Log.i("Key Requested",smsJSON.toString());
                     ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -126,21 +117,20 @@ public class MainReceiver extends BroadcastReceiver {
             }
             else if(smsJSON.getInt("x")==3)
             {
-                Log.i("Key Step 3","Message Received "+smsJSON);
                 smsJSON.getString("t");
                 smsJSON.getString("SecretKey");
                 smsJSON.getString("Secret");
-                new DBManager(context).UpdateContactSpec(smsJSON);
+                smsJSON.getString("Salt");
+                smsJSON.getString("IV");
+                //new DBManager(context).UpdateContactSpec(smsJSON);
             }
             else if(smsJSON.getInt("x")==4)
             {
-                Log.i("Key Step 4","Message Received "+smsJSON.toString());
                 new KeyExchange(context).VerifyContact(smsJSON);
             }
             else if(smsJSON.getInt("x")==5)
             {
                 smsJSON.getString("Secret");
-                Log.i("Key Step 5 ","Contact Verified by "+smsJSON.getString("t"));
                 new DBManager(context).VerifyContactPK(smsJSON.getString("t"), smsJSON.getString("Secret"));
             }
             else if(smsJSON.getInt("x")==6)
@@ -150,17 +140,18 @@ public class MainReceiver extends BroadcastReceiver {
             }
             else if(smsJSON.getInt("x")==7)
             {
-                Log.i("Key IS REQUESTED HERE",smsJSON.toString());
                 new KeyExchange(context).RespondWithKey(smsJSON.getString("t"));
             }
             else if(smsJSON.getInt("x")==8)
             {
-                Log.i("Key IS PASSED HERE",smsJSON.toString());
                 smsJSON.put("CID",smsJSON.getString("t"));
                 new DBManager(context).UpdateContact(smsJSON, smsJSON.getString("K").replaceAll("\"\"", "").replaceAll("\\++", "+").replace(" ", ""));
             }
+            else if(smsJSON.getInt("x")==9) {
+                new DBManager(context).ResetPrivKey(smsJSON);
+
+            }
         } catch (JSONException e) {
-            Log.i("OPT Error+",smsJSON+""+e.getLocalizedMessage());
         }
     }
 }

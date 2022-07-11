@@ -101,7 +101,6 @@ public class DataQRGenerator extends AppCompatActivity {
         ShareQRContact.setOnClickListener(v -> {
             try {
                 String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,ContactID, ContactID);
-                //Log.i("Url",tempFile);
                 Uri bmpUri = Uri.parse(tempFile);
                 final Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -112,8 +111,7 @@ public class DataQRGenerator extends AppCompatActivity {
             {
                 e.printStackTrace();
             }finally {
-                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,"SpiderSMS-"+ContactID, ContactID);
-                Log.i("Url",tempFile);
+                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,"SpiderSMS-", ContactID);
                 Uri bmpUri = Uri.parse(tempFile);
                 final Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

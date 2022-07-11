@@ -43,7 +43,6 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         super(c, resource, chatsList);
        ChatsAdapter.chatsList = chatsList;
        context =c;
-       //Log.i("Chat Lists: ","Construct---- and count: "+chatsList.size());
     }
 
     @Override

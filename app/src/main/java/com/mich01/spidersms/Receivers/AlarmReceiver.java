@@ -12,7 +12,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i("Trigger Received: ",intent.toString());
         if(BackendFunctions.isConnectedOnline(context))
         {
             new BackendFunctions().UpdateContactPrivateKeys(context);

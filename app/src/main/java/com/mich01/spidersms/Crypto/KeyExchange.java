@@ -46,7 +46,6 @@ public class KeyExchange
     {
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         try {
-            Log.i("Key Niks",ContactKeyJSON.toString());
             ContactKeyJSON.put("t",preferences.getString("MyContact","0"));
             ContactKeyJSON.put("CName",preferences.getString("ContactName","--"));
             if(BackendFunctions.isConnectedOnline(context) && !preferences.getString("ServerURL","---").equals("---"))
@@ -55,9 +54,8 @@ public class KeyExchange
             }
             else
             {
-                new SMSHandler(context).sendEncryptedSMS(ContactID, ContactKeyJSON, PublicKey,3);
+                new SMSHandler(context).sendEncryptedSMS(ContactID, ContactKeyJSON, PublicKey, null,null,3);
             }
-            Log.i("Key Step 3","Key Sent ");
         } catch (JSONException | NoSuchPaddingException | InvalidKeyException | InvalidKeySpecException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         }
@@ -72,17 +70,13 @@ public class KeyExchange
         String PublicKey;
         JSONObject ContactKeyJSON = new JSONObject();
         JSONObject LocalContact;
-        Log.i("Key Step 4 ","Contact Verification Process Started");
         try
         {
-            Log.i("Key Stage: ", String.valueOf(ContactObject.getInt("x")));
             Contact =ContactObject.getString("t");
             LocalContact = new DBManager(context).GetContact(Contact);
-            Log.i("Key Step -->","KEY SEMA HII "+ LocalContact.toString());
             ContactHash = PKI_Cipher.ComputeHash(LocalContact.getString("Secret"));
             KeyHash = PKI_Cipher.ComputeHash(LocalContact.getString("PrivKey"));
             PublicKey = LocalContact.getString("PubKey");
-            Log.i("Contact Hash:",ContactHash+" Key Hash "+ContactObject.getString("Secret"));
             if(ContactHash.equals(ContactObject.getString("Secret")) ||
                     KeyHash.equals(ContactObject.getString("SecretKey")))
             {
@@ -94,29 +88,23 @@ public class KeyExchange
                 {
                     ContactKeyJSON.put("x",6);
                 }
-                Log.i("Key Step -->","KEY NDIO HII "+ ContactKeyJSON);
                 ContactKeyJSON.put("t",preferences.getString("MyContact","NewContact"));
                 ContactKeyJSON.put("Secret",ContactObject.getString("Secret"));
                 ContactKeyJSON.put("SecretKey",KeyHash);
-                Log.i("Key Step -->","Contact Key Verified "+ ContactKeyJSON);
                 new DBManager(context).VerifyContactPK(Contact,ContactHash);
                 if(BackendFunctions.isConnectedOnline(context) && !preferences.getString("ServerURL","---").equals("---"))
                 {
-                    Log.i("Key Step -->","NIKO HAPA "+ ContactKeyJSON);
                     new SMSHandler(context).SendSMSOnline(Contact, ContactKeyJSON, PublicKey);
                 }
                 else
                 {
-                    Log.i("Key Step -->","AMA HAPA "+ ContactKeyJSON);
-                    new SMSHandler(context).sendEncryptedSMS(Contact, ContactKeyJSON, PublicKey,3);
+                    new SMSHandler(context).sendEncryptedSMS(Contact, ContactKeyJSON, PublicKey,null,null,3);
                 }
             }
             else
             {
-                Log.i("Key Step 4 Error","Doesn't Match");
             }
         } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
-            Log.i("Key Step 4 Error",e.getMessage());
         }
     }
     @RequiresApi(api = Build.VERSION_CODES.S)
@@ -150,15 +138,12 @@ public class KeyExchange
             MyContactJSON.put("t",preferences.getString("MyContact","0"));
             MyContactJSON.put("x",8);
             MyContactJSON.put("K",PKI_Cipher.SharePublicKey());
-            Log.i("Key Responding",MyContactJSON.toString());
             if(BackendFunctions.isConnectedOnline(context) && !preferences.getString("ServerURL","---").equals("---"))
             {
-                Log.i("Key to send","Online here");
                 new SMSHandler(context).SendSMSOnline(CID, MyContactJSON, OtherContactJSON.getString("PubKey"));
             }
             else
             {
-                Log.i("Key to send","Offline here");
                 new SMSHandler(context).sendPlainSMS(CID, MyContactJSON.toString());
             }
         } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {

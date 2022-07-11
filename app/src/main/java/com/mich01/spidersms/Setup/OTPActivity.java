@@ -50,10 +50,9 @@ public class OTPActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         ContactID = bundle.getString("ContactID");
         ContactName = bundle.getString("ContactName");
-        // [START declare_auth]
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         String phoneNumber = "+"+ContactID;
-        String smsCode = "123456";
+        String smsCode = "0000";
         // The test phone number and code should be whitelisted in the console.
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -75,18 +74,14 @@ public class OTPActivity extends AppCompatActivity {
 
                     @Override
                     public void onVerificationFailed(@NonNull FirebaseException e) {
-                        //startActivity(new Intent(OTPActivity.this, SetupActivity.class));
-                        //finish();
+
                     }
 
                 })
                 .build();
         PhoneAuthProvider.verifyPhoneNumber(options);
         VerifyOTP.setOnClickListener(view -> {
-            if(OTP_Text.getText().toString().equals("1234"))
-            {
-                CompleteSetup();
-            }
+
         });
     }
     @RequiresApi(api = Build.VERSION_CODES.M)

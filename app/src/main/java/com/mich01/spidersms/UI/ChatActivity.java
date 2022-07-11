@@ -55,6 +55,8 @@ public class ChatActivity extends AppCompatActivity {
     JSONObject ContactJSON;
     int CypherType;
     private static String EncryptionKey;
+    private static String AES_Salt;
+    private static String IV;
     @RequiresApi(api = Build.VERSION_CODES.S)
     @SuppressLint("NotifyDataSetChanged")
     @Override
@@ -75,7 +77,6 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(messageAdapter);
         sendButton = findViewById(R.id.sendButton);
-        Log.i("This Confirm", String.valueOf(ContactJSON.length()));
         if(ContactJSON.length()==0)
         {
             userInput.setText("Contact Unavailable");
@@ -87,6 +88,8 @@ public class ChatActivity extends AppCompatActivity {
             {
                 CypherType=2;
                 EncryptionKey =ContactJSON.getString("PrivKey");
+                AES_Salt =ContactJSON.getString("Salt");
+                IV =ContactJSON.getString("IV");
             }
             else if(ContactJSON.getInt("Confirmed")!=0 && ContactJSON.getInt("Confirmed")==0)
             {
@@ -148,7 +151,7 @@ public class ChatActivity extends AppCompatActivity {
                         SMSBody.put("x",1);
                         SMSBody.put("Body",MessageText);
                         UpdateChatMessages(ContactID,MessageText);
-                        new SMSHandler(context).sendEncryptedSMS(ContactID, SMSBody,EncryptionKey,CypherType);
+                        new SMSHandler(context).sendEncryptedSMS(ContactID, SMSBody,EncryptionKey,AES_Salt, IV,CypherType);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -168,7 +171,7 @@ public class ChatActivity extends AppCompatActivity {
                     try {
                         EncryptionKey = ContactJSON.getString("PubKey");
                         UpdateChatMessages(ContactID,MessageText);
-                        new SMSHandler(context).proxyEncryptedSMS(SMSBody,EncryptionKey);
+                        new SMSHandler(context).proxyEncryptedSMS(SMSBody,EncryptionKey, AES_Salt,IV);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }finally {

@@ -46,7 +46,7 @@
 
     <LinearLayout
         android:id="@+id/ll_phone_no"
-        android:layout_width="411dp"
+        android:layout_width="match_parent"
         android:layout_height="54dp"
         android:layout_centerInParent="true"
         android:layout_marginTop="30dp"
@@ -61,13 +61,14 @@
             android:layout_gravity="center_vertical"
             android:background="@drawable/country_code"
             android:ems="10"
+            android:gravity="center"
             app:ccp_autoDetectCountry="true"
             app:ccp_showNameCode="false"
             tools:ccp_contentColor="#fcfdfd" />
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/txt_phone_number"
-            android:layout_width="wrap_content"
+            android:layout_width="210dp"
             android:layout_height="match_parent"
             android:background="@drawable/phone_number_background"
             android:ems="10"

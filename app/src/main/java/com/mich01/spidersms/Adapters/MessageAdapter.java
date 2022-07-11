@@ -58,6 +58,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
         {
             return R.layout.sender_bubble;
         }
+        if(responseMessageList.get(position).isSent() && responseMessageList.get(position).getMessageStatus()==4)
+        {
+            return R.layout.sender_bubble;
+        }
         else if(!responseMessageList.get(position).isSent() && responseMessageList.get(position).getMessageStatus()<3)
         {
             return R.layout.receiver_bubble;
@@ -94,6 +98,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
             {
                 holder.MessageStatus.setTextColor(context.getResources().getColor(R.color.darkblue));
                 Status =" \u2713"+"\u2713";
+            }
+            else if (responseMessageList.get(pos).isSent() && responseMessageList.get(pos).getMessageStatus()==4)
+            {
+                holder.MessageStatus.setTextColor(context.getResources().getColor(R.color.darkblue));
+                Status =" \u2713"+" Online";
             }
             if(!responseMessageList.get(pos).isSent())
             {

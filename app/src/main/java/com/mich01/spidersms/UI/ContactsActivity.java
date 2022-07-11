@@ -271,7 +271,6 @@ public class ContactsActivity extends AppCompatActivity {
         {
             if(Contacts.get(i).getContactNames().toLowerCase().contains(SearchString.toLowerCase()))
             {
-                Log.i("Filtered",SearchString);
                 FilteredContacts.add(new Contact(Contacts.get(i).getCID(),
                     Contacts.get(i).getContactNames(), Contacts.get(i).getPubKey(), Contacts.get(i).getCType()));
             }

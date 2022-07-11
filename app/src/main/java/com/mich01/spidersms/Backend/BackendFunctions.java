@@ -120,7 +120,6 @@ public class BackendFunctions
     @RequiresApi(api = Build.VERSION_CODES.S)
     public void NotifyDecryptionError(Context context)
     {
-        Log.i("OPT 2","FAIL TRIGGER");
         String CHANNEL_ID = "1337";
         try {
             Intent notifyIntent = new Intent(context, SplashActivity.class);

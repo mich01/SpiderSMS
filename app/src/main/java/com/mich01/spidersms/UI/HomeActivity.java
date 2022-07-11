@@ -250,22 +250,17 @@ public class HomeActivity extends AppCompatActivity {
                 }
                 Intent QRIntent = new Intent(this, DataQRGenerator.class);
                 QRIntent.putExtra("Contact", ContactJson.toString());
-                //QRIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                QRIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(QRIntent);
                 break;
             case R.id.terms_conditions:
                 BrowserIntent.putExtra("Section","SpiderSMS T&C");
-                BrowserIntent.putExtra("URL","https://docs.google.com/document/d/e/2PACX-1vTKjP8cPaix2MmEFMvWMhatoGFVfjP3AfK0p7Kxfrr7uE-BmctXlE6xgalyjRzSFyXkrDaNKzm1QKFp/pub");
-                startActivity(BrowserIntent);
-                break;
-            case R.id.license:
-                BrowserIntent.putExtra("Section","SpiderSMS User License");
-                BrowserIntent.putExtra("URL","https://docs.google.com/document/d/e/2PACX-1vTKjP8cPaix2MmEFMvWMhatoGFVfjP3AfK0p7Kxfrr7uE-BmctXlE6xgalyjRzSFyXkrDaNKzm1QKFp/pub");
+                BrowserIntent.putExtra("URL","file:///android_asset/Privacy.html");
                 startActivity(BrowserIntent);
                 break;
             case R.id.about_app:
                 BrowserIntent.putExtra("Section","About SpiderSMS");
-                BrowserIntent.putExtra("URL","https://www.saftey.com");
+                BrowserIntent.putExtra("URL","file:///android_asset/About.html");
                 startActivity(BrowserIntent);
                 break;
         }

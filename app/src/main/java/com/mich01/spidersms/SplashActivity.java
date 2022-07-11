@@ -48,9 +48,6 @@ public class SplashActivity extends AppCompatActivity
                 SharedPreferences.Editor PrefEditor;
                 PrefEditor = preferences.edit();
                 PrefEditor.putLong("InstalledTimestamp", System.currentTimeMillis());
-                PrefEditor.putString("PublicKey", SharedKeys);
-                PrefEditor.putString("PrivateKey", SharedKeys);
-                //PrefEditor.putBoolean("Licensed", false);
                 PrefEditor.apply();
             }
             {

@@ -42,7 +42,6 @@ public class SetupConfig
                 ConfirmOnlineAPI(context, Input);
                 break;
             case "HelloContact":
-                Log.i("Key Step 1","Contact Scanned");
                 if(new DBManager(context).AddContact(Input))
                 {
                     context.startActivity(new Intent(context, HomeActivity.class));

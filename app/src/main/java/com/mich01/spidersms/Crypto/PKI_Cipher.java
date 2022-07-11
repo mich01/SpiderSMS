@@ -1,5 +1,8 @@
 package com.mich01.spidersms.Crypto;
 
+import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
+import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
+
 import android.content.Context;
 import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
@@ -10,6 +13,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.mich01.spidersms.Backend.BackendFunctions;
+import com.mich01.spidersms.Setup.SetupActivity;
 import com.mich01.spidersms.UI.HomeActivity;
 
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -69,6 +73,12 @@ public class PKI_Cipher
     private static PublicKey publicKey;
     private static PrivateKey privateKey;
     private static Context context;
+    private static final int pswdIterations = 10;
+    private static final int keySize = 128;
+    private static final String cypherInstance = "AES/CBC/PKCS5Padding";
+    private static final String secretKeyInstance = "PBKDF2WithHmacSHA1";
+    private static String AESSalt = null;
+    private static String initializationVector = null;
 
     public PKI_Cipher(Context context) {
         this.context = context;
@@ -95,15 +105,11 @@ public class PKI_Cipher
         return sb.toString();
     }
 
-    private static final int pswdIterations = 10;
-    private static final int keySize = 128;
-    private static final String cypherInstance = "AES/CBC/PKCS5Padding";
-    private static final String secretKeyInstance = "PBKDF2WithHmacSHA1";
-    private static final String AESSalt = "ddddd";
-    private static final String initializationVector = "8119745113154120";
-
-    public String Encrypt(String PlainText, String Key)
+    public String Encrypt(String PlainText, String Key,String AESSalt, String initializationVector)
     {
+        //MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        //AESSalt = MyPrefs.getString("Salt","");
+        //initializationVector = MyPrefs.getString("IV","");
         String CipherText=null;
         try
         {
@@ -116,12 +122,11 @@ public class PKI_Cipher
             e.printStackTrace();
 
         }
-        Log.i("Encrypt"," This is the CipherText "+ CipherText);
         return CipherText;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
-    public String Decrypt(String CipherText, String Key)
+    public String Decrypt(String CipherText, String Key, String AESSalt, String initializationVector)
     {
         String PlainText=null;
         try {
@@ -136,7 +141,6 @@ public class PKI_Cipher
             new BackendFunctions().NotifyDecryptionError(context);
 
         }
-        Log.i("Encrypt"," This is the PLainText "+ PlainText);
         return PlainText;
     }
 
@@ -214,8 +218,6 @@ public class PKI_Cipher
             keyStore.load(null);
             PublicKey publicKey = keyStore.getCertificate("SpiderSMS").getPublicKey();
             Public_Key = Base64.encodeToString(publicKey.getEncoded(), Base64.DEFAULT);
-            Log.i("PKI","\n----------------------------- \n");
-            Log.i("PKI"," This is the Public Key "+ Public_Key);
         } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
             e.printStackTrace();
         }

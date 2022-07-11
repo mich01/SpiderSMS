@@ -43,9 +43,6 @@ public class ContactAdapter extends ArrayAdapter<Contact>
         super(c, resource, contacts);
         MyContact =contacts;
         context =c;
-        //Log.i("Chat Lists: ","Construct---- and count: "+contacts.size());
-
-
     }
 
 
