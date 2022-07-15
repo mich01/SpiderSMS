@@ -25,6 +25,7 @@ public class MainReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent)
     {
         String senderNum = null;
+        String DecryptedSMS=null;
         StringBuilder messageChunk =new StringBuilder();
         String message =null;
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED"))
@@ -49,19 +50,20 @@ public class MainReceiver extends BroadcastReceiver {
             assert message != null;
             if(message.startsWith(">"))
             {
+                Log.i("Decrypted SMS:",message);
                 try
                 {
                     JSONObject contactJSON = new DBManager(context).GetContact(senderNum);
                     String DecryptionKey;
-                    String DecryptedSMS;
                     JSONObject smsJSON;
-                    if(contactJSON.length()>0 && contactJSON.getInt("Confirmed")==1)
+                    if(contactJSON.getInt("Confirmed")==1)
                     {
                         DecryptionKey = contactJSON.getString("PrivKey");
                         String AES_Salt = contactJSON.getString("Salt");
-                        String IV = contactJSON.getString("IV");
+                        String IV = contactJSON.getString("Secret");
                         DecryptedSMS = new PKI_Cipher(context).Decrypt(message.replace( ">",""),DecryptionKey, AES_Salt,IV);
                         smsJSON = new JSONObject(DecryptedSMS);
+                        Log.i("DecryptedSMS Info",DecryptedSMS);
                         ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
                     }
                     else
@@ -73,29 +75,33 @@ public class MainReceiver extends BroadcastReceiver {
                     }
                 } catch (Exception ex)
                 {
-                    //String DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
+                    DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
+                    Log.i("Decrypted SMS:",DecryptedSMS);
                 }
             }
             else if(message.startsWith("-"))
             {
                 try
                 {
-                    String DecryptedSMS;
                     JSONObject smsJSON;
                         DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( "-",""));
                         smsJSON = new JSONObject(DecryptedSMS);
                         ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
+                    Log.i("Contact Info",DecryptedSMS);
 
                 } catch (Exception e)
                 {
-                    String DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
+                    DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( ">",""));
+                    Log.i("Start",DecryptedSMS);
                 }
             }
-            else if(message.startsWith("*"))
+            else if(message.startsWith("+"))
             {
                 JSONObject smsJSON = null;
                 try {
-                    smsJSON = new JSONObject(message.replace( "*",""));
+                    DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( "+",""));
+                    smsJSON = new JSONObject(DecryptedSMS);
+                    Log.i("Contact Info",DecryptedSMS);
                     ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -120,9 +126,9 @@ public class MainReceiver extends BroadcastReceiver {
                 smsJSON.getString("t");
                 smsJSON.getString("SecretKey");
                 smsJSON.getString("Secret");
-                smsJSON.getString("Salt");
-                smsJSON.getString("IV");
-                //new DBManager(context).UpdateContactSpec(smsJSON);
+                //smsJSON.getString("Salt");
+                Log.i("Contact Info","Landing Here");
+                new DBManager(context).UpdateContactSpec(smsJSON);
             }
             else if(smsJSON.getInt("x")==4)
             {

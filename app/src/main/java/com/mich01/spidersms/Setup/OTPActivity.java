@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -55,6 +56,7 @@ public class OTPActivity extends AppCompatActivity {
         String smsCode = "0000";
         // The test phone number and code should be whitelisted in the console.
 
+        Log.i("hello",ContactID);
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseAuthSettings firebaseAuthSettings = firebaseAuth.getFirebaseAuthSettings();
 
@@ -81,7 +83,7 @@ public class OTPActivity extends AppCompatActivity {
                 .build();
         PhoneAuthProvider.verifyPhoneNumber(options);
         VerifyOTP.setOnClickListener(view -> {
-
+            CompleteSetup();
         });
     }
     @RequiresApi(api = Build.VERSION_CODES.M)

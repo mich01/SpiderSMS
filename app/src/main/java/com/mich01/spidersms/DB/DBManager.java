@@ -40,6 +40,8 @@ import javax.crypto.NoSuchPaddingException;
 public class DBManager extends SQLiteOpenHelper
 {
     Context context;
+    private String PrivateKey;
+
     public DBManager(Context context) {
         super(context, "Chats.db", null, 1);
         this.context=context;
@@ -66,7 +68,7 @@ public class DBManager extends SQLiteOpenHelper
     public boolean AddContact(JSONObject ContactObject)
     {
         boolean status = false;
-        String PrivateKey = PKI_Cipher.GenerateNewKey();
+        PrivateKey = PKI_Cipher.GenerateNewKey();
         String SharedSecret = PKI_Cipher.GenerateNewKey();
         String Salt = PKI_Cipher.GenerateNewKey();
         try
@@ -76,7 +78,7 @@ public class DBManager extends SQLiteOpenHelper
             SQLiteDatabase DB = this.getWritableDatabase();
             final String PublicKey =ContactObject.getString("PubKey");
             ContentValues contentValues = new ContentValues();
-            contentValues.put("PubKey", ContactObject.getString("PubKey"));
+            contentValues.put("PubKey", PublicKey);
             contentValues.put("PrivKey", PrivateKey);
             contentValues.put("Secret", SharedSecret);
             contentValues.put("Salt", Salt);
@@ -128,7 +130,7 @@ public class DBManager extends SQLiteOpenHelper
     {
         int result;
         String CID;
-        String PrivateKey = PKI_Cipher.GenerateNewKey();
+        PrivateKey = PKI_Cipher.GenerateNewKey();
         String SharedSecret = PKI_Cipher.GenerateNewKey();
         String Salt = PKI_Cipher.GenerateNewKey();
         try
@@ -357,17 +359,21 @@ public class DBManager extends SQLiteOpenHelper
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void VerifyContactPK(String CID, String SecretHash)
     {
+        SQLiteDatabase DB = this.getWritableDatabase();
         try {
             JSONObject LocalContact = new DBManager(context).GetContact(CID);
             if(PKI_Cipher.ComputeHash(LocalContact.getString("Secret")).equals(SecretHash)) {
-                SQLiteDatabase DB = this.getWritableDatabase();
                 ContentValues contentValues = new ContentValues();
                 contentValues.put("Confirmed", 1);
                 DB.update("Contacts", contentValues, "CID=?", new String[]{CID});
                 DB.close();
+                Log.i("DecryptedSMS Info","Contact Secret Exchange Completed");
                 new BackendFunctions().KeyStatusChanged(context, CID, "---Shared Key Changed---");
             }
         }catch (Exception e){}
+        finally {
+            DB.close();
+        }
     }
     public int DeleteAllContacts(String PublicKey)
     {

@@ -45,10 +45,10 @@ import java.util.Objects;
 public class ChatActivity extends AppCompatActivity {
 
     EditText userInput;
-    public static RecyclerView recyclerView;
-    public static List<ResponseMessage> responseMessageList;
-    public static MessageAdapter messageAdapter;
-    public static String ContactID;
+    private static RecyclerView recyclerView;
+    private static List<ResponseMessage> responseMessageList;
+    private static MessageAdapter messageAdapter;
+    private static String ContactID;
     Context context;
     ImageButton sendButton;
     private String MessageText;
@@ -84,14 +84,14 @@ public class ChatActivity extends AppCompatActivity {
             sendButton.setVisibility(View.GONE);
         }
         try {
-            if(ContactJSON.getInt("Confirmed")!=0 && ContactJSON.getInt("Confirmed")==1)
+            if(ContactJSON.getInt("Confirmed")==1)
             {
                 CypherType=2;
                 EncryptionKey =ContactJSON.getString("PrivKey");
                 AES_Salt =ContactJSON.getString("Salt");
-                IV =ContactJSON.getString("IV");
+                IV =ContactJSON.getString("Secret");
             }
-            else if(ContactJSON.getInt("Confirmed")!=0 && ContactJSON.getInt("Confirmed")==0)
+            else if(ContactJSON.getInt("Confirmed")==0)
             {
                 CypherType=1;
                 EncryptionKey = ContactJSON.getString("PubKey");
@@ -200,35 +200,38 @@ public class ChatActivity extends AppCompatActivity {
     }
     @SuppressLint({"Range", "NotifyDataSetChanged"})
     public static void PopulateChatView(Context c) {
-        Cursor cur = new DBManager(c.getApplicationContext()).getCIDChats(ContactID);
-        responseMessageList.clear();
-        while (cur != null && cur.moveToNext())
+        if(ContactID!=null)
         {
-            if (cur.getInt(cur.getColumnIndex("inorout")) == 0 && cur.getInt(cur.getColumnIndex("Status")) <3)
+            Cursor cur = new DBManager(c.getApplicationContext()).getCIDChats(ContactID);
+            responseMessageList.clear();
+            while (cur != null && cur.moveToNext())
             {
-                responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), true, cur.getInt(cur.getColumnIndex("Status")),
-                        cur.getString(cur.getColumnIndex("Timestamp"))));
-            }
-            else if (cur.getInt(cur.getColumnIndex("inorout")) == 1 && cur.getInt(cur.getColumnIndex("Status"))<3 )
-            {
-                responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), false, cur.getInt(cur.getColumnIndex("Status")),
-                        cur.getString(cur.getColumnIndex("Timestamp"))));
-            }
-            else
-            {
-                responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), false, 3,
-                        cur.getString(cur.getColumnIndex("Timestamp"))));
-            }
-        }
-        if (cur != null) {
-            messageAdapter.notifyDataSetChanged();
-            if (ChatActivity.isLastVisible()) {
-                if (cur.getCount() > 0) {
-                    ChatActivity.recyclerView.smoothScrollToPosition(ChatActivity.messageAdapter.getItemCount() - 1);
+                if (cur.getInt(cur.getColumnIndex("inorout")) == 0 && cur.getInt(cur.getColumnIndex("Status")) <3)
+                {
+                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), true, cur.getInt(cur.getColumnIndex("Status")),
+                            cur.getString(cur.getColumnIndex("Timestamp"))));
+                }
+                else if (cur.getInt(cur.getColumnIndex("inorout")) == 1 && cur.getInt(cur.getColumnIndex("Status"))<3 )
+                {
+                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), false, cur.getInt(cur.getColumnIndex("Status")),
+                            cur.getString(cur.getColumnIndex("Timestamp"))));
+                }
+                else
+                {
+                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), false, 3,
+                            cur.getString(cur.getColumnIndex("Timestamp"))));
                 }
             }
+            if (cur != null) {
+                messageAdapter.notifyDataSetChanged();
+                if (ChatActivity.isLastVisible()) {
+                    if (cur.getCount() > 0) {
+                        ChatActivity.recyclerView.smoothScrollToPosition(ChatActivity.messageAdapter.getItemCount() - 1);
+                    }
+                }
+            }
+            ChatActivity.messageAdapter.notifyDataSetChanged();
         }
-
     }
 
     public static boolean isLastVisible() {
