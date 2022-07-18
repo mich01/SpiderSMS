@@ -56,7 +56,6 @@ public class OTPActivity extends AppCompatActivity {
         String smsCode = "0000";
         // The test phone number and code should be whitelisted in the console.
 
-        Log.i("hello",ContactID);
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseAuthSettings firebaseAuthSettings = firebaseAuth.getFirebaseAuthSettings();
 

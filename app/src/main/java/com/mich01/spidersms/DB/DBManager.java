@@ -41,6 +41,8 @@ public class DBManager extends SQLiteOpenHelper
 {
     Context context;
     private String PrivateKey;
+    final String EncryptedTable ="EncryptedSMS";
+    final String CID ="CID";
 
     public DBManager(Context context) {
         super(context, "Chats.db", null, 1);
@@ -76,7 +78,7 @@ public class DBManager extends SQLiteOpenHelper
             SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             String CID = ContactObject.getString("CID");
             SQLiteDatabase DB = this.getWritableDatabase();
-            final String PublicKey =ContactObject.getString("PubKey");
+            String PublicKey =ContactObject.getString("PubKey");
             ContentValues contentValues = new ContentValues();
             contentValues.put("PubKey", PublicKey);
             contentValues.put("PrivKey", PrivateKey);
@@ -143,7 +145,7 @@ public class DBManager extends SQLiteOpenHelper
             contentValues.put("Secret", SharedSecret);
             contentValues.put("Salt", Salt);
             contentValues.put("Confirmed", 0);
-            result = DBUpdateContact.update("Contacts", contentValues, "CID=?", new String[]{CID});
+            result = DBUpdateContact.update("Contacts", contentValues, CID+"=?", new String[]{CID});
             if(result==-1)
             {
                 Toast.makeText(context.getApplicationContext(), ContactDetails.getString("CName")+" Has Failed to Update", Toast.LENGTH_LONG).show();
@@ -160,7 +162,6 @@ public class DBManager extends SQLiteOpenHelper
                 ContactDetails.put("t", preferences.getString("MyContact","NewContact"));
                 new KeyExchange(context).FirstExchange(CID,PublicKey,ContactDetails);
                 Toast.makeText(context.getApplicationContext(), ContactDetails.getString("CName")+" Has Updated their Contacts", Toast.LENGTH_LONG).show();
-                //((ScannerSetupActivity)context).finish();
                 HomeActivity.RePopulateChats(context);
                 ContactsActivity.RepopulateContacts(context);
 
@@ -178,10 +179,9 @@ public class DBManager extends SQLiteOpenHelper
                 SQLiteDatabase DBUpdateChats = this.getWritableDatabase();
                 ContentValues chatValues = new ContentValues();
                 chatValues.put("Status",Status);
-                DBUpdateChats.update("EncryptedSMS", chatValues, "CID=? AND MessageBody=?", new String[]{CID,SMSMessage.getString("Body")});
+                DBUpdateChats.update(EncryptedTable, chatValues, CID+"=? AND MessageBody=?", new String[]{CID,SMSMessage.getString("Body")});
             }
         } catch (JSONException ignored) {
-
         }
 
     }
@@ -264,7 +264,7 @@ public class DBManager extends SQLiteOpenHelper
         contentValues.put("inorout", InorOut);
         contentValues.put("Status",Status);
         contentValues.put("Timestamp", System.currentTimeMillis());
-        DB.insert("EncryptedSMS", null, contentValues);
+        DB.insert(EncryptedTable, null, contentValues);
     }
     public Cursor getCIDChats(String CID) {
         SQLiteDatabase DB = this.getWritableDatabase();
@@ -292,13 +292,14 @@ public class DBManager extends SQLiteOpenHelper
         contentValues.put("inorout", InOrOut);
         contentValues.put("ReadStatus", ReadStatus);
         contentValues.put("Timestamp", System.currentTimeMillis());
-        Cursor ChatCursor = DB.rawQuery("select * from LastChats where CID=?", new String[]{CID});
+        final String TableName = "LastChats";
+        Cursor ChatCursor = DB.rawQuery("select * from "+TableName+" where CID=?", new String[]{CID});
         if (ChatCursor.getCount() > 0) {
-            long result = DB.update("LastChats", contentValues, "CID=?", new String[]{CID});
+           DB.update(TableName, contentValues, "CID=?", new String[]{CID});
         }
         else
         {
-            long result = DB.insert("LastChats", null, contentValues);
+            DB.insert(TableName, null, contentValues);
         }
         ChatCursor.close();
     }
@@ -344,7 +345,7 @@ public class DBManager extends SQLiteOpenHelper
     public int DeleteMessage(String MessageID)
     {
         SQLiteDatabase DB = this.getWritableDatabase();
-        int result = DB.delete("EncryptedSMS", "MessageID=?", new String[]{MessageID});
+        int result = DB.delete(EncryptedTable, "MessageID=?", new String[]{MessageID});
         Toast.makeText(context,"Message Deleted: "+MessageID, Toast.LENGTH_LONG).show();
         return result;
     }
@@ -367,11 +368,11 @@ public class DBManager extends SQLiteOpenHelper
                 contentValues.put("Confirmed", 1);
                 DB.update("Contacts", contentValues, "CID=?", new String[]{CID});
                 DB.close();
-                Log.i("DecryptedSMS Info","Contact Secret Exchange Completed");
                 new BackendFunctions().KeyStatusChanged(context, CID, "---Shared Key Changed---");
             }
-        }catch (Exception e){}
-        finally {
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } finally {
             DB.close();
         }
     }
@@ -385,7 +386,7 @@ public class DBManager extends SQLiteOpenHelper
     public void DeleteAllChats(String CID)
     {
         SQLiteDatabase DB = this.getWritableDatabase();
-        DB.delete("EncryptedSMS", "CID=?", new String[]{CID});
+        DB.delete(EncryptedTable, "CID=?", new String[]{CID});
         DB.delete("LastChats", "CID=?", new String[]{CID});
         Toast.makeText(context,context.getString(R.string.conversation_deleted)+CID, Toast.LENGTH_LONG).show();
     }
@@ -420,9 +421,5 @@ public class DBManager extends SQLiteOpenHelper
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-    }
-
-    public void ResetPrivKey(JSONObject smsJSON) {
     }
 }

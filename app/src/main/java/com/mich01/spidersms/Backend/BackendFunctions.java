@@ -80,7 +80,6 @@ public class BackendFunctions
             new DBManager(context).updateLastMessage(Sender, MessageReceived, 0, 0);
             new DBManager(context).AddChatMessage(Sender,1,MessageReceived,0);
             ChatActivity.PopulateChatView(context.getApplicationContext());
-            ChatActivity.messageAdapter.notifyDataSetChanged();
             HomeActivity.RePopulateChats(context.getApplicationContext());
             HomeActivity.adapter.notifyDataSetChanged();
             Intent notifyIntent = new Intent(context, SplashActivity.class);
