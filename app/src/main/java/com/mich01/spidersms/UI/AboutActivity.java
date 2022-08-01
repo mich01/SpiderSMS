@@ -12,22 +12,22 @@ import java.util.Objects;
 
 public class AboutActivity extends AppCompatActivity {
 
-    WebView ContentView;
-    Bundle BrowserBundles;
-    String BrowserURL;
-    String Content;
+    WebView contentView;
+    Bundle browserBundles;
+    String browserURL;
+    String content;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
-        BrowserBundles = getIntent().getExtras();
-        BrowserURL = BrowserBundles.getString("URL");
-        Content = BrowserBundles.getString("Section");
-        ContentView = findViewById(R.id.about_webview);
-        ContentView.getSettings().setJavaScriptEnabled(false);
-        setTitle(Content);
+        browserBundles = getIntent().getExtras();
+        browserURL = browserBundles.getString("URL");
+        content = browserBundles.getString("Section");
+        contentView = findViewById(R.id.about_webview);
+        contentView.getSettings().setJavaScriptEnabled(false);
+        setTitle(content);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        ContentView.loadUrl(BrowserURL);
+        contentView.loadUrl(browserURL);
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

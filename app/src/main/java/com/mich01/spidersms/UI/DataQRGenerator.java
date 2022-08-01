@@ -1,6 +1,11 @@
 package com.mich01.spidersms.UI;
 
 
+import static com.mich01.spidersms.Data.StringsConstants.AppName;
+import static com.mich01.spidersms.Data.StringsConstants.C_ID;
+import static com.mich01.spidersms.Data.StringsConstants.Contact;
+import static com.mich01.spidersms.Data.StringsConstants.ContactName;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,41 +41,40 @@ import androidmads.library.qrgenearator.QRGEncoder;
 
 @RequiresApi(api = Build.VERSION_CODES.R)
 public class DataQRGenerator extends AppCompatActivity {
-    TextView ContactName;
-    Button DeleteContact;
-    ImageView QRImage;
-    Button ShareQRContact;
+    TextView contactName;
+    Button deleteContact;
+    ImageView qRImage;
+    Button shareQRContact;
     String inputValue;
     Bitmap bitmap;
     QRGEncoder qrgEncoder;
-    JSONObject ContactJSON;
-    String ContactID;
+    JSONObject contactJSON;
+    String contactID;
     Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_qrgenerator);
-        ContactName = findViewById(R.id.txt_contact_shared);
-        DeleteContact = findViewById(R.id.cmdDeleteContact);
-        QRImage = findViewById(R.id.img_contact_qr);
-        ShareQRContact = findViewById(R.id.cmd_share_qr);
+        contactName = findViewById(R.id.txt_contact_shared);
+        deleteContact = findViewById(R.id.cmdDeleteContact);
+        qRImage = findViewById(R.id.img_contact_qr);
+        shareQRContact = findViewById(R.id.cmd_share_qr);
         context = DataQRGenerator.this;
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         Bundle bundle = getIntent().getExtras();
-        inputValue = bundle.getString("Contact");
-        ContactName.setText(bundle.getString("ContactName"));
+        inputValue = bundle.getString(Contact);
+        contactName.setText(bundle.getString(ContactName));
         try {
-            ContactJSON = new JSONObject(inputValue);
-            ContactID = ContactJSON.getString("CID");
+            contactJSON = new JSONObject(inputValue);
+            contactID = contactJSON.getString(C_ID);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //((ContactsActivity)getApplicationContext()).finish();
-        if(bundle.getString("ContactName")==null)
+        if(bundle.getString(ContactName)==null)
         {
-            ContactName.setText(R.string.my_contact);
-            DeleteContact.setVisibility(View.GONE);
+            contactName.setText(R.string.my_contact);
+            deleteContact.setVisibility(View.GONE);
         }
         if (inputValue.length() > 0)
         {
@@ -91,44 +94,44 @@ public class DataQRGenerator extends AppCompatActivity {
             qrgEncoder.setColorWhite(Color.WHITE);
             try {
                 bitmap = qrgEncoder.getBitmap();
-                QRImage.setImageBitmap(bitmap);
+                qRImage.setImageBitmap(bitmap);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
-            Toast.makeText(this, "Value Required ",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.value_required),Toast.LENGTH_LONG).show();
         }
-        ShareQRContact.setOnClickListener(v -> {
+        shareQRContact.setOnClickListener(v -> {
             try {
-                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,ContactID, ContactID);
+                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,contactID, contactID);
                 Uri bmpUri = Uri.parse(tempFile);
                 final Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
                 shareIntent.setType("image/png");
-                startActivity(Intent.createChooser(shareIntent, ContactName.toString()));
+                startActivity(Intent.createChooser(shareIntent, ContactName));
             }catch (Exception e)
             {
                 e.printStackTrace();
-            }finally {
-                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,"SpiderSMS-", ContactID);
+            }
+            finally {
+                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,AppName+"-", contactID);
                 Uri bmpUri = Uri.parse(tempFile);
                 final Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
                 shareIntent.setType("image/png");
-                startActivity(Intent.createChooser(shareIntent, ContactName.toString()));
+                startActivity(Intent.createChooser(shareIntent, ContactName));
             }
 
         });
-        DeleteContact.setOnClickListener(v -> {
+        deleteContact.setOnClickListener(v -> {
             AlertDialog.Builder alert = new AlertDialog.Builder(v.getRootView().getContext());
             alert.setTitle(R.string.confirm_delete_contact);
-            alert.setPositiveButton("Yes", (dialog, whichButton) -> {
-                new DBManager(getApplicationContext()).DeleteContact(ContactID);
-                {
+            alert.setPositiveButton(R.string.yes, (dialog, whichButton) -> {
+                new DBManager(getApplicationContext()).DeleteContact(contactID);
                     try {
-                        HomeActivity.RePopulateChats(DataQRGenerator.this);
+                        HomeActivity.rePopulateChats(DataQRGenerator.this);
                         HomeActivity.adapter.notifyDataSetChanged();
                     }catch (Exception e)
                     {
@@ -136,9 +139,8 @@ public class DataQRGenerator extends AppCompatActivity {
                     }finally {
                         finish();
                     }
-                }
             });
-            alert.setNegativeButton("Cancel",
+            alert.setNegativeButton(R.string.cancel,
                     (dialog, whichButton) -> dialog.cancel());
             alert.show();
         });

@@ -1,7 +1,7 @@
 package com.mich01.spidersms.UI;
 
+import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
-import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.content.Context;
 import android.content.Intent;
@@ -103,7 +103,7 @@ public class UnlockActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                MyPrefs = UnlockActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                MyPrefs = UnlockActivity.this.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
                 if(!UserPin.getText().toString().isEmpty() & PKI_Cipher.ComputeHash(UserPin.getText().toString()).equals(MyPrefs.getString("MyPinHash", "0")))
                 {
                     UnlockStatus.setImageResource(R.drawable.ic_unlocked_fingerprint_24);

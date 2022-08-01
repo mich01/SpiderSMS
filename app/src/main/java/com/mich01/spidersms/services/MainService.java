@@ -1,43 +1,36 @@
 package com.mich01.spidersms.services;
 
+import static com.mich01.spidersms.Data.StringsConstants.ALARM_LENGTH;
+import static com.mich01.spidersms.Data.StringsConstants.CHANNEL_ID;
+
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.Icon;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 
 import com.mich01.spidersms.R;
-import com.mich01.spidersms.Receivers.AlarmReceiver;
 import com.mich01.spidersms.SplashActivity;
 
 
 public class MainService extends Service {
-    private final String CHANNEL_ID = "1337";
-    static Context context;
-    public static Uri notificationMessageSound;
-    public static PendingIntent pendingIntent;
-    public static NotificationManager manager;
+    Context context;
+    Uri notificationMessageSound;
+    PendingIntent pendingIntent;
+    NotificationManager manager;
 
 
     @Override
@@ -77,24 +70,18 @@ public class MainService extends Service {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
         startForeground(1337, notification);
-        Intent AlarmIntent = new Intent(getApplicationContext(), SplashActivity.class);
-        AlarmIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, AlarmIntent, PendingIntent.FLAG_MUTABLE);
+        Intent alarmIntent = new Intent(getApplicationContext(), SplashActivity.class);
+        alarmIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, alarmIntent, PendingIntent.FLAG_MUTABLE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
-                + (1 * 1000), pendingIntent);
+                + ALARM_LENGTH, pendingIntent);
         return START_STICKY;
     }
 
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
 

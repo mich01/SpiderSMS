@@ -1,44 +1,24 @@
 package com.mich01.spidersms.Crypto;
 
-import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
-import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
+import static com.mich01.spidersms.Data.StringsConstants.AndroidKeyStore;
+import static com.mich01.spidersms.Data.StringsConstants.AppName;
+import static com.mich01.spidersms.Data.StringsConstants.SHA256;
 
 import android.content.Context;
 import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
 import com.mich01.spidersms.Backend.BackendFunctions;
-import com.mich01.spidersms.Setup.SetupActivity;
-import com.mich01.spidersms.UI.HomeActivity;
-
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.crypto.ec.CustomNamedCurves;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.whispersystems.curve25519.Curve25519;
-import org.whispersystems.curve25519.Curve25519KeyPair;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.ShortBufferException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-
-import java.security.Key;
 import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -47,10 +27,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.MGF1ParameterSpec;
@@ -60,25 +38,23 @@ import java.util.Random;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PSource;
+import javax.crypto.spec.SecretKeySpec;
 
 
 public class PKI_Cipher
 {
-    private static byte[] KeyCharArray;
-    private static PublicKey publicKey;
-    private static PrivateKey privateKey;
-    private static Context context;
+
+    private final Context context;
     private static final int pswdIterations = 10;
     private static final int keySize = 128;
     private static final String cypherInstance = "AES/CBC/PKCS5Padding";
     private static final String secretKeyInstance = "PBKDF2WithHmacSHA1";
-    private static String AESSalt = null;
-    private static String initializationVector = null;
 
     public PKI_Cipher(Context context) {
         this.context = context;
@@ -88,28 +64,24 @@ public class PKI_Cipher
 
     public static String ComputeHash(String input)
     {
-        MessageDigest digest = null;
+        MessageDigest digest;
+        StringBuilder sb = new StringBuilder();
         try {
-            digest = MessageDigest.getInstance("SHA-256");
+            digest = MessageDigest.getInstance(SHA256);
             digest.reset();
-            digest.update(input.getBytes("UTF-8"));
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            digest.update(input.getBytes( StandardCharsets.UTF_8));
+            byte[] byteData = digest.digest(input.getBytes());
+            for (byte byteDatum : byteData) {
+                sb.append(Integer.toString((byteDatum & 0xff) + 0x100, 16).substring(1));
+            }
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-        }
-        byte[] byteData = digest.digest(input.getBytes());
-        StringBuffer sb = new StringBuffer();
-
-        for (int i = 0; i < byteData.length; i++){
-            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
     }
 
     public String Encrypt(String PlainText, String Key,String AESSalt, String initializationVector)
     {
-        //MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        //AESSalt = MyPrefs.getString("Salt","");
-        //initializationVector = MyPrefs.getString("IV","");
         String CipherText=null;
         try
         {
@@ -135,10 +107,10 @@ public class PKI_Cipher
             Cipher cipher = Cipher.getInstance(cypherInstance);
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, new IvParameterSpec(initializationVector.getBytes()));
             byte[] decrypted = cipher.doFinal(encryted_bytes);
-            PlainText = new String(decrypted, "UTF-8");
+            PlainText = new String(decrypted, StandardCharsets.UTF_8);
         }catch (Exception e){
             e.printStackTrace();
-            new BackendFunctions().NotifyDecryptionError(context);
+            new BackendFunctions().AlertUser(context, "Received Corrupted Encrypted SMS","Message Decryption Failed Please request for a resend");
 
         }
         return PlainText;
@@ -149,9 +121,7 @@ public class PKI_Cipher
             SecretKeyFactory factory = SecretKeyFactory.getInstance(secretKeyInstance);
             KeySpec spec = new PBEKeySpec(plainText.toCharArray(), salt.getBytes(), pswdIterations, keySize);
             return factory.generateSecret(spec).getEncoded();
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return new byte[0];
@@ -164,9 +134,9 @@ public class PKI_Cipher
         byte[] array = new byte[256];
         new Random().nextBytes(array);
         String randomString
-                = new String(array, Charset.forName("UTF-8"));
+                = new String(array, StandardCharsets.UTF_8);
         // Create a StringBuffer to store the result
-        StringBuffer r = new StringBuffer();
+        StringBuilder r = new StringBuilder();
         // remove all spacial char
         String  AlphaNumericString
                 = randomString
@@ -189,15 +159,14 @@ public class PKI_Cipher
 
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public static PrivateKey GeneratePrivateKey()
+    public static void GeneratePrivateKey()
     {
-        PrivateKey privateKey = null;
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
-                    KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
+                    KeyProperties.KEY_ALGORITHM_RSA, AndroidKeyStore);
             keyPairGenerator.initialize(
                     new KeyGenParameterSpec.Builder(
-                            "SpiderSMS",
+                            AppName,
                             KeyProperties.PURPOSE_DECRYPT)
                             .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
                             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_OAEP)
@@ -206,7 +175,6 @@ public class PKI_Cipher
         } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         }
-            return privateKey;
     }
 
     public static String SharePublicKey()
@@ -228,7 +196,7 @@ public class PKI_Cipher
     public String EncryptPKI(String data, String public_Key )
     {
         String CipherText = null;
-        Cipher cipher = null;
+        Cipher cipher;
         try {
             byte[] publicBytes = Base64.decode(public_Key,Base64.DEFAULT);
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
@@ -249,7 +217,7 @@ public class PKI_Cipher
     {
         String PlainText = null;
         OAEPParameterSpec spec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
-        Cipher cipher = null;
+        Cipher cipher;
         try {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
             keyStore.load(null);

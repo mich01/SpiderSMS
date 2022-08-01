@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,45 +19,37 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.amulyakhare.textdrawable.TextDrawable;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ChatActivity;
-import com.mich01.spidersms.UI.ContactsActivity;
 import com.mich01.spidersms.UI.HomeActivity;
+import com.mich01.spidersms.UI.TextDrawable.ColorGenerator;
+import com.mich01.spidersms.UI.TextDrawable.TextDrawable;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 
 public class ChatsAdapter extends ArrayAdapter<LastChat>
 {
-    static ArrayList<LastChat> chatsList;
-    @SuppressLint("StaticFieldLeak")
-    static TextView LastText;
+    ArrayList<LastChat> chatsList;
+    TextView lastText;
     Context context;
+    // declare the color generator and drawable builder
+    private ColorGenerator mColorGenerator = ColorGenerator.MATERIAL;
+    private TextDrawable.IBuilder mDrawableBuilder;
 
     public ChatsAdapter(@NonNull Context c, int resource, ArrayList<LastChat> chatsList)
     {
         super(c, resource, chatsList);
-       ChatsAdapter.chatsList = chatsList;
-       context =c;
-    }
-
-    @Override
-    public int getCount() {
-        return super.getCount();
+        this.chatsList = chatsList;
+        this.context =c;
     }
 
     @Nullable
     @Override
     public LastChat getItem(int position) {
         return super.getItem(position);
-    }
-
-    @Override
-    public int getPosition(@Nullable LastChat item) {
-        return super.getPosition(item);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -74,12 +65,12 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         TextDrawable drawable = TextDrawable.builder().buildRect(String.valueOf(chatsList.get(position).getContactName().charAt(0)), R.id.last_contact_img);
         ImageView images = convertView.findViewById(R.id.last_contact_img);
         TextView contactID = convertView.findViewById(R.id.last_contact_id);
-        TextView TimeStamp = convertView.findViewById(R.id.time_stamp);
-        LastText = convertView.findViewById(R.id.last_chat_text);
+        TextView timeStamp = convertView.findViewById(R.id.time_stamp);
+        lastText = convertView.findViewById(R.id.last_chat_text);
         images.setImageDrawable(drawable);
         contactID.setText(chatsList.get(position).getContactName());
         String niceDateStr = (String) DateUtils.getRelativeTimeSpanString(Long.parseLong(chatsList.get(position).getTimestamp()), Calendar.getInstance().getTimeInMillis(), DateUtils.MINUTE_IN_MILLIS);
-        TimeStamp.setText(niceDateStr);
+        timeStamp.setText(niceDateStr);
         if(chatsList.get(position).getContactID().equalsIgnoreCase(chatsList.get(position).getContactName()))
         {
             contactID.setTypeface(null, Typeface.BOLD_ITALIC);
@@ -90,50 +81,43 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         }
         if(chatsList.get(position).getStatus()==0)
         {
-            LastText.setTypeface(null, Typeface.BOLD);
-            LastText.setTextColor(Color.BLACK);
-            TimeStamp.setTextColor(Color.BLACK);
+            lastText.setTypeface(null, Typeface.BOLD);
+            lastText.setTextColor(Color.BLACK);
+            timeStamp.setTextColor(Color.BLACK);
             convertView.setBackgroundResource(R.color.gold);
         }
         else
         {
-            LastText.setTypeface(null, Typeface.NORMAL);
+            lastText.setTypeface(null, Typeface.NORMAL);
             contactID.setTextColor(Color.WHITE);
-            LastText.setTextColor(Color.WHITE);
-            TimeStamp.setTextColor(Color.WHITE);
+            lastText.setTextColor(Color.WHITE);
+            timeStamp.setTextColor(Color.WHITE);
             convertView.setBackgroundResource(R.color.darkblue);
         }
-        LastText.setText(chatsList.get(position).getLastMessage());
+        lastText.setText(chatsList.get(position).getLastMessage());
 
         convertView.setOnClickListener(v -> {
-            Intent ChatIntent = new Intent(v.getRootView().getContext(), ChatActivity.class);
-            ChatIntent.putExtra("ContactID", chatsList.get(position).getContactID());
-            ChatIntent.putExtra("ContactName", chatsList.get(position).getContactName());
-            ChatIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
-            ChatIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getContext().startActivity(ChatIntent);
+            Intent  chatIntent  = new Intent(v.getRootView().getContext(), ChatActivity.class);
+             chatIntent .putExtra("ContactID", chatsList.get(position).getContactID());
+             chatIntent .putExtra("ContactName", chatsList.get(position).getContactName());
+             chatIntent .putExtra("CalledBy", HomeActivity.class.getSimpleName());
+             chatIntent .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity( chatIntent );
         });
         convertView.setOnLongClickListener(view -> {
             AlertDialog.Builder alert = new AlertDialog.Builder(view.getRootView().getContext());
             alert.setTitle(R.string.do_you_want_to_delete);
             alert.setPositiveButton("Ok", (dialog, whichButton) -> {
                 new DBManager(getContext()).DeleteAllChats(chatsList.get(position).getContactID());
-                HomeActivity.RePopulateChats(view.getRootView().getContext());
+                HomeActivity.rePopulateChats(view.getRootView().getContext());
                 HomeActivity.adapter.notifyDataSetChanged();
             });
 
             alert.setNegativeButton("Cancel",
-                    (dialog, whichButton) -> {
-                dialog.cancel();
-                    });
+                    (dialog, whichButton) -> dialog.cancel());
                 alert.show();
             return false;
         });
         return convertView;
     }
-    public static void updateText(int position)
-    {
-        LastText.setText(chatsList.get(position).getLastMessage());
-    }
-
 }

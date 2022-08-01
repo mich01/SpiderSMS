@@ -1,17 +1,23 @@
 package com.mich01.spidersms.Setup;
 
+import static com.mich01.spidersms.Data.StringsConstants.APPEND_PARAM;
+import static com.mich01.spidersms.Data.StringsConstants.ContactID;
+import static com.mich01.spidersms.Data.StringsConstants.ContactName;
+import static com.mich01.spidersms.Data.StringsConstants.DEFAULT_PREF_VALUE;
+import static com.mich01.spidersms.Data.StringsConstants.MyContact;
+import static com.mich01.spidersms.Data.StringsConstants.SetupComplete;
+import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
-import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -30,70 +36,61 @@ import java.util.concurrent.TimeUnit;
 
 public class OTPActivity extends AppCompatActivity {
 
-
-    // [END declare_auth]
-    String ContactID;
-    String ContactName;
-    ImageView OTP_Status;
-    Button VerifyOTP;
-    EditText OTP_Text;
-    private String mVerificationId;
-    private PhoneAuthProvider.ForceResendingToken mResendToken;
-    private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
+    String contactID;
+    String contactName;
+    ImageView otpStatus;
+    Button verifyOTP;
+    EditText otpText;
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_otp);
-        OTP_Status = findViewById(R.id.img_status);
-        VerifyOTP =findViewById(R.id.cmd_complete_setup);
-        OTP_Text = findViewById(R.id.txt_otp);
+        otpStatus = findViewById(R.id.img_status);
+        verifyOTP =findViewById(R.id.cmd_complete_setup);
+        otpText = findViewById(R.id.txt_otp);
         Bundle bundle = getIntent().getExtras();
-        ContactID = bundle.getString("ContactID");
-        ContactName = bundle.getString("ContactName");
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        String phoneNumber = "+"+ContactID;
-        String smsCode = "0000";
+        contactID = bundle.getString(ContactID);
+        contactName = bundle.getString(ContactName);
+        String phoneNumber = APPEND_PARAM+contactID;
         // The test phone number and code should be whitelisted in the console.
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseAuthSettings firebaseAuthSettings = firebaseAuth.getFirebaseAuthSettings();
 
 // Configure faking the auto-retrieval with the whitelisted numbers.
-        firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber(phoneNumber, smsCode);
+        firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber(phoneNumber, DEFAULT_PREF_VALUE);
 
         PhoneAuthOptions options = PhoneAuthOptions.newBuilder(firebaseAuth)
                 .setPhoneNumber(phoneNumber)
                 .setTimeout(120L, TimeUnit.SECONDS)
                 .setActivity(this)
                 .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                    @RequiresApi(api = Build.VERSION_CODES.M)
                     @Override
                     public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
-                        CompleteSetup();
+                        completeSetup();
                     }
 
                     @Override
                     public void onVerificationFailed(@NonNull FirebaseException e) {
-
+                        //Doesn't really need add
+                        Toast.makeText(OTPActivity.this, "Verification Failed "+e, Toast.LENGTH_SHORT).show();
                     }
 
                 })
                 .build();
         PhoneAuthProvider.verifyPhoneNumber(options);
-        VerifyOTP.setOnClickListener(view -> {
-            CompleteSetup();
-        });
+        verifyOTP.setOnClickListener(view -> completeSetup());
     }
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void CompleteSetup()
+    public void completeSetup()
     {
-        OTP_Status.setImageResource(R.drawable.otp_success);
-        MyPrefs = OTPActivity.this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        otpStatus.setImageResource(R.drawable.otp_success);
+        MyPrefs = OTPActivity.this.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
         MyPrefsEditor = MyPrefs.edit();
-        MyPrefsEditor.putString("MyContact", ContactID);
-        MyPrefsEditor.putString("ContactName", ContactName);
-        MyPrefsEditor.putInt("SetupComplete", 1);
+        MyPrefsEditor.putString(MyContact, contactID);
+        MyPrefsEditor.putString(ContactName, contactName);
+        MyPrefsEditor.putInt(SetupComplete, 1);
         MyPrefsEditor.apply();
         MyPrefsEditor.commit();
         startActivity(new Intent(OTPActivity.this, HomeActivity.class));

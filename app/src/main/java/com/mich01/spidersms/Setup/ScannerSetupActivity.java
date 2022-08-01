@@ -1,7 +1,7 @@
 package com.mich01.spidersms.Setup;
 
 
-import static com.mich01.spidersms.Setup.SetupConfig.ReadScan;
+import static com.mich01.spidersms.Setup.SetupConfig.readScan;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
@@ -26,7 +26,7 @@ import java.util.Objects;
 
 public class ScannerSetupActivity extends AppCompatActivity {
     CodeScanner codeScanner;
-    CodeScannerView Scannerview;
+    CodeScannerView scannerview;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -34,19 +34,19 @@ public class ScannerSetupActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qrscanner);
-        Scannerview = findViewById(R.id.scannerView);
+        scannerview = findViewById(R.id.scannerView);
         FloatingActionButton backButton = findViewById(R.id.cmdBack);
-        codeScanner = new CodeScanner(this, Scannerview);
+        codeScanner = new CodeScanner(this, scannerview);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         codeScanner.setDecodeCallback(result -> runOnUiThread(() -> {
             try {
-                ReadScan(ScannerSetupActivity.this,new JSONObject(result.toString()));
+                readScan(ScannerSetupActivity.this,new JSONObject(result.toString()));
             } catch (JSONException e) {
-                Toast.makeText(ScannerSetupActivity.this, "Config Data Corrupted!!", Toast.LENGTH_LONG).show();
+                Toast.makeText(ScannerSetupActivity.this, R.string.config_data_corrupted, Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
         }));
-        Scannerview.setOnClickListener(v -> codeScanner.startPreview());
+        scannerview.setOnClickListener(v -> codeScanner.startPreview());
         backButton.setOnClickListener(v -> finish());
     }
 
@@ -59,7 +59,7 @@ public class ScannerSetupActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void requestCameraPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)  != PackageManager.PERMISSION_GRANTED)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)  != PackageManager.PERMISSION_GRANTED)
         {
             requestPermissions(new String[]{Manifest.permission.CAMERA},1111);
         }

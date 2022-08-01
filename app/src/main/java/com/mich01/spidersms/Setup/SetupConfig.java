@@ -1,14 +1,24 @@
 package com.mich01.spidersms.Setup;
 
+import static com.mich01.spidersms.Data.StringsConstants.ApiKey;
+import static com.mich01.spidersms.Data.StringsConstants.Config;
+import static com.mich01.spidersms.Data.StringsConstants.Config_api;
+import static com.mich01.spidersms.Data.StringsConstants.Config_proxy;
+import static com.mich01.spidersms.Data.StringsConstants.DBExists;
+import static com.mich01.spidersms.Data.StringsConstants.Data;
+import static com.mich01.spidersms.Data.StringsConstants.HelloContact;
+import static com.mich01.spidersms.Data.StringsConstants.ProxyNumber;
+import static com.mich01.spidersms.Data.StringsConstants.ProxyPubKey;
+import static com.mich01.spidersms.Data.StringsConstants.ServerURL;
+import static com.mich01.spidersms.Data.StringsConstants.ServerUserName;
+import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
-import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
@@ -29,151 +39,152 @@ import org.json.JSONObject;
 public class SetupConfig
 {
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public static void ReadScan(Context context, JSONObject Input) throws JSONException {
-        switch (Input.getString("Data"))
+    public static void readScan(Context context, JSONObject input) throws JSONException {
+        switch (input.getString(Data))
         {
-            case "Config":
-                ConfirmUpdate(context, Input);
+            case Config:
+                confirmUpdate(context, input);
                 break;
-            case "Config-proxy":
-                UpdateProxySMS(context, Input);
+            case Config_proxy:
+                updateProxySMS(context, input);
                 break;
-            case "Config-api":
-                ConfirmOnlineAPI(context, Input);
+            case Config_api:
+                confirmOnlineAPI(context, input);
                 break;
-            case "HelloContact":
-                if(new DBManager(context).AddContact(Input))
+            case HelloContact:
+                if(new DBManager(context).AddContact(input))
                 {
                     context.startActivity(new Intent(context, HomeActivity.class));
-                    Toast.makeText(context.getApplicationContext(), "New Contact Added", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context.getApplicationContext(), R.string.contact_added, Toast.LENGTH_LONG).show();
                 }
                 break;
             default:
-                new SetupConfig().SnackBarAlert(context.getResources().getString(R.string.config_update_success),context);
+                new SetupConfig().snackBarAlert(context.getResources().getString(R.string.config_update_success),context);
         }
     }
-    public static boolean ConfigServer(Context context,String Data)
+    public static boolean configServer(Context context,String data)
     {
         try
         {
-            JSONObject ConfigJson = new JSONObject(Data);
-            MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            JSONObject configJson = new JSONObject(data);
+            MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
             MyPrefsEditor = MyPrefs.edit();
-            MyPrefsEditor.putString("ServerURL", ConfigJson.get("ServerURL").toString());
-            MyPrefsEditor.putString("ProxyNumber",ConfigJson.get("ProxyNumber").toString());
-            MyPrefsEditor.putString("ServerUserName",ConfigJson.get("ServerUserName").toString());
-            MyPrefsEditor.putString("ApiKey",ConfigJson.get("ApiKey").toString());
+            MyPrefsEditor.putString(ServerURL, configJson.get(ServerURL).toString());
+            MyPrefsEditor.putString(ProxyNumber,configJson.get(ProxyNumber).toString());
+            MyPrefsEditor.putString(ServerUserName,configJson.get(ServerUserName).toString());
+            MyPrefsEditor.putString(ApiKey,configJson.get(ApiKey).toString());
             MyPrefsEditor.apply();
             MyPrefsEditor.commit();
-            new SetupConfig().SnackBarAlert(context.getResources().getString(R.string.config_update_success),context);
+            new SetupConfig().snackBarAlert(context.getResources().getString(R.string.config_update_success),context);
             ((ScannerSetupActivity)context).finish();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            new SetupConfig().SnackBarError(context.getString(R.string.error_invalid_data),context);
+            new SetupConfig().snackBarError(context.getString(R.string.error_invalid_data),context);
             return false;
         }
     }
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public static void ConfirmUpdate(Context context, JSONObject Input)
+    public static void confirmUpdate(Context context, JSONObject input)
     {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(R.string.are_you_sure_app_settings);
-        alert.setPositiveButton("Update", (dialog, whichButton) -> {
-            if(ConfigServer(context,Input.toString()))
+        alert.setPositiveButton(R.string.update, (dialog, whichButton) -> {
+            if(configServer(context,input.toString()))
             {
-                if(MyPrefs.getInt("DBExists",0)==0)
+                if(MyPrefs.getInt(DBExists,0)==0)
                 {
                     context.startActivity(new Intent(context, UnlockActivity.class));
-                    ((ScannerSetupActivity) context).finish();
                 }
                 else
                 {
                     context.startActivity(new Intent(context, HomeActivity.class));
-                    ((ScannerSetupActivity) context).finish();
                 }
-                new SetupConfig().SnackBarAlert(context.getString(R.string.server_setup_complete),context);
+                ((ScannerSetupActivity) context).finish();
+                new SetupConfig().snackBarAlert(context.getString(R.string.server_setup_complete),context);
             }
         });
 
-        alert.setNegativeButton("Cancel",
+        alert.setNegativeButton(R.string.cancel,
                 (dialog, whichButton) -> ((ScannerSetupActivity)context).finish());
         alert.show();
     }
-    public static void UpdateProxySMS(Context context, JSONObject ConfigJson)
+    public static void updateProxySMS(Context context, JSONObject configJson)
     {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(R.string.are_you_sure_proxy_update);
-        alert.setPositiveButton("Update", (dialog, whichButton) -> {
+        alert.setPositiveButton(R.string.update, (dialog, whichButton) -> {
             try {
-                MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
                 MyPrefsEditor = MyPrefs.edit();
-                MyPrefsEditor.putString("ProxyNumber",ConfigJson.getString("ProxyNumber"));
-                MyPrefsEditor.putString("ProxyPubKey",ConfigJson.getString("ProxyPubKey"));
+                MyPrefsEditor.putString(ProxyNumber,configJson.getString(ProxyNumber));
+                MyPrefsEditor.putString(ProxyPubKey,configJson.getString(ProxyPubKey));
                 MyPrefsEditor.apply();
                 MyPrefsEditor.commit();
-                new SetupConfig().SnackBarAlert(context.getString(R.string.proxy_number_updated),context);
+                new SetupConfig().snackBarAlert(context.getString(R.string.proxy_number_updated),context);
                 ((ScannerSetupActivity)context).finish();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         });
 
-        alert.setNegativeButton("Cancel",
+        alert.setNegativeButton(R.string.cancel,
                 (dialog, whichButton) -> ((ScannerSetupActivity)context).finish());
         alert.show();
     }
-    public static void ConfirmOnlineAPI(Context context, JSONObject ConfigJson)
+    public static void confirmOnlineAPI(Context context, JSONObject configJson)
     {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(R.string.are_you_sure_api);
-        alert.setPositiveButton("Update", (dialog, whichButton) -> {
+        alert.setPositiveButton(R.string.update, (dialog, whichButton) -> {
             try {
-                MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
                 MyPrefsEditor = MyPrefs.edit();
-                MyPrefsEditor.putString("ServerURL", ConfigJson.get("ServerURL").toString());
-                MyPrefsEditor.putString("ServerUserName",ConfigJson.get("ServerUserName").toString());
-                MyPrefsEditor.putString("ApiKey",ConfigJson.get("ApiKey").toString());
+                MyPrefsEditor.putString(ServerURL, configJson.get(ServerURL).toString());
+                MyPrefsEditor.putString(ServerUserName,configJson.get(ServerUserName).toString());
+                MyPrefsEditor.putString(ApiKey,configJson.get(ApiKey).toString());
                 MyPrefsEditor.apply();
                 MyPrefsEditor.commit();
-                new SetupConfig().SnackBarAlert(context.getString(R.string.api_updated_success), context);
+                new SetupConfig().snackBarAlert(context.getString(R.string.api_updated_success), context);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         });
 
-        alert.setNegativeButton("Cancel",
+        alert.setNegativeButton(R.string.cancel,
                 (dialog, whichButton) -> ((ScannerSetupActivity)context).finish());
         alert.show();
     }
-    public void SnackBarAlert(String AlertMessage, Context context)
+    public void snackBarAlert(String alertMessage, Context context)
     {
         Snackbar mSnackBar;
         try {
-            mSnackBar = Snackbar.make(((ScannerSetupActivity) context).findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
+            mSnackBar = Snackbar.make(((ScannerSetupActivity) context).findViewById(android.R.id.content), alertMessage, Snackbar.LENGTH_LONG);
+            TextView snackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
+            snackBarView.setTextColor(ContextCompat.getColor(context, R.color.black));
+            snackBarView.setBackgroundColor(ContextCompat.getColor(context, R.color.green));
+            snackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            snackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
+            mSnackBar.show();
         }catch (Exception e) {
-            mSnackBar = Snackbar.make(((HomeActivity) context).findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
+            e.printStackTrace();
         }
-        TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
-        SnackBarView.setTextColor(ContextCompat.getColor(context, R.color.black));
-        SnackBarView.setBackgroundColor(ContextCompat.getColor(context, R.color.green));
-        SnackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        SnackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
-        mSnackBar.show();
+
     }
-    public void SnackBarError(String AlertMessage, Context context)
+    public void snackBarError(String alertMessage, Context context)
     {
         Snackbar mSnackBar;
         try {
-            mSnackBar = Snackbar.make(((ScannerSetupActivity) context).findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
+            mSnackBar = Snackbar.make(((ScannerSetupActivity) context).findViewById(android.R.id.content), alertMessage, Snackbar.LENGTH_LONG);
+            TextView snackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
+            snackBarView.setTextColor(ContextCompat.getColor(context, R.color.white));
+            snackBarView.setBackgroundColor(ContextCompat.getColor(context, R.color.error));
+            snackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            snackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
+            mSnackBar.show();
         }catch (Exception e) {
-            mSnackBar = Snackbar.make(((HomeActivity) context).findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
+            e.printStackTrace();
         }
-        TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
-        SnackBarView.setTextColor(ContextCompat.getColor(context, R.color.white));
-        SnackBarView.setBackgroundColor(ContextCompat.getColor(context, R.color.error));
-        SnackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        SnackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
-        mSnackBar.show();
+
     }
 }

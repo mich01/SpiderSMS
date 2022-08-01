@@ -1,10 +1,12 @@
 package com.mich01.spidersms.Adapters;
 
+import static com.mich01.spidersms.Data.StringsConstants.StatusDelivered;
+import static com.mich01.spidersms.Data.StringsConstants.StatusOnline;
+import static com.mich01.spidersms.Data.StringsConstants.StatusSent;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Build;
-import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,22 +14,16 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amulyakhare.textdrawable.TextDrawable;
 import com.mich01.spidersms.Backend.BackendFunctions;
 import com.mich01.spidersms.Backend.ResponseMessage;
-import com.mich01.spidersms.Backend.SMSHandler;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
-import com.mich01.spidersms.UI.ChatActivity;
-import com.mich01.spidersms.UI.ContactsActivity;
-import com.mich01.spidersms.UI.DataQRGenerator;
 import com.mich01.spidersms.UI.HomeActivity;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -36,13 +32,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
     Context context;
     static class CustomViewHolder extends RecyclerView.ViewHolder {
         TextView textView;
-        TextView MessageStatus;
+        TextView messageStatus;
 
 
         public CustomViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.textMessage);
-            MessageStatus = itemView.findViewById(R.id.text_status);
+            messageStatus = itemView.findViewById(R.id.text_status);
         }
     }
     List<ResponseMessage> responseMessageList;
@@ -83,39 +79,40 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
     public void onBindViewHolder(@NonNull @NotNull MessageAdapter.CustomViewHolder holder, int pos)
     {
         try {
-            String Status ="-";
+            String status ="-";
             if(responseMessageList.get(pos).isSent() && responseMessageList.get(pos).getMessageStatus()<1)
             {
-                holder.MessageStatus.setTextColor(context.getResources().getColor(R.color.danger));
-                Status =" Failed";
+                holder.messageStatus.setTextColor(ContextCompat.getColor(context,R.color.danger));
+                status =" Failed";
             }
             else if(responseMessageList.get(pos).isSent() && responseMessageList.get(pos).getMessageStatus()==1  )
             {
-                holder.MessageStatus.setTextColor(context.getResources().getColor(R.color.darkblue));
-                Status =" \u2713";
+                holder.messageStatus.setTextColor(ContextCompat.getColor(context,R.color.darkblue));
+                status =StatusSent;
             }
             else if (responseMessageList.get(pos).isSent() && responseMessageList.get(pos).getMessageStatus()==2)
             {
-                holder.MessageStatus.setTextColor(context.getResources().getColor(R.color.darkblue));
-                Status =" \u2713"+"\u2713";
+                holder.messageStatus.setTextColor(ContextCompat.getColor(context,R.color.darkblue));
+                status =StatusDelivered;
             }
             else if (responseMessageList.get(pos).isSent() && responseMessageList.get(pos).getMessageStatus()==4)
             {
-                holder.MessageStatus.setTextColor(context.getResources().getColor(R.color.darkblue));
-                Status =" \u2713"+" Online";
+                holder.messageStatus.setTextColor(ContextCompat.getColor(context,R.color.darkblue));
+                status =StatusOnline;
             }
             if(!responseMessageList.get(pos).isSent())
             {
-                Status ="";
+                status ="";
             }
-            holder.MessageStatus.setText(new BackendFunctions().convertTime(Long.parseLong(responseMessageList.get(pos).getTimeStamp()))+Status);
+            String statusText = new BackendFunctions().convertTime(Long.parseLong(responseMessageList.get(pos).getTimeStamp()))+status;
+            holder.messageStatus.setText(statusText);
             holder.textView.setText(responseMessageList.get(pos).getTextMessage());
             holder.textView.setOnLongClickListener(view -> {
                 AlertDialog.Builder alert = new AlertDialog.Builder(view.getContext());
-                alert.setTitle("Are you sure you want to delete this conversation");
+                alert.setTitle(R.string.sure_delete_conversation);
                 alert.setPositiveButton("Ok", (dialog, whichButton) -> {
                     new DBManager(view.getContext()).DeleteMessage(String.valueOf(pos));
-                    HomeActivity.RePopulateChats(view.getContext());
+                    HomeActivity.rePopulateChats(view.getContext());
                     HomeActivity.adapter.notifyDataSetChanged();
                 });
 

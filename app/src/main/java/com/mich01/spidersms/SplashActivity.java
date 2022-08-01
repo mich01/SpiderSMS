@@ -3,7 +3,7 @@ package com.mich01.spidersms;
 
 import static com.mich01.spidersms.Crypto.PKI_Cipher.GenerateNewKey;
 import static com.mich01.spidersms.Crypto.PKI_Cipher.GeneratePrivateKey;
-import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
+import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,7 +30,6 @@ import java.util.Objects;
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity
 {
-    Handler h = new Handler();
     SharedPreferences preferences;
     int First_Run = 0;
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -38,9 +38,9 @@ public class SplashActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash); Objects.requireNonNull(getSupportActionBar()).hide();
-        if (!BackendFunctions.CheckRoot() || BackendFunctions.CheckRoot())
+        if (!BackendFunctions.checkRoot() || BackendFunctions.checkRoot())
         {
-            preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            preferences = getSharedPreferences(global_pref, Context.MODE_PRIVATE);
             if (preferences.getLong("InstalledTimestamp", 0) == 0)
             {
                 GeneratePrivateKey();
@@ -80,19 +80,22 @@ public class SplashActivity extends AppCompatActivity
         }
         else
         {
-            h.postDelayed(() -> {
-                First_Run=preferences.getInt("SetupComplete", 0);
-                Intent i;
-                if (First_Run == 0)
-                {
-                    i = new Intent(SplashActivity.this, SetupActivity.class);
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    First_Run=preferences.getInt("SetupComplete", 0);
+                    Intent i;
+                    if (First_Run == 0)
+                    {
+                        i = new Intent(SplashActivity.this, SetupActivity.class);
 
-                } else {
-                    i = new Intent(SplashActivity.this, UnlockActivity.class);
+                    } else {
+                        i = new Intent(SplashActivity.this, UnlockActivity.class);
+                    }
+                    startActivity(i);
+                    overridePendingTransition(R.transition.fade_in, R.transition.fade_out);
+                    finish();
                 }
-                startActivity(i);
-                overridePendingTransition(R.transition.fade_in, R.transition.fade_out);
-                finish();
             }, 1000);
         }
     }

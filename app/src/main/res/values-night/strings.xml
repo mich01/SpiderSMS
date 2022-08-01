@@ -53,4 +53,15 @@
     <string name="terms_and_conditions">Terms and Conditions</string>
     <string name="about_spidersms">About SpiderSMS</string>
     <string name="empty_message_sent">Message Not sent as it was empty</string>
+    <string name="new_message_alert">"You have received a new Encrypted SMS "</string>
+    <string name="action_message">Tap to read</string>
+    <string name="contact_unavailable">Contact Unavailable</string>
+    <string name="havent_selected_file">You Haven\'t selected any file</string>
+    <string name="need_qr_bitmap">You need to select a QR Code bitmap</string>
+    <string name="cannot_open_file">Cannot open file</string>
+    <string name="value_required">Value Required</string>
+    <string name="yes">Yes</string>
+    <string name="search_contacts">Search Contact..</string>
+    <string name="t_n_c"><![CDATA[SpiderSMS T&C]]></string>
+    <string name="sure_delete_conversation">Are you sure you want to delete this conversation</string>
 </resources>

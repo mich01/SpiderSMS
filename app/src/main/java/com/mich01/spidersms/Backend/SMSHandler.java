@@ -1,7 +1,22 @@
 package com.mich01.spidersms.Backend;
 
+import static com.mich01.spidersms.Data.StringsConstants.ApiKey;
+import static com.mich01.spidersms.Data.StringsConstants.AppTrigger;
+import static com.mich01.spidersms.Data.StringsConstants.Generic_Failure;
+import static com.mich01.spidersms.Data.StringsConstants.KeyConfirmTrigger;
+import static com.mich01.spidersms.Data.StringsConstants.KeyRequestTrigger;
+import static com.mich01.spidersms.Data.StringsConstants.MAX_SMS_MESSAGE_LENGTH;
+import static com.mich01.spidersms.Data.StringsConstants.MessageType;
+import static com.mich01.spidersms.Data.StringsConstants.No_Service;
+import static com.mich01.spidersms.Data.StringsConstants.Null_PDU;
+import static com.mich01.spidersms.Data.StringsConstants.Radio_Off;
+import static com.mich01.spidersms.Data.StringsConstants.SMS_DELIVERED;
+import static com.mich01.spidersms.Data.StringsConstants.SMS_NOT_DELIVERED;
+import static com.mich01.spidersms.Data.StringsConstants.SMS_SENT;
+import static com.mich01.spidersms.Data.StringsConstants.ServerURL;
+import static com.mich01.spidersms.Data.StringsConstants.ServerUserName;
+import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
-import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -48,49 +63,48 @@ import okhttp3.Response;
 
 public class SMSHandler {
     Context context;
-    private static final int MAX_SMS_MESSAGE_LENGTH = 160;
-    private static final String SMS_SENT = "SMS_SENT";
-    private static final String SMS_DELIVERED = "SMS_DELIVERED";
-    String AppTrigger = ">";
-    String KeyConfirmTrigger = "-";
-    String KeyRequestTrigger = "*";
+    SmsManager manager;
     public SMSHandler(Context context)
     {
         this.context = context;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
-    public void sendPlainSMS(String PhoneNo, String SMSText)
+    public void sendPlainSMS(String phoneNo, String smsText)
     {
-        if(SMSText.isEmpty() || PhoneNo.isEmpty())
+        if(smsText.isEmpty() || phoneNo.isEmpty())
         {
-            ErrorAlert();
+            errorAlert();
         }
         else
         {
-            String SMS;
+            String sms;
             context.registerReceiver(new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) {
                     switch (getResultCode()) {
                         case Activity.RESULT_OK:
-                            Toast.makeText(context, "SMS sent",
+                            Toast.makeText(context, SMS_SENT,
                                     Toast.LENGTH_SHORT).show();
                             break;
                         case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                            Toast.makeText(context, "Generic failure",
+                            Toast.makeText(context, Generic_Failure,
                                     Toast.LENGTH_SHORT).show();
                             break;
                         case SmsManager.RESULT_ERROR_NO_SERVICE:
-                            Toast.makeText(context, "No service",
+                            Toast.makeText(context, No_Service,
                                     Toast.LENGTH_SHORT).show();
                             break;
                         case SmsManager.RESULT_ERROR_NULL_PDU:
-                            Toast.makeText(context, "Null PDU",
+                            Toast.makeText(context, Null_PDU,
                                     Toast.LENGTH_SHORT).show();
                             break;
                         case SmsManager.RESULT_ERROR_RADIO_OFF:
-                            Toast.makeText(context, "Radio off",
+                            Toast.makeText(context, Radio_Off,
+                                    Toast.LENGTH_SHORT).show();
+                            break;
+                        default:
+                            Toast.makeText(context, "Exception",
                                     Toast.LENGTH_SHORT).show();
                             break;
                     }
@@ -103,26 +117,30 @@ public class SMSHandler {
                 public void onReceive(Context arg0, Intent arg1) {
                     switch (getResultCode()) {
                         case Activity.RESULT_OK:
-                            Toast.makeText(context, "SMS delivered",
+                            Toast.makeText(context, SMS_DELIVERED,
                                     Toast.LENGTH_SHORT).show();
                             break;
                         case Activity.RESULT_CANCELED:
-                            Toast.makeText(context, "SMS not delivered",
+                            Toast.makeText(context, SMS_NOT_DELIVERED,
+                                    Toast.LENGTH_SHORT).show();
+                            break;
+                        default:
+                            Toast.makeText(context, "Exception",
                                     Toast.LENGTH_SHORT).show();
                             break;
                     }
                 }
             }, new IntentFilter(SMS_DELIVERED));
-            MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-            new DBManager(context).updateLastMessage(PhoneNo, SMSText, 1, 1);
-            new DBManager(context).AddChatMessage(PhoneNo, 0, SMSText, 0);
-            SmsManager manager = SmsManager.getDefault();
+            MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+            new DBManager(context).updateLastMessage(phoneNo, smsText, 1, 1);
+            new DBManager(context).AddChatMessage(phoneNo, 0, smsText, 0);
+            manager = SmsManager.getDefault();
             PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE);
             PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE);
-            SMS = KeyRequestTrigger.concat(SMSText);
-            if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)
+            sms = KeyRequestTrigger.concat(smsText);
+            if(sms.length()>=MAX_SMS_MESSAGE_LENGTH)
             {
-                ArrayList<String> parts =manager.divideMessage(SMS);
+                ArrayList<String> parts =manager.divideMessage(sms);
                 int numParts = parts.size();
                 ArrayList<PendingIntent> sentIntents = new ArrayList<>();
                 ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
@@ -131,24 +149,24 @@ public class SMSHandler {
                     sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE));
                     deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE));
                 }
-                manager.sendMultipartTextMessage(PhoneNo,null, parts, sentIntents, deliveryIntents);
+                manager.sendMultipartTextMessage(phoneNo,null, parts, sentIntents, deliveryIntents);
             }
             else
             {
-                manager.sendTextMessage(PhoneNo, null, SMS, piSend, piDelivered);
+                manager.sendTextMessage(phoneNo, null, sms, piSend, piDelivered);
             }}
     }
 
     @SuppressLint("InlinedApi")
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void sendEncryptedSMS(String PhoneNo, JSONObject SMSText, String EncryptionKey,String AES_Salt, String IV, int CryptType) throws JSONException {
-        if(SMSText.toString().isEmpty() || PhoneNo.isEmpty() || EncryptionKey.isEmpty())
+    public void sendEncryptedSMS(String phoneNo, JSONObject smsText, String encryptionKey,String aesSalt, String iv, int cryptType) throws JSONException {
+        if(smsText.toString().isEmpty() || phoneNo.isEmpty() || encryptionKey.isEmpty())
         {
-            ErrorAlert();
+            errorAlert();
         }
         else
         {
-            String SMS;
+            String sms;
             //---when the SMS has been sent---
             context.registerReceiver(new BroadcastReceiver() {
                 @Override
@@ -157,27 +175,29 @@ public class SMSHandler {
                         case Activity.RESULT_OK:
                             Toast.makeText(context, "SMS sent",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,1);
+                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,1);
                             break;
                         case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
                             Toast.makeText(context, "Generic failure",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
                             break;
                         case SmsManager.RESULT_ERROR_NO_SERVICE:
                             Toast.makeText(context, "No service",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
                             break;
                         case SmsManager.RESULT_ERROR_NULL_PDU:
                             Toast.makeText(context, "Null PDU",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
                             break;
                         case SmsManager.RESULT_ERROR_RADIO_OFF:
                             Toast.makeText(context, "Radio off",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -191,35 +211,37 @@ public class SMSHandler {
                         case Activity.RESULT_OK:
                             Toast.makeText(context, "SMS delivered",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,2);
+                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,2);
                             break;
                         case Activity.RESULT_CANCELED:
                             Toast.makeText(context, "SMS not delivered",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
+                            break;
+                        default:
                             break;
                     }
                 }
             }, new IntentFilter(SMS_DELIVERED));
-            if(SMSText.getInt("x")==1 || SMSText.getInt("x")==2) {
-                SMSText.put("R", new Random().nextInt(26) + 'a');
+            if(smsText.getInt(MessageType)==1 || smsText.getInt(MessageType)==2) {
+                smsText.put("R", new Random().nextInt(26) + 'a');
             }
-            SmsManager manager = SmsManager.getDefault();
+            manager = SmsManager.getDefault();
             PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE);
             PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE);
-            if(CryptType==1) {
-                SMS =AppTrigger+new PKI_Cipher(context).EncryptPKI(SMSText.toString(), EncryptionKey);
-            }else if(CryptType==3)
+            if(cryptType==1) {
+                sms =AppTrigger+new PKI_Cipher(context).EncryptPKI(smsText.toString(), encryptionKey);
+            }else if(cryptType==3)
             {
-                SMS =KeyConfirmTrigger+new PKI_Cipher(context).EncryptPKI(SMSText.toString(), EncryptionKey);
+                sms =KeyConfirmTrigger+new PKI_Cipher(context).EncryptPKI(smsText.toString(), encryptionKey);
             }
             else
             {
-                SMS = AppTrigger + new PKI_Cipher(context).Encrypt(SMSText.toString(), EncryptionKey, AES_Salt, IV);
+                sms = AppTrigger + new PKI_Cipher(context).Encrypt(smsText.toString(), encryptionKey, aesSalt, iv);
             }
-            if(SMS.length()>=MAX_SMS_MESSAGE_LENGTH)
+            if(sms.length()>=MAX_SMS_MESSAGE_LENGTH)
             {
-                ArrayList<String> parts =manager.divideMessage(SMS);
+                ArrayList<String> parts =manager.divideMessage(sms);
                 int numParts = parts.size();
                 ArrayList<PendingIntent> sentIntents = new ArrayList<>();
                 ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
@@ -228,22 +250,22 @@ public class SMSHandler {
                     sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE));
                     deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE));
                 }
-                manager.sendMultipartTextMessage(PhoneNo,null, parts, sentIntents, deliveryIntents);
+                manager.sendMultipartTextMessage(phoneNo,null, parts, sentIntents, deliveryIntents);
             }
             else
             {
-                manager.sendTextMessage(PhoneNo, null, SMS, piSend, piDelivered);
+                manager.sendTextMessage(phoneNo, null, sms, piSend, piDelivered);
             }
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
-    public void proxyEncryptedSMS(JSONObject SMSText, String EncryptionKey, String AES_Salt, String IV) throws JSONException {
-        MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        String ProxyNumber = MyPrefs.getString("ProxyNumber", "---");
-        if(SMSText.toString().isEmpty() ||  EncryptionKey.isEmpty())
+    public void proxyEncryptedSMS(JSONObject smsText, String encryptionKey, String aesSalt, String iv) throws JSONException {
+        MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+        String proxyNumber = MyPrefs.getString("proxyNumber", "---");
+        if(smsText.toString().isEmpty() ||  encryptionKey.isEmpty())
         {
-            ErrorAlert();
+            errorAlert();
         }
         else {
             //---when the SMS has been sent---
@@ -254,27 +276,29 @@ public class SMSHandler {
                         case Activity.RESULT_OK:
                             Toast.makeText(context, "SMS sent",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(ProxyNumber,SMSText,1);
+                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,1);
                             break;
                         case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
                             Toast.makeText(context, "Generic failure",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(ProxyNumber,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
                             break;
                         case SmsManager.RESULT_ERROR_NO_SERVICE:
                             Toast.makeText(context, "No service",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(ProxyNumber,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
                             break;
                         case SmsManager.RESULT_ERROR_NULL_PDU:
                             Toast.makeText(context, "Null PDU",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(ProxyNumber,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
                             break;
                         case SmsManager.RESULT_ERROR_RADIO_OFF:
                             Toast.makeText(context, "Radio off",
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(ProxyNumber,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -286,25 +310,27 @@ public class SMSHandler {
                 public void onReceive(Context arg0, Intent arg1) {
                     switch (getResultCode()) {
                         case Activity.RESULT_OK:
-                            Toast.makeText(context, "SMS delivered",
+                            Toast.makeText(context, SMS_DELIVERED,
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(ProxyNumber,SMSText,2);
+                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,2);
                             break;
                         case Activity.RESULT_CANCELED:
-                            Toast.makeText(context, "SMS not delivered",
+                            Toast.makeText(context, SMS_NOT_DELIVERED,
                                     Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(ProxyNumber,SMSText,0);
+                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
+                            break;
+                        default:
                             break;
                     }
                 }
             }, new IntentFilter(SMS_DELIVERED));
-            SmsManager manager = SmsManager.getDefault();
+            manager = SmsManager.getDefault();
             PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE);
             PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE);
-            String SMS = AppTrigger.concat(new PKI_Cipher(context).Encrypt(SMSText.toString(), EncryptionKey, AES_Salt,IV));
-            SMSText.put("R", new Random().nextInt(26) + 'a');
-            if (SMS.length() >= MAX_SMS_MESSAGE_LENGTH) {
-                ArrayList<String> parts = manager.divideMessage(SMS);
+            String sms = AppTrigger.concat(new PKI_Cipher(context).Encrypt(smsText.toString(), encryptionKey, aesSalt,iv));
+            smsText.put("R", new Random().nextInt(26) + 'a');
+            if (sms.length() >= MAX_SMS_MESSAGE_LENGTH) {
+                ArrayList<String> parts = manager.divideMessage(sms);
                 int numParts = parts.size();
                 ArrayList<PendingIntent> sentIntents = new ArrayList<>();
                 ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
@@ -312,68 +338,67 @@ public class SMSHandler {
                     sentIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE));
                     deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE));
                 }
-                manager.sendMultipartTextMessage(ProxyNumber, null, parts, sentIntents, deliveryIntents);
+                manager.sendMultipartTextMessage(proxyNumber, null, parts, sentIntents, deliveryIntents);
             } else {
-                manager.sendTextMessage(ProxyNumber, null, SMS, piSend, piDelivered);
+                manager.sendTextMessage(proxyNumber, null, sms, piSend, piDelivered);
             }
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void SendSMSOnline(String PhoneNo, JSONObject SMSText, String EncryptionKey) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, JSONException {
-        MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        if(SMSText.toString().isEmpty() || PhoneNo.isEmpty() || EncryptionKey.isEmpty() ||
-                MyPrefs.getString("ServerURL","---").equals("---") ||
-                MyPrefs.getString("ApiKey","---").equals("---"))
+    public void sendSMSOnline(String phoneNo, JSONObject smsText, String encryptionKey) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, JSONException {
+        MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+        if(smsText.toString().isEmpty() || phoneNo.isEmpty() || encryptionKey.isEmpty() ||
+                MyPrefs.getString(ServerURL,"---").equals("---") ||
+                MyPrefs.getString(ApiKey ,"---").equals("---"))
         {
-            ErrorAlert();
+            errorAlert();
         }
         else {
-            MyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
             final OkHttpClient client = new OkHttpClient();
-            String url = MyPrefs.getString("ServerURL", "---");
-            String API_UserName = MyPrefs.getString("ServerUserName", "---");
-            String API_Key = MyPrefs.getString("ApiKey", "---");
-            String SMSBody= null;
-            if(SMSText.getInt("x")==7 | SMSText.getInt("x")==8)
+            String url = MyPrefs.getString(ServerURL, "---");
+            String apiUserName = MyPrefs.getString(ServerUserName, "---");
+            String apiKey = MyPrefs.getString(ApiKey, "---");
+            String smsBody;
+            if(smsText.getInt(MessageType)==7 | smsText.getInt(MessageType )==8)
             {
-                SMSBody = KeyRequestTrigger+SMSText.toString();
+                smsBody = KeyRequestTrigger+smsText;
             }
             else
             {
-                SMSBody =AppTrigger + new PKI_Cipher(context).EncryptPKI(SMSText.toString(), EncryptionKey);
+                smsBody =AppTrigger + new PKI_Cipher(context).EncryptPKI(smsText.toString(), encryptionKey);
             }
             RequestBody requestBody = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
-                    .addFormDataPart("username", API_UserName)
-                    .addFormDataPart("to", PhoneNo)
-                    .addFormDataPart("message", SMSBody)
+                    .addFormDataPart("username", apiUserName)
+                    .addFormDataPart("to", phoneNo)
+                    .addFormDataPart("message", smsBody)
                     .build();
             Request request = new Request.Builder()
                     .url(url)
                     .addHeader("Accept", "application/json")
                     .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .addHeader("ApiKey", API_Key)
+                    .addHeader(ApiKey, apiKey)
                     .post(requestBody)
                     .build();
-            new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,1);
+            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,1);
             Handler h = new Handler(context.getMainLooper());
             h.post(() -> client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     e.printStackTrace();
-                    new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,1);
+                    new DBManager(context).UpdateMessageStatus(phoneNo,smsText,1);
                 }
                 @Override
                 public void onResponse(@NotNull Call call, @NotNull Response response) {
                     response.close();
-                    new DBManager(context).UpdateMessageStatus(PhoneNo,SMSText,1);
-                    //Toast.makeText(context, "Message Sent",Toast.LENGTH_SHORT).show();
+                    new DBManager(context).UpdateMessageStatus(phoneNo,smsText,1);
                 }
             }));
         }
     }
-    public void ErrorAlert()
+    public void errorAlert()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         AlertDialog alertDialog = builder.create();

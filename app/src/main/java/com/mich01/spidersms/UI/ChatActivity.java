@@ -1,8 +1,28 @@
 package com.mich01.spidersms.UI;
 
 
+import static com.mich01.spidersms.Data.StringsConstants.APPEND_PARAM;
+import static com.mich01.spidersms.Data.StringsConstants.Body;
+import static com.mich01.spidersms.Data.StringsConstants.CONTACTID;
+import static com.mich01.spidersms.Data.StringsConstants.Confirmed;
+import static com.mich01.spidersms.Data.StringsConstants.ContactID;
+import static com.mich01.spidersms.Data.StringsConstants.ContactName;
+import static com.mich01.spidersms.Data.StringsConstants.ContactTarget;
+import static com.mich01.spidersms.Data.StringsConstants.DEFAULT_PREF_VALUE;
+import static com.mich01.spidersms.Data.StringsConstants.MessageBody;
+import static com.mich01.spidersms.Data.StringsConstants.MessageType;
+import static com.mich01.spidersms.Data.StringsConstants.MyContact;
+import static com.mich01.spidersms.Data.StringsConstants.PrivKey;
+import static com.mich01.spidersms.Data.StringsConstants.ProxyNumber;
+import static com.mich01.spidersms.Data.StringsConstants.PubKey;
+import static com.mich01.spidersms.Data.StringsConstants.Salt;
+import static com.mich01.spidersms.Data.StringsConstants.Secret;
+import static com.mich01.spidersms.Data.StringsConstants.ServerURL;
+import static com.mich01.spidersms.Data.StringsConstants.Status;
+import static com.mich01.spidersms.Data.StringsConstants.Timestamp;
+import static com.mich01.spidersms.Data.StringsConstants.global_pref;
+import static com.mich01.spidersms.Data.StringsConstants.inorout;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
-import static com.mich01.spidersms.Prefs.PrefsMgr.PREF_NAME;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -11,7 +31,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,15 +67,15 @@ public class ChatActivity extends AppCompatActivity {
     private static RecyclerView recyclerView;
     private static List<ResponseMessage> responseMessageList;
     private static MessageAdapter messageAdapter;
-    private static String ContactID;
+    private static String currentcontact;
     Context context;
     ImageButton sendButton;
-    private String MessageText;
-    JSONObject ContactJSON;
-    int CypherType;
-    private static String EncryptionKey;
-    private static String AES_Salt;
-    private static String IV;
+    private String messageText;
+    JSONObject contactJSON;
+    int cypherType;
+    private String encryptionKey;
+    private String aesSalt;
+    private String iv;
     @RequiresApi(api = Build.VERSION_CODES.S)
     @SuppressLint("NotifyDataSetChanged")
     @Override
@@ -68,8 +87,8 @@ public class ChatActivity extends AppCompatActivity {
         context = this;
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         Bundle bundle = getIntent().getExtras();
-        ContactID = bundle.getString("ContactID");
-        ContactJSON = new DBManager(context).GetContact(ContactID);
+        currentcontact = bundle.getString(CONTACTID);
+        contactJSON = new DBManager(context).GetContact(currentcontact);
         userInput = findViewById(R.id.userInput);
         recyclerView = findViewById(R.id.chat_conversation);
         responseMessageList = new ArrayList<>();
@@ -77,33 +96,31 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(messageAdapter);
         sendButton = findViewById(R.id.sendButton);
-        if(ContactJSON.length()==0)
+        if(contactJSON.length()==0)
         {
-            userInput.setText("Contact Unavailable");
+            userInput.setText(R.string.contact_unavailable);
             userInput.setEnabled(false);
             sendButton.setVisibility(View.GONE);
         }
         try {
-            if(ContactJSON.getInt("Confirmed")==1)
+            if(contactJSON.getInt(Confirmed)==1)
             {
-                CypherType=2;
-                EncryptionKey =ContactJSON.getString("PrivKey");
-                AES_Salt =ContactJSON.getString("Salt");
-                IV =ContactJSON.getString("Secret");
+                cypherType=2;
+                encryptionKey =contactJSON.getString(PrivKey);
+                aesSalt =contactJSON.getString(Salt);
+                iv =contactJSON.getString(Secret);
             }
-            else if(ContactJSON.getInt("Confirmed")==0)
+            else if(contactJSON.getInt(Confirmed)==0)
             {
-                CypherType=1;
-                EncryptionKey = ContactJSON.getString("PubKey");
+                cypherType=1;
+                encryptionKey = contactJSON.getString(PubKey);
             }
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        new DBManager(ChatActivity.this).UpdateMessageStatus(ContactID, 1);
+        } catch (JSONException e) {e.printStackTrace();}
+        new DBManager(ChatActivity.this).UpdateMessageStatus(currentcontact, 1);
 
-        getSupportActionBar().setTitle(bundle.getString("ContactName"));
-        PopulateChatView(context);
+        getSupportActionBar().setTitle(bundle.getString(ContactName));
+        populateChatView(context);
         sendButton.setOnClickListener(view ->
         {
             if(userInput.getText().toString().isEmpty())
@@ -118,40 +135,42 @@ public class ChatActivity extends AppCompatActivity {
             }
             else
             {
-                MessageText = userInput.getText().toString();
-                Button Option1, Option2, Option3;
+                messageText = userInput.getText().toString();
+                Button option1;
+                Button option2;
+                Button option3;
                 AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
                 ViewGroup viewGroup = findViewById(android.R.id.content);
                 View dialogView = LayoutInflater.from(view.getContext()).inflate(R.layout.send_options_modal, viewGroup, false);
                 builder.setView(dialogView);
-                String SendTo = getString(R.string.send_option1) + " " + bundle.getString("ContactName");
-                Option1 = dialogView.findViewById(R.id.send_option_1);
-                Option2 = dialogView.findViewById(R.id.send_option_2);
-                Option3 = dialogView.findViewById(R.id.send_option_3);
-                Option3.setEnabled(false);
-                Option2.setEnabled(false);
-                MyPrefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-                Option1.setText(SendTo);
+                String sendTo = getString(R.string.send_option1) + " " + bundle.getString(ContactName);
+                option1 = dialogView.findViewById(R.id.send_option_1);
+                option2 = dialogView.findViewById(R.id.send_option_2);
+                option3 = dialogView.findViewById(R.id.send_option_3);
+                option3.setEnabled(false);
+                option2.setEnabled(false);
+                MyPrefs = getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+                option1.setText(sendTo);
                 AlertDialog alertDialog = builder.create();
                 alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                 alertDialog.show();
-                if(MyPrefs.getString("ProxyNumber", "---").equals("---"))
+                if(MyPrefs.getString(ProxyNumber, "---").equals("---"))
                 {
-                    Option2.setEnabled(false);
+                    option2.setEnabled(false);
                 }
-                if(!MyPrefs.getString("ServerURL", "---").equals("---") && BackendFunctions.isConnectedOnline(context))
+                if(!MyPrefs.getString(ServerURL, "---").equals("---") && BackendFunctions.isConnectedOnline(context))
                 {
-                    Option3.setEnabled(true);
+                    option3.setEnabled(true);
                 }
-                Option1.setOnClickListener(view1 ->
+                option1.setOnClickListener(view1 ->
                 {
-                    MessageText =userInput.getText().toString();
-                    JSONObject SMSBody = new JSONObject();
+                    messageText =userInput.getText().toString();
+                    JSONObject smsBody = new JSONObject();
                     try {
-                        SMSBody.put("x",1);
-                        SMSBody.put("Body",MessageText);
-                        UpdateChatMessages(ContactID,MessageText);
-                        new SMSHandler(context).sendEncryptedSMS(ContactID, SMSBody,EncryptionKey,AES_Salt, IV,CypherType);
+                        smsBody.put(MessageType,1);
+                        smsBody.put(Body,messageText);
+                        updateChatMessages(currentcontact,messageText);
+                        new SMSHandler(context).sendEncryptedSMS(currentcontact, smsBody,encryptionKey,aesSalt, iv,cypherType);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -159,38 +178,38 @@ public class ChatActivity extends AppCompatActivity {
                         alertDialog.cancel();
                     }
                 });
-                Option2.setOnClickListener(view12 ->{
-                    JSONObject SMSBody = new JSONObject();
+                option2.setOnClickListener(view12 ->{
+                    JSONObject smsBody = new JSONObject();
                     try {
-                        SMSBody.put("x",2);
-                        SMSBody.put("t","+"+MyPrefs.getString("MyContact","000000"));
-                        SMSBody.put("Body",MessageText);
+                        smsBody.put(MessageType,2);
+                        smsBody.put(ContactTarget,APPEND_PARAM+MyPrefs.getString(MyContact,DEFAULT_PREF_VALUE));
+                        smsBody.put(Body,messageText);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                     try {
-                        EncryptionKey = ContactJSON.getString("PubKey");
-                        UpdateChatMessages(ContactID,MessageText);
-                        new SMSHandler(context).proxyEncryptedSMS(SMSBody,EncryptionKey, AES_Salt,IV);
+                        encryptionKey = contactJSON.getString(PubKey);
+                        updateChatMessages(currentcontact,messageText);
+                        new SMSHandler(context).proxyEncryptedSMS(smsBody,encryptionKey, aesSalt,iv);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }finally {
                         alertDialog.cancel();
                     }});
-                Option3.setOnClickListener(view13 ->
+                option3.setOnClickListener(view13 ->
                 {
-                    JSONObject SMSBody = new JSONObject();
+                    JSONObject smsBody = new JSONObject();
                     try {
-                        SMSBody.put("x",2);
-                        SMSBody.put("t",MyPrefs.getString("MyContact","000000"));
-                        SMSBody.put("Body",MessageText);
+                        smsBody.put(MessageType,2);
+                        smsBody.put(ContactTarget,MyPrefs.getString(MyContact,DEFAULT_PREF_VALUE));
+                        smsBody.put(Body,messageText);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    UpdateChatMessages(ContactID,MessageText);
+                    updateChatMessages(currentcontact,messageText);
                     try {
-                        EncryptionKey = ContactJSON.getString("PubKey");
-                        new SMSHandler(context).SendSMSOnline(ContactID, SMSBody,EncryptionKey);
+                        encryptionKey = contactJSON.getString(PubKey);
+                        new SMSHandler(context).sendSMSOnline(currentcontact, smsBody,encryptionKey);
                     }catch (Exception e){e.printStackTrace();}
                     finally {
                         alertDialog.cancel();
@@ -199,35 +218,33 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
     @SuppressLint({"Range", "NotifyDataSetChanged"})
-    public static void PopulateChatView(Context c) {
-        if(ContactID!=null)
+    public static void populateChatView(Context c) {
+        if(currentcontact!=null)
         {
-            Cursor cur = new DBManager(c.getApplicationContext()).getCIDChats(ContactID);
+            Cursor cur = new DBManager(c.getApplicationContext()).getCIDChats(currentcontact);
             responseMessageList.clear();
             while (cur != null && cur.moveToNext())
             {
-                if (cur.getInt(cur.getColumnIndex("inorout")) == 0 && cur.getInt(cur.getColumnIndex("Status")) <3)
+                if (cur.getInt(cur.getColumnIndex(inorout)) == 0 && cur.getInt(cur.getColumnIndex(Status)) <3)
                 {
-                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), true, cur.getInt(cur.getColumnIndex("Status")),
-                            cur.getString(cur.getColumnIndex("Timestamp"))));
+                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex(MessageBody)), true, cur.getInt(cur.getColumnIndex(Status)),
+                            cur.getString(cur.getColumnIndex(Timestamp))));
                 }
-                else if (cur.getInt(cur.getColumnIndex("inorout")) == 1 && cur.getInt(cur.getColumnIndex("Status"))<3 )
+                else if (cur.getInt(cur.getColumnIndex(inorout)) == 1 && cur.getInt(cur.getColumnIndex(Status))<3 )
                 {
-                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), false, cur.getInt(cur.getColumnIndex("Status")),
-                            cur.getString(cur.getColumnIndex("Timestamp"))));
+                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex(MessageBody)), false, cur.getInt(cur.getColumnIndex(Status)),
+                            cur.getString(cur.getColumnIndex(Timestamp))));
                 }
                 else
                 {
-                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex("MessageBody")), false, 3,
-                            cur.getString(cur.getColumnIndex("Timestamp"))));
+                    responseMessageList.add(new ResponseMessage(cur.getString(cur.getColumnIndex(MessageBody)), false, 3,
+                            cur.getString(cur.getColumnIndex(Timestamp))));
                 }
             }
             if (cur != null) {
                 messageAdapter.notifyDataSetChanged();
-                if (ChatActivity.isLastVisible()) {
-                    if (cur.getCount() > 0) {
+                if (ChatActivity.isLastVisible() && cur.getCount() > 0) {
                         ChatActivity.recyclerView.smoothScrollToPosition(ChatActivity.messageAdapter.getItemCount() - 1);
-                    }
                 }
             }
             ChatActivity.messageAdapter.notifyDataSetChanged();
@@ -243,7 +260,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void UpdateChatPosition() {
+    public void updateChatPosition() {
         ResponseMessage message = new ResponseMessage(userInput.getText().toString(), true, 1,"0");
         responseMessageList.add(message);
         runOnUiThread(() -> {
@@ -263,8 +280,8 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        new DBManager(ChatActivity.this).UpdateMessageStatus(ContactID, 1);
-        HomeActivity.RePopulateChats(context);
+        new DBManager(ChatActivity.this).UpdateMessageStatus(currentcontact, 1);
+        HomeActivity.rePopulateChats(context);
         finish();
     }
     @Override
@@ -281,13 +298,13 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void UpdateChatMessages(String Recepient, String SMS)
+    public void updateChatMessages(String recepient, String sms)
     {
-        new DBManager(context).updateLastMessage(Recepient, SMS, 1, 1);
-        new DBManager(context).AddChatMessage(Recepient, 0, SMS, 0);
-        UpdateChatPosition();
+        new DBManager(context).updateLastMessage(recepient, sms, 1, 1);
+        new DBManager(context).AddChatMessage(recepient, 0, sms, 0);
+        updateChatPosition();
         userInput.setText("");
-        HomeActivity.RePopulateChats(context);
+        HomeActivity.rePopulateChats(context);
         if (isLastVisible()) {
             recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
         }

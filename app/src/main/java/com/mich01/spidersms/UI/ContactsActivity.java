@@ -1,6 +1,6 @@
 package com.mich01.spidersms.UI;
 
-import static com.mich01.spidersms.Setup.SetupConfig.ReadScan;
+import static com.mich01.spidersms.Setup.SetupConfig.readScan;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -8,7 +8,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -18,7 +17,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -49,12 +47,9 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
-import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.Adapters.ContactAdapter;
 import com.mich01.spidersms.Backend.GetPhoneContacts;
-import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.Contact;
-import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.Setup.ScannerSetupActivity;
 
@@ -69,12 +64,12 @@ import java.util.Objects;
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class ContactsActivity extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
-    static ListView ContactListView;
-    public static ContactAdapter adapter;
-    TextView StatusStext;
+    private static ListView contactListView;
+    private static ContactAdapter adapter;
+    TextView statustext;
     ProgressBar progressBar;
-    EditText SearchText;
-    public static ArrayList<Contact> Contacts = new ArrayList<>();
+    EditText searchText;
+    public static ArrayList<Contact> contacts = new ArrayList<>();
     static ProgressDialog dialog;
 
     ActivityResultLauncher<Intent> gerConfigBMPFile = registerForActivityResult(
@@ -82,7 +77,7 @@ public class ContactsActivity extends AppCompatActivity {
             result -> {
                 Intent data = result.getData();
                 if (data == null || data.getData() == null) {
-                    SnackBarAlert("You Haven't selected any file");
+                    snackBarAlert(getString(R.string.havent_selected_file));
                     return;
                 }
                 Uri uri = data.getData();
@@ -90,10 +85,11 @@ public class ContactsActivity extends AppCompatActivity {
                     InputStream inputStream = getContentResolver().openInputStream(uri);
                     Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                     if (bitmap == null) {
-                        SnackBarAlert("You haven't selected any file");
+                        snackBarAlert(getString(R.string.havent_selected_file));
                         return;
                     }
-                    int width = bitmap.getWidth(), height = bitmap.getHeight();
+                    int width = bitmap.getWidth();
+                    int height = bitmap.getHeight();
                     int[] pixels = new int[width * height];
                     bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
                     bitmap.recycle();
@@ -102,13 +98,13 @@ public class ContactsActivity extends AppCompatActivity {
                     MultiFormatReader reader = new MultiFormatReader();
                     try {
                         Result results = reader.decode(bBitmap);
-                        JSONObject ResultsJSON = new JSONObject(results.getText());
-                        ReadScan(ContactsActivity.this, ResultsJSON);
+                        JSONObject resultsJSON = new JSONObject(results.getText());
+                        readScan(ContactsActivity.this, resultsJSON);
                     } catch (NotFoundException | JSONException e) {
-                        SnackBarAlert("You need to select a QR Code bitmap");
+                        snackBarAlert(getString(R.string.need_qr_bitmap));
                     }
                 } catch (FileNotFoundException e) {
-                    SnackBarAlert("Cannot open file");
+                    snackBarAlert(getString(R.string.cannot_open_file));
                 }
             });
     @Override
@@ -116,22 +112,22 @@ public class ContactsActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
-        ContactListView = findViewById(R.id.contacts_list);
+        contactListView = findViewById(R.id.contacts_list);
         progressBar = findViewById(R.id.contacts_progressBar);
-        StatusStext = findViewById(R.id.lbl_contact_Status);
+        statustext = findViewById(R.id.lbl_contact_Status);
         SwipeRefreshLayout swipeRefreshLayout;
         swipeRefreshLayout = findViewById(R.id.contactRefreshLayout);
 
         new GetPhoneContacts().getMyContacts(ContactsActivity.this);
-        if(Contacts.size()==0)
+        if(contacts.size()==0)
         {
-            SnackBarAlert(getString(R.string.drag_to_update_contact));
+            snackBarAlert(getString(R.string.drag_to_update_contact));
         }
-        adapter = new ContactAdapter(ContactsActivity.this,R.layout.contact_item,Contacts);
-        ContactListView.setAdapter(adapter);
-        Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.contacts_view_title)+ " ("+Contacts.size()+")");
+        adapter = new ContactAdapter(ContactsActivity.this,R.layout.contact_item,contacts);
+        contactListView.setAdapter(adapter);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.contacts_view_title)+ " ("+contacts.size()+")");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        ContactListView.setOnItemClickListener((parent, view, position, id) -> {
+        contactListView.setOnItemClickListener((parent, view, position, id) -> {
         });
         // Implementing setOnRefreshListener on SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener(() -> {
@@ -176,23 +172,23 @@ public class ContactsActivity extends AppCompatActivity {
         menu.findItem(R.id.add_contact).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                Button ScanQRButton;
-                Button SelectFileButton;
+                Button scanQRButton;
+                Button selectFileButton;
                 AlertDialog.Builder builder = new AlertDialog.Builder(ContactsActivity.this);
                 ViewGroup viewGroup = findViewById(android.R.id.content);
                 LayoutInflater inflater = ContactsActivity.this.getLayoutInflater();
                 View dialogView = inflater.inflate(R.layout.activity_config_choice, viewGroup, false);
                 builder.setView(dialogView);
-                ScanQRButton = dialogView.findViewById(R.id.cmdNavigateToQR);
-                SelectFileButton = dialogView.findViewById(R.id.cmdFilechooser);
+                scanQRButton = dialogView.findViewById(R.id.cmdNavigateToQR);
+                selectFileButton = dialogView.findViewById(R.id.cmdFilechooser);
                 AlertDialog alertDialog = builder.create();
                 alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                 alertDialog.show();
-                ScanQRButton.setOnClickListener(v -> {
+                scanQRButton.setOnClickListener(v -> {
                     startActivity(new Intent(getApplicationContext(), ScannerSetupActivity.class));
                     alertDialog.dismiss();
                 });
-                SelectFileButton.setOnClickListener(v -> {
+                selectFileButton.setOnClickListener(v -> {
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                         requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1111);
                     } else {
@@ -207,7 +203,7 @@ public class ContactsActivity extends AppCompatActivity {
             }
         });
         SearchView searchView= (SearchView) menu.findItem(R.id.search_contact).getActionView();
-        SearchText = findViewById(R.id.search_contact);
+        searchText = findViewById(R.id.search_contact);
         searchView.setQueryHint("Search Contact..");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -218,7 +214,7 @@ public class ContactsActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String query) {
-                FilterContacts(query);
+                filterContacts(query);
                 return false;
             }
         });
@@ -234,17 +230,17 @@ public class ContactsActivity extends AppCompatActivity {
         @Override protected void onPostExecute(String result)
         {
             dialog.dismiss();
-            adapter = new ContactAdapter(adapter.getContext(), R.layout.contact_item,Contacts);
-            ContactListView.setAdapter(adapter);
+            adapter = new ContactAdapter(adapter.getContext(), R.layout.contact_item,contacts);
+            contactListView.setAdapter(adapter);
             adapter.notifyDataSetChanged();
-            Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(contactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
             snackbar.setBackgroundTint(Color.GREEN);
             snackbar.setTextColor(Color.BLACK);
             snackbar.show();
         }
     }
 
-    public static void RepopulateContacts(Context context){
+    public static void repopulateContacts(Context context){
         Handler h = new Handler(context.getMainLooper());
         h.post(new Runnable() {
             @SuppressLint("Range")
@@ -252,10 +248,10 @@ public class ContactsActivity extends AppCompatActivity {
             public void run() {
                 new GetPhoneContacts().getMyContacts(adapter.getContext());
                 synchronized (this) {
-                    adapter = new ContactAdapter(adapter.getContext(), R.layout.contact_item,Contacts);
-                    ContactListView.setAdapter(adapter);
+                    adapter = new ContactAdapter(adapter.getContext(), R.layout.contact_item,contacts);
+                    contactListView.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
-                    Snackbar snackbar = Snackbar.make(ContactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
+                    Snackbar snackbar = Snackbar.make(contactListView, R.string.contacts_updated, Snackbar.LENGTH_LONG);
                     snackbar.setBackgroundTint(Color.GREEN);
                     snackbar.setTextColor(Color.BLACK);
                     snackbar.show();
@@ -264,29 +260,29 @@ public class ContactsActivity extends AppCompatActivity {
         });
 
     }
-    public void FilterContacts(String SearchString)
+    public void filterContacts(String searchString)
     {
-        ArrayList<Contact> FilteredContacts = new ArrayList<>();
-        for(int i=0;i<Contacts.size();i++)
+        ArrayList<Contact> filteredContacts = new ArrayList<>();
+        for(int i=0;i<contacts.size();i++)
         {
-            if(Contacts.get(i).getContactNames().toLowerCase().contains(SearchString.toLowerCase()))
+            if(contacts.get(i).getContactNames().toLowerCase().contains(searchString.toLowerCase()))
             {
-                FilteredContacts.add(new Contact(Contacts.get(i).getCID(),
-                    Contacts.get(i).getContactNames(), Contacts.get(i).getPubKey(), Contacts.get(i).getCType()));
+                filteredContacts.add(new Contact(contacts.get(i).getCID(),
+                    contacts.get(i).getContactNames(), contacts.get(i).getPubKey(), contacts.get(i).getCType()));
             }
         }
-        ContactAdapter Filteredadapter = new ContactAdapter(getApplicationContext(),R.layout.contact_item, FilteredContacts);
-        ContactListView.setAdapter(Filteredadapter);
-        Filteredadapter.notifyDataSetChanged();
+        ContactAdapter filteredadapter = new ContactAdapter(getApplicationContext(),R.layout.contact_item, filteredContacts);
+        contactListView.setAdapter(filteredadapter);
+        filteredadapter.notifyDataSetChanged();
     }
-    public void SnackBarAlert(String AlertMessage)
+    public void snackBarAlert(String alertMessage)
     {
-        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
-        TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
-        SnackBarView.setTextColor(ContextCompat.getColor(ContactsActivity.this, R.color.white));
-        SnackBarView.setBackgroundColor(ContextCompat.getColor(ContactsActivity.this, R.color.error));
-        SnackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        SnackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
+        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), alertMessage, Snackbar.LENGTH_LONG);
+        TextView snackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
+        snackBarView.setTextColor(ContextCompat.getColor(ContactsActivity.this, R.color.white));
+        snackBarView.setBackgroundColor(ContextCompat.getColor(ContactsActivity.this, R.color.error));
+        snackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        snackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
         mSnackBar.show();
     }
 }
