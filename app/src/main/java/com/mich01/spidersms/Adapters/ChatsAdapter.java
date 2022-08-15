@@ -1,12 +1,15 @@
 package com.mich01.spidersms.Adapters;
 
+import static com.mich01.spidersms.Data.StringsConstants.ContactID;
+import static com.mich01.spidersms.Data.StringsConstants.CalledBy;
+import static com.mich01.spidersms.Data.StringsConstants.ContactName;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,29 +20,24 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
 import com.mich01.spidersms.UI.ChatActivity;
 import com.mich01.spidersms.UI.HomeActivity;
-import com.mich01.spidersms.UI.TextDrawable.ColorGenerator;
 import com.mich01.spidersms.UI.TextDrawable.TextDrawable;
 
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class ChatsAdapter extends ArrayAdapter<LastChat>
 {
-    ArrayList<LastChat> chatsList;
+    List<LastChat> chatsList;
     TextView lastText;
     Context context;
-    // declare the color generator and drawable builder
-    private ColorGenerator mColorGenerator = ColorGenerator.MATERIAL;
-    private TextDrawable.IBuilder mDrawableBuilder;
 
-    public ChatsAdapter(@NonNull Context c, int resource, ArrayList<LastChat> chatsList)
+    public ChatsAdapter(@NonNull Context c, int resource, List<LastChat> chatsList)
     {
         super(c, resource, chatsList);
         this.chatsList = chatsList;
@@ -52,7 +50,6 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
         return super.getItem(position);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("ResourceType")
     @NonNull
     @Override
@@ -98,22 +95,22 @@ public class ChatsAdapter extends ArrayAdapter<LastChat>
 
         convertView.setOnClickListener(v -> {
             Intent  chatIntent  = new Intent(v.getRootView().getContext(), ChatActivity.class);
-             chatIntent .putExtra("ContactID", chatsList.get(position).getContactID());
-             chatIntent .putExtra("ContactName", chatsList.get(position).getContactName());
-             chatIntent .putExtra("CalledBy", HomeActivity.class.getSimpleName());
+             chatIntent .putExtra(ContactID, chatsList.get(position).getContactID());
+             chatIntent .putExtra(ContactName, chatsList.get(position).getContactName());
+             chatIntent .putExtra(CalledBy , HomeActivity.class.getSimpleName());
              chatIntent .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             getContext().startActivity( chatIntent );
         });
         convertView.setOnLongClickListener(view -> {
             AlertDialog.Builder alert = new AlertDialog.Builder(view.getRootView().getContext());
             alert.setTitle(R.string.do_you_want_to_delete);
-            alert.setPositiveButton("Ok", (dialog, whichButton) -> {
+            alert.setPositiveButton(R.string.ok, (dialog, whichButton) -> {
                 new DBManager(getContext()).DeleteAllChats(chatsList.get(position).getContactID());
                 HomeActivity.rePopulateChats(view.getRootView().getContext());
                 HomeActivity.adapter.notifyDataSetChanged();
             });
 
-            alert.setNegativeButton("Cancel",
+            alert.setNegativeButton(R.string.cancel,
                     (dialog, whichButton) -> dialog.cancel());
                 alert.show();
             return false;

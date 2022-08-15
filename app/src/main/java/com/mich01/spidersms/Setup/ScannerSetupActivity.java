@@ -5,12 +5,10 @@ import static com.mich01.spidersms.Setup.SetupConfig.readScan;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -28,7 +26,6 @@ public class ScannerSetupActivity extends AppCompatActivity {
     CodeScanner codeScanner;
     CodeScannerView scannerview;
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -43,21 +40,18 @@ public class ScannerSetupActivity extends AppCompatActivity {
                 readScan(ScannerSetupActivity.this,new JSONObject(result.toString()));
             } catch (JSONException e) {
                 Toast.makeText(ScannerSetupActivity.this, R.string.config_data_corrupted, Toast.LENGTH_LONG).show();
-                e.printStackTrace();
             }
         }));
         scannerview.setOnClickListener(v -> codeScanner.startPreview());
         backButton.setOnClickListener(v -> finish());
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onResume() {
         super.onResume();
         requestCameraPermission();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private void requestCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)  != PackageManager.PERMISSION_GRANTED)
         {

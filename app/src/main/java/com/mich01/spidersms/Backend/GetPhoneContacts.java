@@ -1,15 +1,15 @@
 package com.mich01.spidersms.Backend;
 
 import static com.mich01.spidersms.Data.StringsConstants.C_ID;
+import static com.mich01.spidersms.Data.StringsConstants.ContactName;
+import static com.mich01.spidersms.Data.StringsConstants.DEFAULT_PREF_VALUE;
+import static com.mich01.spidersms.Data.StringsConstants.PubKey;
 
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
-import android.os.Build;
 import android.provider.ContactsContract;
-
-import androidx.annotation.RequiresApi;
 
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.Contact;
@@ -20,16 +20,13 @@ import org.json.JSONObject;
 
 public class GetPhoneContacts
 {
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("Range")
     public void getPhoneContacts(Context ContactContext)
     {
-        String phoneNo = null;
+        String phoneNo = "";
         ContentResolver cr = ContactContext.getContentResolver();
         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
                 null, null, null, null);
-        //int Index =ContactsActivity.ContactNames.length;
         if ((cur != null ? cur.getCount() : 0) > 0)
         {
             while (cur.moveToNext())
@@ -38,7 +35,6 @@ public class GetPhoneContacts
                         cur.getColumnIndex(ContactsContract.Contacts._ID));
                 @SuppressLint("Range") String name = cur.getString(cur.getColumnIndex(
                         ContactsContract.Contacts.DISPLAY_NAME));
-
                 if (cur.getInt(cur.getColumnIndex(
                         ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0)
                 {
@@ -53,28 +49,31 @@ public class GetPhoneContacts
 
                     }
                     pCur.close();
-                    JSONObject ContactJSON = new JSONObject();
-                    try {
-                        ContactJSON.put(C_ID,phoneNo.replace(" ",""));
-                        ContactJSON.put("ContactName",name);
-                        if(new DBManager(ContactContext).GetContact(phoneNo.replace(" ","")).length()<1)
-                        {
-                            ContactsActivity.contacts.add(new Contact(phoneNo, name, "000000", 0));
-                            new DBManager(ContactContext).UpdatePhoneBook(ContactJSON);
-                        }
-                    }
-                    catch (Exception e){e.printStackTrace();}
-                    finally {
-                        if(cur!=null){
-                            cur.close();
-                        }
-                    }
+                    loadPhoneContacts(phoneNo, name, ContactContext);
                 }
             }
-        }
 
+        }
+        if(cur!=null){
+            cur.close();
+        }
     }
-    @RequiresApi(api = Build.VERSION_CODES.M)
+
+    private void loadPhoneContacts(String phoneNo, String name, Context ContactContext) {
+        JSONObject ContactJSON = new JSONObject();
+        try {
+            assert phoneNo != null;
+            ContactJSON.put(C_ID,phoneNo.replace(" ",""));
+            ContactJSON.put(ContactName,name);
+            if(new DBManager(ContactContext).GetContact(phoneNo.replace(" ","")).length()<1)
+            {
+                ContactsActivity.contacts.add(new Contact(phoneNo, name, DEFAULT_PREF_VALUE, 0));
+                new DBManager(ContactContext).UpdatePhoneBook(ContactJSON);
+            }
+        }
+        catch (Exception ignored){}
+    }
+
     @SuppressLint("Range")
     public void getMyContacts(Context context)
     {
@@ -84,9 +83,9 @@ public class GetPhoneContacts
         while (cur.moveToNext())
         {
             @SuppressLint("Range") String CID = cur.getString(cur.getColumnIndex(C_ID));
-            @SuppressLint("Range") String Name = cur.getString(cur.getColumnIndex("ContactName"));
+            @SuppressLint("Range") String Name = cur.getString(cur.getColumnIndex(ContactName));
             int ContactType;
-            if (cur.getString(cur.getColumnIndex("PubKey"))!=null && cur.getString(cur.getColumnIndex("PubKey")).equals("000000"))
+            if (cur.getString(cur.getColumnIndex(PubKey))!=null && cur.getString(cur.getColumnIndex(PubKey)).equals(DEFAULT_PREF_VALUE))
             {
                 ContactType =0;
             }else
@@ -94,7 +93,7 @@ public class GetPhoneContacts
                 ContactType =1;
             }
             ContactsActivity.contacts.add(new Contact(CID,Name
-                    , cur.getString(cur.getColumnIndex("PubKey")), ContactType));
+                    , cur.getString(cur.getColumnIndex(PubKey)), ContactType));
         }
         cur.close();
     }

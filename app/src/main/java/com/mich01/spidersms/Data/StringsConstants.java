@@ -2,19 +2,23 @@ package com.mich01.spidersms.Data;
 
 public class StringsConstants
 {
+    private StringsConstants() {
+    }
     public static final String StatusSent =" \u2713";
     public static final String StatusDelivered =" \u2713"+"\u2713";
     public static final String StatusOnline =" \u2713"+" Online";
     public static final String EncryptedTable ="EncryptedSMS";
     public static final String C_ID ="CID";
+    public static final String date_Format ="yyyy MM dd HH:mm:ss";
+    public static final String su ="su";
     public static final String MyPinHash ="MyPinHash";
     public static final String DEFAULT_PREF_VALUE ="00000";
     public static final String ContactID ="contactID";
-    public static final String CONTACTID ="ContactID";
     public static final String DBName ="Chats.db";
     public static final String PubKey ="PubKey";
     public static final String ServerPublicKey ="ServerPublicKey";
     public static final String ProxyNumber ="ProxyNumber";
+    public static final String proxy_Number ="proxyNumber";
     public static final String UserName ="UserName";
     public static final String PhoneNumber ="PhoneNumber";
     public static final String SeverURL ="SeverURL";
@@ -58,8 +62,9 @@ public class StringsConstants
     public static final String MessageType ="x";
     public static final String ContactTarget ="t";
     public static final String Pub_Key ="K";
+    public static final String RandParam ="R";
+    public static final String FillerParam ="a";
     public static final String SHA256 ="SHA-256";
-    public static final String UTF8 ="UTF-8";
     public static final String AndroidKeyStore ="AndroidKeyStore";
     public static final String AppName ="SpiderSMS";
     public static final int MAX_SMS_MESSAGE_LENGTH = 160;
@@ -77,5 +82,13 @@ public class StringsConstants
     public static final String Radio_Off ="Radio off";
     public static final String SMS_NOT_DELIVERED ="SMS not delivered";
     public static final String CHANNEL_ID = "1337";
+    public static final String CalledBy = "CalledBy";
     public static final String MAIN_INTENT = "android.provider.Telephony.SMS_RECEIVED";
+    public static final int pswdIterations = 10;
+    public static final int keySize = 128;
+    public static final String cypherInstanceAES = "AES/CBC/PKCS5Padding";
+    public static final String cypherInstanceRSA = "RSA/ECB/OAEPPadding";
+    public static final String secretKeyInstance = "PBKDF2WithHmacSHA1";
+    public static final String corruptedEncryption ="Received Corrupted Encrypted SMS";
+    public static final String requestResend ="Message Decryption Failed Please request for a resend";
 }

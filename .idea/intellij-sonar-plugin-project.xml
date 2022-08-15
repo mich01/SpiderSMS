@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SonarAnalyzer-Project">
+    <sonarQubeConnectionName>SonaCube</sonarQubeConnectionName>
+    <sonarProperties>
+      <property name="sonar.projectKey" value="sqp_356e892d15b02506e7ae6c9a93d6baa9a1a1ca31" />
+      <property name="sonar.projectName" value="SpiderSMS" />
+    </sonarProperties>
+  </component>
+</project>

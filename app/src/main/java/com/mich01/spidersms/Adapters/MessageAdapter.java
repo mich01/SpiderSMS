@@ -1,19 +1,18 @@
 package com.mich01.spidersms.Adapters;
 
+import static com.mich01.spidersms.Data.StringsConstants.KeyConfirmTrigger;
 import static com.mich01.spidersms.Data.StringsConstants.StatusDelivered;
 import static com.mich01.spidersms.Data.StringsConstants.StatusOnline;
 import static com.mich01.spidersms.Data.StringsConstants.StatusSent;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -74,16 +73,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
         return new CustomViewHolder(LayoutInflater.from(parent.getContext()).inflate(viewType, parent, false));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onBindViewHolder(@NonNull @NotNull MessageAdapter.CustomViewHolder holder, int pos)
     {
         try {
-            String status ="-";
+            String status =KeyConfirmTrigger;
             if(responseMessageList.get(pos).isSent() && responseMessageList.get(pos).getMessageStatus()<1)
             {
                 holder.messageStatus.setTextColor(ContextCompat.getColor(context,R.color.danger));
-                status =" Failed";
+                status =context.getString(R.string.failed);
             }
             else if(responseMessageList.get(pos).isSent() && responseMessageList.get(pos).getMessageStatus()==1  )
             {
@@ -110,23 +108,20 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.CustomVi
             holder.textView.setOnLongClickListener(view -> {
                 AlertDialog.Builder alert = new AlertDialog.Builder(view.getContext());
                 alert.setTitle(R.string.sure_delete_conversation);
-                alert.setPositiveButton("Ok", (dialog, whichButton) -> {
+                alert.setPositiveButton(R.string.ok, (dialog, whichButton) -> {
                     new DBManager(view.getContext()).DeleteMessage(String.valueOf(pos));
                     HomeActivity.rePopulateChats(view.getContext());
                     HomeActivity.adapter.notifyDataSetChanged();
                 });
 
-                alert.setNegativeButton("Cancel",
+                alert.setNegativeButton(R.string.cancel,
                         (dialog, whichButton) -> {
                         });
 
                 alert.show();
                 return false;
             });
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        }catch (Exception ignored){}
     }
 
     @Override

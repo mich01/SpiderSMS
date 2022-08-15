@@ -2,6 +2,7 @@ package com.mich01.spidersms.Backend;
 
 import static com.mich01.spidersms.Data.StringsConstants.ApiKey;
 import static com.mich01.spidersms.Data.StringsConstants.AppTrigger;
+import static com.mich01.spidersms.Data.StringsConstants.FillerParam;
 import static com.mich01.spidersms.Data.StringsConstants.Generic_Failure;
 import static com.mich01.spidersms.Data.StringsConstants.KeyConfirmTrigger;
 import static com.mich01.spidersms.Data.StringsConstants.KeyRequestTrigger;
@@ -10,14 +11,17 @@ import static com.mich01.spidersms.Data.StringsConstants.MessageType;
 import static com.mich01.spidersms.Data.StringsConstants.No_Service;
 import static com.mich01.spidersms.Data.StringsConstants.Null_PDU;
 import static com.mich01.spidersms.Data.StringsConstants.Radio_Off;
+import static com.mich01.spidersms.Data.StringsConstants.RandParam;
 import static com.mich01.spidersms.Data.StringsConstants.SMS_DELIVERED;
 import static com.mich01.spidersms.Data.StringsConstants.SMS_NOT_DELIVERED;
 import static com.mich01.spidersms.Data.StringsConstants.SMS_SENT;
 import static com.mich01.spidersms.Data.StringsConstants.ServerURL;
 import static com.mich01.spidersms.Data.StringsConstants.ServerUserName;
-import static com.mich01.spidersms.Data.StringsConstants.global_pref;
+import static com.mich01.spidersms.Data.StringsConstants.proxy_Number;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
+import static com.mich01.spidersms.Prefs.PrefsMgr.getPrefs;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -45,9 +49,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -64,6 +68,7 @@ import okhttp3.Response;
 public class SMSHandler {
     Context context;
     SmsManager manager;
+    int RandomValue = new SecureRandom().nextInt(26);
     public SMSHandler(Context context)
     {
         this.context = context;
@@ -79,59 +84,7 @@ public class SMSHandler {
         else
         {
             String sms;
-            context.registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context arg0, Intent arg1) {
-                    switch (getResultCode()) {
-                        case Activity.RESULT_OK:
-                            Toast.makeText(context, SMS_SENT,
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                            Toast.makeText(context, Generic_Failure,
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        case SmsManager.RESULT_ERROR_NO_SERVICE:
-                            Toast.makeText(context, No_Service,
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        case SmsManager.RESULT_ERROR_NULL_PDU:
-                            Toast.makeText(context, Null_PDU,
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        case SmsManager.RESULT_ERROR_RADIO_OFF:
-                            Toast.makeText(context, Radio_Off,
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        default:
-                            Toast.makeText(context, "Exception",
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                }
-            }, new IntentFilter(SMS_SENT));
-
-            //---when the SMS has been delivered---
-            context.registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context arg0, Intent arg1) {
-                    switch (getResultCode()) {
-                        case Activity.RESULT_OK:
-                            Toast.makeText(context, SMS_DELIVERED,
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        case Activity.RESULT_CANCELED:
-                            Toast.makeText(context, SMS_NOT_DELIVERED,
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        default:
-                            Toast.makeText(context, "Exception",
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                }
-            }, new IntentFilter(SMS_DELIVERED));
-            MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+            registerPlainSMS(phoneNo, smsText);
             new DBManager(context).updateLastMessage(phoneNo, smsText, 1, 1);
             new DBManager(context).AddChatMessage(phoneNo, 0, smsText, 0);
             manager = SmsManager.getDefault();
@@ -157,8 +110,66 @@ public class SMSHandler {
             }}
     }
 
+    private void registerPlainSMS(String phoneNo, String smsText)
+    {
+        String BroadcastPermission = Manifest.permission.RECEIVE_SMS;
+        BroadcastReceiver failedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent arg1) {
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+                        Toast.makeText(context, SMS_SENT,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                        Toast.makeText(context, Generic_Failure,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_NO_SERVICE:
+                        Toast.makeText(context, No_Service,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_NULL_PDU:
+                        Toast.makeText(context, Null_PDU,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_RADIO_OFF:
+                        Toast.makeText(context, Radio_Off,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Toast.makeText(context, R.string.exception,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        };
+        BroadcastReceiver successfulReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent arg1) {
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+                        Toast.makeText(context, SMS_DELIVERED,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        Toast.makeText(context, SMS_NOT_DELIVERED,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Toast.makeText(context, R.string.exception,
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        };
+        context.registerReceiver(failedReceiver, new IntentFilter(SMS_SENT),BroadcastPermission,null);
+
+        //---when the SMS has been delivered---
+        context.registerReceiver(successfulReceiver, new IntentFilter(SMS_DELIVERED), BroadcastPermission,null);
+    }
+
     @SuppressLint("InlinedApi")
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public void sendEncryptedSMS(String phoneNo, JSONObject smsText, String encryptionKey,String aesSalt, String iv, int cryptType) throws JSONException {
         if(smsText.toString().isEmpty() || phoneNo.isEmpty() || encryptionKey.isEmpty())
         {
@@ -168,63 +179,9 @@ public class SMSHandler {
         {
             String sms;
             //---when the SMS has been sent---
-            context.registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context arg0, Intent arg1) {
-                    switch (getResultCode()) {
-                        case Activity.RESULT_OK:
-                            Toast.makeText(context, "SMS sent",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,1);
-                            break;
-                        case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                            Toast.makeText(context, "Generic failure",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
-                            break;
-                        case SmsManager.RESULT_ERROR_NO_SERVICE:
-                            Toast.makeText(context, "No service",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
-                            break;
-                        case SmsManager.RESULT_ERROR_NULL_PDU:
-                            Toast.makeText(context, "Null PDU",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
-                            break;
-                        case SmsManager.RESULT_ERROR_RADIO_OFF:
-                            Toast.makeText(context, "Radio off",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }, new IntentFilter(SMS_SENT));
-
-            //---when the SMS has been delivered---
-            context.registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context arg0, Intent arg1) {
-                    switch (getResultCode()) {
-                        case Activity.RESULT_OK:
-                            Toast.makeText(context, "SMS delivered",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,2);
-                            break;
-                        case Activity.RESULT_CANCELED:
-                            Toast.makeText(context, "SMS not delivered",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }, new IntentFilter(SMS_DELIVERED));
+            registerSMSReceiver(phoneNo, smsText);
             if(smsText.getInt(MessageType)==1 || smsText.getInt(MessageType)==2) {
-                smsText.put("R", new Random().nextInt(26) + 'a');
+                smsText.put(RandParam, RandomValue + FillerParam);
             }
             manager = SmsManager.getDefault();
             PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE);
@@ -241,16 +198,7 @@ public class SMSHandler {
             }
             if(sms.length()>=MAX_SMS_MESSAGE_LENGTH)
             {
-                ArrayList<String> parts =manager.divideMessage(sms);
-                int numParts = parts.size();
-                ArrayList<PendingIntent> sentIntents = new ArrayList<>();
-                ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
-                for (int i = 0; i < numParts; i++)
-                {
-                    sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE));
-                    deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE));
-                }
-                manager.sendMultipartTextMessage(phoneNo,null, parts, sentIntents, deliveryIntents);
+                sendMultipartSMS(phoneNo, sms);
             }
             else
             {
@@ -259,76 +207,157 @@ public class SMSHandler {
         }
     }
 
+    private void sendMultipartSMS(String phoneNo, String sms) {
+        ArrayList<String> parts =manager.divideMessage(sms);
+        int numParts = parts.size();
+        ArrayList<PendingIntent> sentIntents = new ArrayList<>();
+        ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
+        for (int i = 0; i < numParts; i++)
+        {
+            sentIntents.add(PendingIntent.getBroadcast(context, 0,  new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE));
+            deliveryIntents.add(PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE));
+        }
+        manager.sendMultipartTextMessage(phoneNo,null, parts, sentIntents, deliveryIntents);
+    }
+
+    private void registerSMSReceiver(String phoneNo, JSONObject smsText)
+    {
+        String BroadcastPermission = Manifest.permission.RECEIVE_SMS;
+        BroadcastReceiver failedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent arg1) {
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+                        Toast.makeText(context, R.string.sms_sent,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(phoneNo,smsText,1);
+                        break;
+                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                        Toast.makeText(context, R.string.generic_failure,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
+                        break;
+                    case SmsManager.RESULT_ERROR_NO_SERVICE:
+                        Toast.makeText(context, R.string.no_servie,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
+                        break;
+                    case SmsManager.RESULT_ERROR_NULL_PDU:
+                        Toast.makeText(context, R.string.null_pdu,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
+                        break;
+                    case SmsManager.RESULT_ERROR_RADIO_OFF:
+                        Toast.makeText(context, R.string.radio_off,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        BroadcastReceiver succesfulReceiver =new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent arg1) {
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+                        Toast.makeText(context, R.string.sms_delivered,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(phoneNo,smsText,2);
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        Toast.makeText(context, R.string.sms_not_delivered,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(phoneNo,smsText,0);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        context.registerReceiver(failedReceiver, new IntentFilter(SMS_SENT),BroadcastPermission,null);
+        //---when the SMS has been delivered---
+        context.registerReceiver(succesfulReceiver, new IntentFilter(SMS_DELIVERED),BroadcastPermission,null);
+    }
+    public void registerProxy(String proxyNumber, JSONObject smsText)
+    {
+        String BroadcastPermission = Manifest.permission.RECEIVE_SMS;
+        BroadcastReceiver failedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent arg1)
+            {
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+                        Toast.makeText(context, R.string.sms_sent,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,1);
+                        break;
+                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                        Toast.makeText(context, R.string.generic_failure,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
+                        break;
+                    case SmsManager.RESULT_ERROR_NO_SERVICE:
+                        Toast.makeText(context, R.string.no_servie,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
+                        break;
+                    case SmsManager.RESULT_ERROR_NULL_PDU:
+                        Toast.makeText(context, R.string.null_pdu,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
+                        break;
+                    case SmsManager.RESULT_ERROR_RADIO_OFF:
+                        Toast.makeText(context, R.string.radio_off,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        BroadcastReceiver successfulReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent arg1) {
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+                        Toast.makeText(context, SMS_DELIVERED,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,2);
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        Toast.makeText(context, SMS_NOT_DELIVERED,
+                                Toast.LENGTH_SHORT).show();
+                        new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        //---when the SMS has been sent---
+        context.registerReceiver(failedReceiver, new IntentFilter(SMS_SENT),BroadcastPermission,null);
+
+        //---when the SMS has been delivered---
+        context.registerReceiver(successfulReceiver, new IntentFilter(SMS_DELIVERED),BroadcastPermission,null);
+    }
     @RequiresApi(api = Build.VERSION_CODES.S)
-    public void proxyEncryptedSMS(JSONObject smsText, String encryptionKey, String aesSalt, String iv) throws JSONException {
-        MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
-        String proxyNumber = MyPrefs.getString("proxyNumber", "---");
+    public void proxyEncryptedSMS(JSONObject smsText, String encryptionKey, String aesSalt, String iv) throws JSONException, NullPointerException {
+        MyPrefs = getPrefs(context);
+        String proxyNumber = MyPrefs.getString(proxy_Number, "---");
         if(smsText.toString().isEmpty() ||  encryptionKey.isEmpty())
         {
             errorAlert();
         }
         else {
-            //---when the SMS has been sent---
-            context.registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context arg0, Intent arg1) {
-                    switch (getResultCode()) {
-                        case Activity.RESULT_OK:
-                            Toast.makeText(context, "SMS sent",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,1);
-                            break;
-                        case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                            Toast.makeText(context, "Generic failure",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
-                            break;
-                        case SmsManager.RESULT_ERROR_NO_SERVICE:
-                            Toast.makeText(context, "No service",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
-                            break;
-                        case SmsManager.RESULT_ERROR_NULL_PDU:
-                            Toast.makeText(context, "Null PDU",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
-                            break;
-                        case SmsManager.RESULT_ERROR_RADIO_OFF:
-                            Toast.makeText(context, "Radio off",
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }, new IntentFilter(SMS_SENT));
-
-            //---when the SMS has been delivered---
-            context.registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context arg0, Intent arg1) {
-                    switch (getResultCode()) {
-                        case Activity.RESULT_OK:
-                            Toast.makeText(context, SMS_DELIVERED,
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,2);
-                            break;
-                        case Activity.RESULT_CANCELED:
-                            Toast.makeText(context, SMS_NOT_DELIVERED,
-                                    Toast.LENGTH_SHORT).show();
-                            new DBManager(context).UpdateMessageStatus(proxyNumber,smsText,0);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }, new IntentFilter(SMS_DELIVERED));
+           registerProxy(proxy_Number, smsText);
             manager = SmsManager.getDefault();
             PendingIntent piSend = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT), PendingIntent.FLAG_MUTABLE);
             PendingIntent piDelivered = PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED), PendingIntent.FLAG_MUTABLE);
             String sms = AppTrigger.concat(new PKI_Cipher(context).Encrypt(smsText.toString(), encryptionKey, aesSalt,iv));
-            smsText.put("R", new Random().nextInt(26) + 'a');
+            smsText.put(RandParam, RandomValue + FillerParam);
             if (sms.length() >= MAX_SMS_MESSAGE_LENGTH) {
                 ArrayList<String> parts = manager.divideMessage(sms);
                 int numParts = parts.size();
@@ -344,10 +373,8 @@ public class SMSHandler {
             }
         }
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public void sendSMSOnline(String phoneNo, JSONObject smsText, String encryptionKey) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, JSONException {
-        MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+    public void sendSMSOnline(String phoneNo, JSONObject smsText, String encryptionKey) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, JSONException, NullPointerException {
+        MyPrefs = getPrefs(context);
         if(smsText.toString().isEmpty() || phoneNo.isEmpty() || encryptionKey.isEmpty() ||
                 MyPrefs.getString(ServerURL,"---").equals("---") ||
                 MyPrefs.getString(ApiKey ,"---").equals("---"))
@@ -355,13 +382,12 @@ public class SMSHandler {
             errorAlert();
         }
         else {
-            MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
             final OkHttpClient client = new OkHttpClient();
             String url = MyPrefs.getString(ServerURL, "---");
             String apiUserName = MyPrefs.getString(ServerUserName, "---");
             String apiKey = MyPrefs.getString(ApiKey, "---");
             String smsBody;
-            if(smsText.getInt(MessageType)==7 | smsText.getInt(MessageType )==8)
+            if(smsText.getInt(MessageType)==7 || smsText.getInt(MessageType )==8)
             {
                 smsBody = KeyRequestTrigger+smsText;
             }
@@ -387,7 +413,6 @@ public class SMSHandler {
             h.post(() -> client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                    e.printStackTrace();
                     new DBManager(context).UpdateMessageStatus(phoneNo,smsText,1);
                 }
                 @Override

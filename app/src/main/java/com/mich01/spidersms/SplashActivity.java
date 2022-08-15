@@ -1,25 +1,24 @@
 package com.mich01.spidersms;
 
 
-import static com.mich01.spidersms.Crypto.PKI_Cipher.GenerateNewKey;
 import static com.mich01.spidersms.Crypto.PKI_Cipher.GeneratePrivateKey;
-import static com.mich01.spidersms.Data.StringsConstants.global_pref;
+import static com.mich01.spidersms.Data.StringsConstants.SetupComplete;
+import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
+import static com.mich01.spidersms.Prefs.PrefsMgr.getPrefs;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.mich01.spidersms.Backend.BackendFunctions;
 import com.mich01.spidersms.Setup.SetupActivity;
@@ -30,9 +29,7 @@ import java.util.Objects;
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity
 {
-    SharedPreferences preferences;
     int First_Run = 0;
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -40,26 +37,14 @@ public class SplashActivity extends AppCompatActivity
         setContentView(R.layout.activity_splash); Objects.requireNonNull(getSupportActionBar()).hide();
         if (!BackendFunctions.checkRoot() || BackendFunctions.checkRoot())
         {
-            preferences = getSharedPreferences(global_pref, Context.MODE_PRIVATE);
-            if (preferences.getLong("InstalledTimestamp", 0) == 0)
-            {
-                GeneratePrivateKey();
-                String SharedKeys =GenerateNewKey();
-                SharedPreferences.Editor PrefEditor;
-                PrefEditor = preferences.edit();
-                PrefEditor.putLong("InstalledTimestamp", System.currentTimeMillis());
-                PrefEditor.apply();
-            }
-            {
-                CheckPermissions();
-            }
+           checkInstallationStatus();
         }
         else {
             AlertDialog alertDialog = new AlertDialog.Builder(SplashActivity.this).create();
-            alertDialog.setTitle("Error");
+            alertDialog.setTitle(R.string.error);
             alertDialog.setIcon(R.drawable.ic_baseline_error_outline_24);
             alertDialog.setMessage(getString(R.string.rooted_device_error));
-            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.exit_btn),
+            alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.exit_btn),
                     (dialog, which) -> {
                         dialog.dismiss();
                         finish();
@@ -68,43 +53,54 @@ public class SplashActivity extends AppCompatActivity
             alertDialog.show();
         }
     }
+
+    private void checkInstallationStatus() {
+        MyPrefs = getPrefs(this);
+        if (MyPrefs.getLong("InstalledTimestamp", 0) == 0)
+        {
+            GeneratePrivateKey();
+            SharedPreferences.Editor PrefEditor;
+            PrefEditor = MyPrefs.edit();
+            PrefEditor.putLong("InstalledTimestamp", System.currentTimeMillis());
+            PrefEditor.apply();
+        }else
+        {
+            CheckPermissions();
+        }
+    }
+
     public void CheckPermissions()
     {
-        if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS)  != PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)  != PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECEIVE_SMS)  != PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)  != PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)  != PackageManager.PERMISSION_GRANTED )
+        if(ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS)  != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)  != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECEIVE_SMS)  != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)  != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)  != PackageManager.PERMISSION_GRANTED )
         {
             RequestPermissions();
         }
         else
         {
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    First_Run=preferences.getInt("SetupComplete", 0);
-                    Intent i;
-                    if (First_Run == 0)
-                    {
-                        i = new Intent(SplashActivity.this, SetupActivity.class);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                MyPrefs = getPrefs(this);
+                First_Run=MyPrefs.getInt(SetupComplete, 0);
+                Intent i;
+                if (First_Run == 0)
+                {
+                    i = new Intent(SplashActivity.this, SetupActivity.class);
 
-                    } else {
-                        i = new Intent(SplashActivity.this, UnlockActivity.class);
-                    }
-                    startActivity(i);
-                    overridePendingTransition(R.transition.fade_in, R.transition.fade_out);
-                    finish();
+                } else {
+                    i = new Intent(SplashActivity.this, UnlockActivity.class);
                 }
+                startActivity(i);
+                overridePendingTransition(R.transition.fade_in, R.transition.fade_out);
+                finish();
             }, 1000);
         }
     }
     public void RequestPermissions()
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
             requestPermissions(new String[]{Manifest.permission.SEND_SMS,Manifest.permission.READ_CONTACTS,Manifest.permission.CAMERA,Manifest.permission.RECEIVE_SMS,Manifest.permission.READ_EXTERNAL_STORAGE},1111);
-        }
         CheckPermissions();
     }
 }

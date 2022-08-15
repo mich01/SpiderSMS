@@ -1,7 +1,14 @@
 package com.mich01.spidersms.Adapters;
 
 
+import static com.mich01.spidersms.Data.StringsConstants.CName;
+import static com.mich01.spidersms.Data.StringsConstants.ContactID;
+import static com.mich01.spidersms.Data.StringsConstants.CalledBy;
+import static com.mich01.spidersms.Data.StringsConstants.Contact;
 import static com.mich01.spidersms.Data.StringsConstants.C_ID;
+import static com.mich01.spidersms.Data.StringsConstants.ContactName;
+import static com.mich01.spidersms.Data.StringsConstants.Data;
+import static com.mich01.spidersms.Data.StringsConstants.PubKey;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -35,14 +42,14 @@ import com.mich01.spidersms.UI.TextDrawable.TextDrawable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ContactAdapter extends ArrayAdapter<Contact>
 {
-    ArrayList<Contact> myContact;
+    List<Contact> myContact;
     Context context;
 
-    public ContactAdapter(@NonNull Context c, int resource, @NonNull ArrayList<Contact> contacts) {
+    public ContactAdapter(@NonNull Context c, int resource, @NonNull List<Contact> contacts) {
         super(c, resource, contacts);
         this.myContact = contacts;
         context =c;
@@ -77,9 +84,9 @@ public class ContactAdapter extends ArrayAdapter<Contact>
             {
                 Toast.makeText(context, myContact.get(position).getContactNames(), Toast.LENGTH_LONG).show();
                 Intent chatIntent = new Intent(context, ChatActivity.class);
-                chatIntent.putExtra("ContactID", myContact.get(position).getCID());
-                chatIntent.putExtra("ContactName", myContact.get(position).getContactNames());
-                chatIntent.putExtra("CalledBy", HomeActivity.class.getSimpleName());
+                chatIntent.putExtra(ContactID, myContact.get(position).getCID());
+                chatIntent.putExtra(ContactName, myContact.get(position).getContactNames());
+                chatIntent.putExtra(CalledBy, HomeActivity.class.getSimpleName());
                 chatIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(chatIntent);
                 //ERROR REPORTED HERE
@@ -88,13 +95,13 @@ public class ContactAdapter extends ArrayAdapter<Contact>
             else
             {
                 AlertDialog.Builder alert = new AlertDialog.Builder(v.getRootView().getContext());
-                alert.setTitle("SPerform Action "+myContact.get(position).getContactNames());
-                alert.setPositiveButton("INVITE", (dialog, whichButton) -> {
+                alert.setTitle(R.string.perform_action+myContact.get(position).getContactNames());
+                alert.setPositiveButton(R.string._invite, (dialog, whichButton) -> {
                     String appURL = context.getString(R.string.share_app);
                     new SMSHandler(v.getRootView().getContext()).sendPlainSMS(myContact.get(position).getCID(),appURL);
                 });
 
-                alert.setNeutralButton("DELETE",
+                alert.setNeutralButton(R.string._delete,
                         (dialog, whichButton) -> {
                     new DBManager(context).DeleteContact(myContact.get(position).getCID());
                     HomeActivity.rePopulateChats(context);
@@ -102,7 +109,7 @@ public class ContactAdapter extends ArrayAdapter<Contact>
                     dialog.dismiss();
                 });
                 alert.show();
-                alert.setNegativeButton("CANCEL",
+                alert.setNegativeButton(R.string._cancel,
                         (dialog, whichButton) -> {
                         });
                 alert.show();
@@ -113,25 +120,23 @@ public class ContactAdapter extends ArrayAdapter<Contact>
             {
                 JSONObject contactJson = new JSONObject();
                 try {
-                    contactJson.put("Data","Contact");
+                    contactJson.put(Data,Contact);
                     contactJson.put(C_ID,  myContact.get(position).getCID());
-                    contactJson.put("CName", myContact.get(position).getContactNames());
-                    contactJson.put("PubKey", myContact.get(position).getPubKey());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                    contactJson.put(CName, myContact.get(position).getContactNames());
+                    contactJson.put(PubKey, myContact.get(position).getPubKey());
+                } catch (JSONException ignored) {}
                 Intent qrIntent = new Intent(context, DataQRGenerator.class);
-                qrIntent.putExtra("Contact", contactJson.toString());
-                qrIntent.putExtra("SContactID", myContact.get(position).getCID());
+                qrIntent.putExtra(Contact, contactJson.toString());
+                qrIntent.putExtra(ContactID, myContact.get(position).getCID());
                 qrIntent.putExtra(C_ID, myContact.get(position).getCID());
-                qrIntent.putExtra("ContactName", myContact.get(position).getContactNames());
+                qrIntent.putExtra(ContactName, myContact.get(position).getContactNames());
                 qrIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(qrIntent);
                 ((ContactsActivity)context).finish();
             }
             else
             {
-                Toast.makeText(context,"You cant Share this Contact" , Toast.LENGTH_LONG).show();
+                Toast.makeText(context,R.string.cant_share_contact, Toast.LENGTH_LONG).show();
             }
             return false;
         });

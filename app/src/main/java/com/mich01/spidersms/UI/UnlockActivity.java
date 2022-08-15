@@ -1,11 +1,11 @@
 package com.mich01.spidersms.UI;
 
-import static com.mich01.spidersms.Data.StringsConstants.global_pref;
+import static com.mich01.spidersms.Data.StringsConstants.MyPinHash;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
+import static com.mich01.spidersms.Prefs.PrefsMgr.getPrefs;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,12 +16,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.R;
@@ -34,17 +34,14 @@ public class UnlockActivity extends AppCompatActivity {
     private Executor executor;
     ImageView UnlockStatus;
     EditText UserPin;
-    private BiometricPrompt biometricPrompt;
-    private BiometricPrompt.PromptInfo promptInfo;
+    Context context;
 
-    public UnlockActivity() {
-    }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        context = this;
         setContentView(R.layout.activity_unlock);
         UserPin = findViewById(R.id.txt_user_pin);
         UnlockStatus = findViewById(R.id.img_lock_status);
@@ -57,16 +54,16 @@ public class UnlockActivity extends AppCompatActivity {
     }
     public void getBiometrics()
     {
+        final BiometricPrompt biometricPrompt;
         biometricPrompt = new BiometricPrompt(UnlockActivity.this,
                 executor, new BiometricPrompt.AuthenticationCallback() {
             @Override
             public void onAuthenticationError(int errorCode,
                                               @NonNull CharSequence errString) {
                 super.onAuthenticationError(errorCode, errString);
-                SnackBarAlert("Authentication Method Changed: " );
+                SnackBarAlert(context.getResources().getString(R.string.authentication_mode_changed));
             }
 
-            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void onAuthenticationSucceeded(
                     @NonNull BiometricPrompt.AuthenticationResult result) {
@@ -82,11 +79,11 @@ public class UnlockActivity extends AppCompatActivity {
                 SnackBarAlertError();
             }
         });
-
+        BiometricPrompt.PromptInfo promptInfo;
         promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Biometric login for my app")
-                .setSubtitle("Log in using your biometric credential")
-                .setNegativeButtonText("Use account password")
+                .setTitle(context.getResources().getString(R.string.biometric_title))
+                .setSubtitle(context.getResources().getString(R.string.biometric_subtitle))
+                .setNegativeButtonText(context.getResources().getString(R.string.biometric_alternative))
                 .build();
 
         biometricPrompt.authenticate(promptInfo);
@@ -97,30 +94,28 @@ public class UnlockActivity extends AppCompatActivity {
         UserPin.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+                //Do Nothing for now
             }
-
-            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                MyPrefs = UnlockActivity.this.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
-                if(!UserPin.getText().toString().isEmpty() & PKI_Cipher.ComputeHash(UserPin.getText().toString()).equals(MyPrefs.getString("MyPinHash", "0")))
+                MyPrefs = getPrefs(context);
+                if(!UserPin.getText().toString().isEmpty() && PKI_Cipher.ComputeHash(UserPin.getText().toString()).equals(MyPrefs.getString(MyPinHash, "0")))
                 {
                     UnlockStatus.setImageResource(R.drawable.ic_unlocked_fingerprint_24);
                     startActivity(new Intent(UnlockActivity.this, HomeActivity.class));
                     finish();
                 }
             }
-
             @Override
             public void afterTextChanged(Editable editable) {
+                //Do Nothing for now
             }
         });
     }
 
     private void SnackBarAlertError() {
 
-            Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), "Authentication failed", Snackbar.LENGTH_LONG);
+            Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), R.string.authentication_failed, BaseTransientBottomBar.LENGTH_LONG);
             TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
             SnackBarView.setTextColor(ContextCompat.getColor(UnlockActivity.this, R.color.white));
             SnackBarView.setBackgroundColor(ContextCompat.getColor(UnlockActivity.this, R.color.error));
@@ -131,7 +126,7 @@ public class UnlockActivity extends AppCompatActivity {
 
     public void SnackBarAlert(String AlertMessage)
     {
-        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), AlertMessage, Snackbar.LENGTH_LONG);
+        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), AlertMessage, BaseTransientBottomBar.LENGTH_LONG);
         TextView SnackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
         SnackBarView.setTextColor(ContextCompat.getColor(UnlockActivity.this, R.color.white));
         SnackBarView.setBackgroundColor(ContextCompat.getColor(UnlockActivity.this, R.color.darkblue));

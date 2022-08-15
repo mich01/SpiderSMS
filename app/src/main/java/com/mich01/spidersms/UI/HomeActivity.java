@@ -14,17 +14,15 @@ import static com.mich01.spidersms.Data.StringsConstants.ReadStatus;
 import static com.mich01.spidersms.Data.StringsConstants.Section;
 import static com.mich01.spidersms.Data.StringsConstants.Timestamp;
 import static com.mich01.spidersms.Data.StringsConstants.about_path;
-import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 import static com.mich01.spidersms.Data.StringsConstants.privacy_path;
+import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
+import static com.mich01.spidersms.Prefs.PrefsMgr.getPrefs;
 import static com.mich01.spidersms.Setup.SetupConfig.readScan;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -59,6 +57,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
@@ -70,7 +69,6 @@ import com.mich01.spidersms.Adapters.ChatsAdapter;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.Data.LastChat;
 import com.mich01.spidersms.R;
-import com.mich01.spidersms.Receivers.AlarmReceiver;
 import com.mich01.spidersms.Setup.ScannerSetupActivity;
 import com.mich01.spidersms.services.MainService;
 
@@ -82,7 +80,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 
-@RequiresApi(api = Build.VERSION_CODES.M)
 public class HomeActivity extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
     public static ListView chatListView;
@@ -108,25 +105,29 @@ public class HomeActivity extends AppCompatActivity {
                         snackBarAlert(getString(R.string.havent_selected_file));
                         return;
                     }
-                    int width = bitmap.getWidth();
-                    int height = bitmap.getHeight();
-                    int[] pixels = new int[width * height];
-                    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-                    bitmap.recycle();
-                    RGBLuminanceSource source = new RGBLuminanceSource(width, height, pixels);
-                    BinaryBitmap bBitmap = new BinaryBitmap(new HybridBinarizer(source));
-                    MultiFormatReader reader = new MultiFormatReader();
-                    try {
-                        Result results = reader.decode(bBitmap);
-                        JSONObject resultsJSON = new JSONObject(results.getText());
-                        readScan(HomeActivity.this, resultsJSON);
-                    } catch (NotFoundException | JSONException e) {
-                        snackBarAlert(getString(R.string.need_qr_bitmap));
-                    }
+                   generateBitmap(bitmap);
                 } catch (FileNotFoundException e) {
                     snackBarAlert(getString(R.string.cannot_open_file));
                 }
             });
+
+    private void generateBitmap(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int[] pixels = new int[width * height];
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        bitmap.recycle();
+        RGBLuminanceSource source = new RGBLuminanceSource(width, height, pixels);
+        BinaryBitmap bBitmap = new BinaryBitmap(new HybridBinarizer(source));
+        MultiFormatReader reader = new MultiFormatReader();
+        try {
+            Result results = reader.decode(bBitmap);
+            JSONObject resultsJSON = new JSONObject(results.getText());
+            readScan(HomeActivity.this, resultsJSON);
+        } catch (NotFoundException | JSONException e) {
+            snackBarAlert(getString(R.string.need_qr_bitmap));
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,10 +137,6 @@ public class HomeActivity extends AppCompatActivity {
         chatListView = findViewById(R.id.chats_list);
         progressBar = findViewById(R.id.chats_progressBar);
         statusText = findViewById(R.id.lbl_contact_Status);
-        Intent alarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, alarmIntent, PendingIntent.FLAG_MUTABLE);
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+ (60  * 1000), pendingIntent);
         Objects.requireNonNull(this.getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         this.getSupportActionBar().setCustomView(R.layout.main_action_bar);
         adapter = new ChatsAdapter(HomeActivity.this, R.layout.chat_list_item, chatsList);
@@ -148,9 +145,7 @@ public class HomeActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab_chat);
         fab.setOnClickListener(view -> {
             if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 1111);
-                }
             } else {
                 startActivity(new Intent(getApplicationContext(), ContactsActivity.class));
             }
@@ -168,9 +163,7 @@ public class HomeActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(new String[]{Manifest.permission.RECEIVE_SMS}, 1111);
-            }
         } else {
             MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
                 @Override
@@ -248,16 +241,14 @@ public class HomeActivity extends AppCompatActivity {
                 });
                 break;
             case R.id.share_contact:
-                SharedPreferences preferences = this.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+                MyPrefs = getPrefs(this);
                 JSONObject contactJson = new JSONObject();
                 try {
                     contactJson.put(Data, HelloContact);
-                    contactJson.put(C_ID, preferences.getString(MyContact, null));
-                    contactJson.put(CName, preferences.getString(ContactName, null));
+                    contactJson.put(C_ID, MyPrefs.getString(MyContact, null));
+                    contactJson.put(CName, MyPrefs.getString(ContactName, null));
                     contactJson.put(PubKey, SharePublicKey());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                } catch (JSONException ignored){}
                 Intent qrIntent = new Intent(this, DataQRGenerator.class);
                 qrIntent.putExtra(Contact, contactJson.toString());
                 qrIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -285,29 +276,29 @@ public class HomeActivity extends AppCompatActivity {
             @SuppressLint("Range")
             @Override
             public void run() {
-                Cursor cur = new DBManager(context).getLastChatList();
-                while (cur != null && cur.moveToNext()) {
-                    if (cur.getString(cur.getColumnIndex(ContactName)) == null) {
-                        chatsList.add(new LastChat(cur.getString(cur.getColumnIndex(C_ID)),
-                                cur.getString(cur.getColumnIndex(C_ID)),
-                                cur.getString(cur.getColumnIndex(MessageText)),
-                                cur.getString(cur.getColumnIndex(Timestamp)),
-                                cur.getInt(cur.getColumnIndex(ReadStatus))));
-                    } else {
-                        chatsList.add(new LastChat(cur.getString(cur.getColumnIndex(C_ID)),
-                                cur.getString(cur.getColumnIndex(ContactName)),
-                                cur.getString(cur.getColumnIndex(MessageText)),
-                                cur.getString(cur.getColumnIndex(Timestamp)),
-                                cur.getInt(cur.getColumnIndex(ReadStatus))));
+                try(Cursor cur = new DBManager(context).getLastChatList())
+                {
+                    while (cur != null && cur.moveToNext()) {
+                        if (cur.getString(cur.getColumnIndex(ContactName)) == null) {
+                            chatsList.add(new LastChat(cur.getString(cur.getColumnIndex(C_ID)),
+                                    cur.getString(cur.getColumnIndex(C_ID)),
+                                    cur.getString(cur.getColumnIndex(MessageText)),
+                                    cur.getString(cur.getColumnIndex(Timestamp)),
+                                    cur.getInt(cur.getColumnIndex(ReadStatus))));
+                        } else {
+                            chatsList.add(new LastChat(cur.getString(cur.getColumnIndex(C_ID)),
+                                    cur.getString(cur.getColumnIndex(ContactName)),
+                                    cur.getString(cur.getColumnIndex(MessageText)),
+                                    cur.getString(cur.getColumnIndex(Timestamp)),
+                                    cur.getInt(cur.getColumnIndex(ReadStatus))));
+                        }
                     }
                 }
                 synchronized (this) {
                     ChatsAdapter updatedChats = new ChatsAdapter(context, R.layout.chat_list_item, chatsList);
                     try {
                         chatListView.setAdapter(updatedChats);
-                    } catch (NullPointerException e) {
-                        e.printStackTrace();
-                    }
+                    } catch (NullPointerException ignored){}
                 }
             }
         });
@@ -320,29 +311,29 @@ public class HomeActivity extends AppCompatActivity {
             @SuppressLint("Range")
             @Override
             public void run() {
-                Cursor cur = new DBManager(context).getLastChatList();
-                while (cur != null && cur.moveToNext()) {
-                    if (cur.getString(cur.getColumnIndex(ContactName)) == null) {
-                        chatsList.add(new LastChat(cur.getString(cur.getColumnIndex(C_ID)),
-                                cur.getString(cur.getColumnIndex(C_ID)),
-                                cur.getString(cur.getColumnIndex(MessageText)),
-                                cur.getString(cur.getColumnIndex(Timestamp)),
-                                cur.getInt(cur.getColumnIndex(ReadStatus))));
-                    } else {
-                        chatsList.add(new LastChat(cur.getString(cur.getColumnIndex(C_ID)),
-                                cur.getString(cur.getColumnIndex(ContactName)),
-                                cur.getString(cur.getColumnIndex(MessageText)),
-                                cur.getString(cur.getColumnIndex(Timestamp)),
-                                cur.getInt(cur.getColumnIndex(ReadStatus))));
+                try(Cursor cur = new DBManager(context).getLastChatList())
+                {
+                    while (cur != null && cur.moveToNext()) {
+                        if (cur.getString(cur.getColumnIndex(ContactName)) == null) {
+                            chatsList.add(new LastChat(cur.getString(cur.getColumnIndex(C_ID)),
+                                    cur.getString(cur.getColumnIndex(C_ID)),
+                                    cur.getString(cur.getColumnIndex(MessageText)),
+                                    cur.getString(cur.getColumnIndex(Timestamp)),
+                                    cur.getInt(cur.getColumnIndex(ReadStatus))));
+                        } else {
+                            chatsList.add(new LastChat(cur.getString(cur.getColumnIndex(C_ID)),
+                                    cur.getString(cur.getColumnIndex(ContactName)),
+                                    cur.getString(cur.getColumnIndex(MessageText)),
+                                    cur.getString(cur.getColumnIndex(Timestamp)),
+                                    cur.getInt(cur.getColumnIndex(ReadStatus))));
+                        }
                     }
                 }
                 synchronized (this) {
                     ChatsAdapter updatedChats = new ChatsAdapter(context, R.layout.chat_list_item, chatsList);
                     try {
                         chatListView.setAdapter(updatedChats);
-                    } catch (NullPointerException e) {
-                        e.printStackTrace();
-                    }
+                    } catch (NullPointerException ignored){}
                 }
             }
         });
@@ -352,7 +343,7 @@ public class HomeActivity extends AppCompatActivity {
     public void filterChats(String searchString) {
         ArrayList<LastChat> filteredChatList = new ArrayList<>();
         for (int i = 0; i < chatsList.size(); i++) {
-            if (chatsList.get(i).getContactName().toLowerCase().contains(searchString.toLowerCase()) | chatsList.get(i).getLastMessage().toLowerCase().contains(searchString.toLowerCase())) {
+            if (chatsList.get(i).getContactName().toLowerCase().contains(searchString.toLowerCase()) || chatsList.get(i).getLastMessage().toLowerCase().contains(searchString.toLowerCase())) {
                 filteredChatList.add(new LastChat(chatsList.get(i).getContactID(),
                         chatsList.get(i).getContactName(),
                         chatsList.get(i).getLastMessage(),
@@ -365,7 +356,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void snackBarAlert(String alertMessage) {
-        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), alertMessage, Snackbar.LENGTH_LONG);
+        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), alertMessage, BaseTransientBottomBar.LENGTH_LONG);
         TextView snackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
         snackBarView.setTextColor(ContextCompat.getColor(HomeActivity.this, R.color.white));
         snackBarView.setBackgroundColor(ContextCompat.getColor(HomeActivity.this, R.color.error));

@@ -1,6 +1,8 @@
 package com.mich01.spidersms.Backend;
 
 import static com.mich01.spidersms.Data.StringsConstants.CHANNEL_ID;
+import static com.mich01.spidersms.Data.StringsConstants.date_Format;
+import static com.mich01.spidersms.Data.StringsConstants.su;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -12,7 +14,7 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -36,10 +38,9 @@ public class BackendFunctions
     {
         Process process = null;
         try {
-            process = Runtime.getRuntime().exec("su");
+            process = Runtime.getRuntime().exec(su);
         } catch (Exception e)
         {
-            e.printStackTrace();
             return false;
         }
         finally {
@@ -47,9 +48,8 @@ public class BackendFunctions
             {
                 try {
                     process.destroy();
-                }
-                catch (Exception ignored){
-                    Log.i("SpiderSMS","Works well");
+                } finally {
+                    process.destroy();
                 }
             }
         }
@@ -73,28 +73,27 @@ public class BackendFunctions
         try {
             new DBManager(context).updateLastMessage(sender, messageReceived, 0, 0);
             new DBManager(context).AddChatMessage(sender,1,messageReceived,0);
+        }finally {
             ChatActivity.populateChatView(context.getApplicationContext());
             HomeActivity.rePopulateChats(context.getApplicationContext());
             HomeActivity.adapter.notifyDataSetChanged();
             AlertUser(context, context.getString(R.string.new_message_alert), context.getString(R.string.action_message));
-        }catch (Exception e){
-            e.printStackTrace();
         }
     }
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public void keyStatusChanged(Context context, String Sender, String MessageReceived)
     {
         try {
             new DBManager(context).AddChatMessage(Sender,1,MessageReceived,3);
-        }catch (Exception e){
-            e.printStackTrace();
+        }
+        finally {
+            Toast.makeText(context, Sender+" KeyChanged",Toast.LENGTH_LONG).show();
         }
     }
 
     public String convertTime(long time)
     {
         Date date = new Date(time);
-        Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+        Format format = new SimpleDateFormat(date_Format);
         return format.format(date);
     }
     public void AlertUser(Context context, String AlertMessage, String ActionMessage)

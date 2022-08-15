@@ -5,21 +5,18 @@ import static com.mich01.spidersms.Data.StringsConstants.AppName;
 import static com.mich01.spidersms.Data.StringsConstants.C_ID;
 import static com.mich01.spidersms.Data.StringsConstants.Contact;
 import static com.mich01.spidersms.Data.StringsConstants.ContactName;
+import static com.mich01.spidersms.Data.StringsConstants.KeyConfirmTrigger;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -28,6 +25,11 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
 
@@ -36,8 +38,7 @@ import org.json.JSONObject;
 
 import java.util.Objects;
 
-import androidmads.library.qrgenearator.QRGContents;
-import androidmads.library.qrgenearator.QRGEncoder;
+
 
 @RequiresApi(api = Build.VERSION_CODES.R)
 public class DataQRGenerator extends AppCompatActivity {
@@ -47,7 +48,6 @@ public class DataQRGenerator extends AppCompatActivity {
     Button shareQRContact;
     String inputValue;
     Bitmap bitmap;
-    QRGEncoder qrgEncoder;
     JSONObject contactJSON;
     String contactID;
     Context context;
@@ -68,9 +68,7 @@ public class DataQRGenerator extends AppCompatActivity {
         try {
             contactJSON = new JSONObject(inputValue);
             contactID = contactJSON.getString(C_ID);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        } catch (JSONException ignored) {}
         if(bundle.getString(ContactName)==null)
         {
             contactName.setText(R.string.my_contact);
@@ -78,26 +76,8 @@ public class DataQRGenerator extends AppCompatActivity {
         }
         if (inputValue.length() > 0)
         {
-            WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
-            Display display = manager.getDefaultDisplay();
-            Point point = new Point();
-            display.getSize(point);
-            int width = point.x;
-            int height = point.y;
-            int smallerDimension = Math.min(width, height);
-            smallerDimension = smallerDimension * 3 / 4;
-            qrgEncoder = new QRGEncoder(
-                    inputValue, null,
-                    QRGContents.Type.TEXT,
-                    smallerDimension);
-            qrgEncoder.setColorBlack(Color.BLACK);
-            qrgEncoder.setColorWhite(Color.WHITE);
-            try {
-                bitmap = qrgEncoder.getBitmap();
-                qRImage.setImageBitmap(bitmap);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            //Encode with a QR Code image
+            generateQR(inputValue);
         } else {
             Toast.makeText(this, getString(R.string.value_required),Toast.LENGTH_LONG).show();
         }
@@ -110,12 +90,9 @@ public class DataQRGenerator extends AppCompatActivity {
                 shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
                 shareIntent.setType("image/png");
                 startActivity(Intent.createChooser(shareIntent, ContactName));
-            }catch (Exception e)
-            {
-                e.printStackTrace();
-            }
+            }catch (Exception ignored){}
             finally {
-                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,AppName+"-", contactID);
+                String tempFile = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,AppName+KeyConfirmTrigger, contactID);
                 Uri bmpUri = Uri.parse(tempFile);
                 final Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -133,10 +110,8 @@ public class DataQRGenerator extends AppCompatActivity {
                     try {
                         HomeActivity.rePopulateChats(DataQRGenerator.this);
                         HomeActivity.adapter.notifyDataSetChanged();
-                    }catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }finally {
+                    }catch (Exception ignored){}
+                    finally {
                         finish();
                     }
             });
@@ -152,5 +127,17 @@ public class DataQRGenerator extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void generateQR(String ContactValue) {
+        MultiFormatWriter writer = new MultiFormatWriter();
+        try {
+            BitMatrix matrix = writer.encode(ContactValue, BarcodeFormat.QR_CODE, 600, 600);
+            BarcodeEncoder encoder = new BarcodeEncoder();
+            bitmap = encoder.createBitmap(matrix);
+            //set data image to imageview
+            qRImage.setImageBitmap(bitmap);
+
+        } catch (WriterException ignored){}
     }
 }

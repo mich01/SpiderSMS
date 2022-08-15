@@ -82,19 +82,18 @@ public class TextDrawable extends ShapeDrawable {
         canvas.translate(r.left, r.top);
 
         // draw text
-        int width = this.width < 0 ? r.width() : this.width;
-        int height = this.height < 0 ? r.height() : this.height;
-        int fontSize = this.fontSize < 0 ? (Math.min(width, height) / 2) : this.fontSize;
-        textPaint.setTextSize(fontSize);
-        canvas.drawText(text, width / 2, height / 2 - ((textPaint.descent() + textPaint.ascent()) / 2), textPaint);
-
+        int Width = this.width < 0 ? r.width() : this.width;
+        int Height = this.height < 0 ? r.height() : this.height;
+        int FontSize = this.fontSize < 0 ? (Math.min(Width, Height) / 2) : this.fontSize;
+        textPaint.setTextSize(FontSize);
+        canvas.drawText(text, (float) Width / 2, (float) Height / 2 - ((textPaint.descent() + textPaint.ascent()) / 2), textPaint);
         canvas.restoreToCount(count);
 
     }
 
     private void drawBorder(Canvas canvas) {
         RectF rect = new RectF(getBounds());
-        rect.inset(borderThickness/2, borderThickness/2);
+        rect.inset( (float) borderThickness/2, (float) borderThickness/2);
 
         if (shape instanceof OvalShape) {
             canvas.drawOval(rect, borderPaint);

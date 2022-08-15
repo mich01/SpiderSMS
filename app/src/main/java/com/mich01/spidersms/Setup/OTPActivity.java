@@ -6,13 +6,11 @@ import static com.mich01.spidersms.Data.StringsConstants.ContactName;
 import static com.mich01.spidersms.Data.StringsConstants.DEFAULT_PREF_VALUE;
 import static com.mich01.spidersms.Data.StringsConstants.MyContact;
 import static com.mich01.spidersms.Data.StringsConstants.SetupComplete;
-import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
-import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
+import static com.mich01.spidersms.Prefs.PrefsMgr.getPrefs;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,7 +18,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.FirebaseException;
@@ -41,7 +38,7 @@ public class OTPActivity extends AppCompatActivity {
     ImageView otpStatus;
     Button verifyOTP;
     EditText otpText;
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    SharedPreferences.Editor MyPrefsEditor;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +51,6 @@ public class OTPActivity extends AppCompatActivity {
         contactName = bundle.getString(ContactName);
         String phoneNumber = APPEND_PARAM+contactID;
         // The test phone number and code should be whitelisted in the console.
-
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseAuthSettings firebaseAuthSettings = firebaseAuth.getFirebaseAuthSettings();
 
@@ -74,19 +70,44 @@ public class OTPActivity extends AppCompatActivity {
                     @Override
                     public void onVerificationFailed(@NonNull FirebaseException e) {
                         //Doesn't really need add
-                        Toast.makeText(OTPActivity.this, "Verification Failed "+e, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(OTPActivity.this, R.string.verification_failed, Toast.LENGTH_SHORT).show();
                     }
 
                 })
                 .build();
         PhoneAuthProvider.verifyPhoneNumber(options);
-        verifyOTP.setOnClickListener(view -> completeSetup());
+        verifyOTP.setOnClickListener(view ->checkOTP(phoneNumber));
     }
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void checkOTP(String phoneNumber)
+    {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuthSettings firebaseAuthSettings = firebaseAuth.getFirebaseAuthSettings();
+        firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber(phoneNumber, DEFAULT_PREF_VALUE);
+
+        PhoneAuthOptions options = PhoneAuthOptions.newBuilder(firebaseAuth)
+                .setPhoneNumber(phoneNumber)
+                .setTimeout(120L, TimeUnit.SECONDS)
+                .setActivity(this)
+                .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    @Override
+                    public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
+                        completeSetup();
+                    }
+
+                    @Override
+                    public void onVerificationFailed(@NonNull FirebaseException e) {
+                        //Doesn't really need add
+                        Toast.makeText(OTPActivity.this, R.string.verification_failed, Toast.LENGTH_SHORT).show();
+                    }
+
+                })
+                .build();
+        PhoneAuthProvider.verifyPhoneNumber(options);
+    }
     public void completeSetup()
     {
         otpStatus.setImageResource(R.drawable.otp_success);
-        MyPrefs = OTPActivity.this.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+        MyPrefs = getPrefs(this);
         MyPrefsEditor = MyPrefs.edit();
         MyPrefsEditor.putString(MyContact, contactID);
         MyPrefsEditor.putString(ContactName, contactName);
@@ -94,5 +115,6 @@ public class OTPActivity extends AppCompatActivity {
         MyPrefsEditor.apply();
         MyPrefsEditor.commit();
         startActivity(new Intent(OTPActivity.this, HomeActivity.class));
+        finish();
     }
 }

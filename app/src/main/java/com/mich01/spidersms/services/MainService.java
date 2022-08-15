@@ -1,6 +1,7 @@
 package com.mich01.spidersms.services;
 
 import static com.mich01.spidersms.Data.StringsConstants.ALARM_LENGTH;
+import static com.mich01.spidersms.Data.StringsConstants.AppName;
 import static com.mich01.spidersms.Data.StringsConstants.CHANNEL_ID;
 
 import android.app.AlarmManager;
@@ -46,8 +47,7 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        String channelName = "SpiderSMS";
-        NotificationChannel chan = new NotificationChannel(CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+        NotificationChannel chan = new NotificationChannel(CHANNEL_ID, AppName, NotificationManager.IMPORTANCE_NONE);
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -65,7 +65,7 @@ public class MainService extends Service {
         Notification notification = notificationBuilder.setOngoing(true)
                 .setSmallIcon(R.drawable.spider_logo)
                 .setLargeIcon(icon)
-                .setContentTitle("App is active")
+                .setContentTitle(context.getResources().getString(R.string.app_active))
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();

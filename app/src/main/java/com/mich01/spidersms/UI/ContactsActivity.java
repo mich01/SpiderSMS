@@ -14,7 +14,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Gravity;
@@ -33,13 +32,13 @@ import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
@@ -61,10 +60,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 
-@RequiresApi(api = Build.VERSION_CODES.M)
 public class ContactsActivity extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
     private static ListView contactListView;
+    Context context;
     private static ContactAdapter adapter;
     TextView statustext;
     ProgressBar progressBar;
@@ -88,29 +87,35 @@ public class ContactsActivity extends AppCompatActivity {
                         snackBarAlert(getString(R.string.havent_selected_file));
                         return;
                     }
-                    int width = bitmap.getWidth();
-                    int height = bitmap.getHeight();
-                    int[] pixels = new int[width * height];
-                    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-                    bitmap.recycle();
-                    RGBLuminanceSource source = new RGBLuminanceSource(width, height, pixels);
-                    BinaryBitmap bBitmap = new BinaryBitmap(new HybridBinarizer(source));
-                    MultiFormatReader reader = new MultiFormatReader();
-                    try {
-                        Result results = reader.decode(bBitmap);
-                        JSONObject resultsJSON = new JSONObject(results.getText());
-                        readScan(ContactsActivity.this, resultsJSON);
-                    } catch (NotFoundException | JSONException e) {
-                        snackBarAlert(getString(R.string.need_qr_bitmap));
-                    }
+                   generateBitmap(bitmap);
                 } catch (FileNotFoundException e) {
                     snackBarAlert(getString(R.string.cannot_open_file));
                 }
             });
+
+    private void generateBitmap(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int[] pixels = new int[width * height];
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        bitmap.recycle();
+        RGBLuminanceSource source = new RGBLuminanceSource(width, height, pixels);
+        BinaryBitmap bBitmap = new BinaryBitmap(new HybridBinarizer(source));
+        MultiFormatReader reader = new MultiFormatReader();
+        try {
+            Result results = reader.decode(bBitmap);
+            JSONObject resultsJSON = new JSONObject(results.getText());
+            readScan(ContactsActivity.this, resultsJSON);
+        } catch (NotFoundException | JSONException e) {
+            snackBarAlert(getString(R.string.need_qr_bitmap));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        context = this;
         setContentView(R.layout.activity_contacts);
         contactListView = findViewById(R.id.contacts_list);
         progressBar = findViewById(R.id.contacts_progressBar);
@@ -132,7 +137,7 @@ public class ContactsActivity extends AppCompatActivity {
         // Implementing setOnRefreshListener on SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener(() -> {
             swipeRefreshLayout.setRefreshing(false);
-            dialog = ProgressDialog.show(ContactsActivity.this, "Updating Contacts",
+            dialog = ProgressDialog.show(ContactsActivity.this,context.getResources().getString(R.string.contacts_update),
                     getString(R.string.updating_contacts), true);
             dialog.setIcon(R.drawable.update_24);
             // User defined method to shuffle the array list items
@@ -169,38 +174,35 @@ public class ContactsActivity extends AppCompatActivity {
 
         };
         menu.findItem(R.id.search_contact).setOnActionExpandListener(onActionExpandListener);
-        menu.findItem(R.id.add_contact).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                Button scanQRButton;
-                Button selectFileButton;
-                AlertDialog.Builder builder = new AlertDialog.Builder(ContactsActivity.this);
-                ViewGroup viewGroup = findViewById(android.R.id.content);
-                LayoutInflater inflater = ContactsActivity.this.getLayoutInflater();
-                View dialogView = inflater.inflate(R.layout.activity_config_choice, viewGroup, false);
-                builder.setView(dialogView);
-                scanQRButton = dialogView.findViewById(R.id.cmdNavigateToQR);
-                selectFileButton = dialogView.findViewById(R.id.cmdFilechooser);
-                AlertDialog alertDialog = builder.create();
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                alertDialog.show();
-                scanQRButton.setOnClickListener(v -> {
-                    startActivity(new Intent(getApplicationContext(), ScannerSetupActivity.class));
+        menu.findItem(R.id.add_contact).setOnMenuItemClickListener(menuItem -> {
+            Button scanQRButton;
+            Button selectFileButton;
+            AlertDialog.Builder builder = new AlertDialog.Builder(ContactsActivity.this);
+            ViewGroup viewGroup = findViewById(android.R.id.content);
+            LayoutInflater inflater1 = ContactsActivity.this.getLayoutInflater();
+            View dialogView = inflater1.inflate(R.layout.activity_config_choice, viewGroup, false);
+            builder.setView(dialogView);
+            scanQRButton = dialogView.findViewById(R.id.cmdNavigateToQR);
+            selectFileButton = dialogView.findViewById(R.id.cmdFilechooser);
+            AlertDialog alertDialog = builder.create();
+            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            alertDialog.show();
+            scanQRButton.setOnClickListener(v -> {
+                startActivity(new Intent(getApplicationContext(), ScannerSetupActivity.class));
+                alertDialog.dismiss();
+            });
+            selectFileButton.setOnClickListener(v -> {
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1111);
+                } else {
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    gerConfigBMPFile.launch(intent);
                     alertDialog.dismiss();
-                });
-                selectFileButton.setOnClickListener(v -> {
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1111);
-                    } else {
-                        Intent intent = new Intent();
-                        intent.setType("image/*");
-                        intent.setAction(Intent.ACTION_GET_CONTENT);
-                        gerConfigBMPFile.launch(intent);
-                        alertDialog.dismiss();
-                    }
-                });
-                return false;
-            }
+                }
+            });
+            return false;
         });
         SearchView searchView= (SearchView) menu.findItem(R.id.search_contact).getActionView();
         searchText = findViewById(R.id.search_contact);
@@ -233,7 +235,7 @@ public class ContactsActivity extends AppCompatActivity {
             adapter = new ContactAdapter(adapter.getContext(), R.layout.contact_item,contacts);
             contactListView.setAdapter(adapter);
             adapter.notifyDataSetChanged();
-            Snackbar snackbar = Snackbar.make(contactListView, "Contacts Updated", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(contactListView, R.string.contacts_updated, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setBackgroundTint(Color.GREEN);
             snackbar.setTextColor(Color.BLACK);
             snackbar.show();
@@ -251,7 +253,7 @@ public class ContactsActivity extends AppCompatActivity {
                     adapter = new ContactAdapter(adapter.getContext(), R.layout.contact_item,contacts);
                     contactListView.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
-                    Snackbar snackbar = Snackbar.make(contactListView, R.string.contacts_updated, Snackbar.LENGTH_LONG);
+                    Snackbar snackbar = Snackbar.make(contactListView, R.string.contacts_updated, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.setBackgroundTint(Color.GREEN);
                     snackbar.setTextColor(Color.BLACK);
                     snackbar.show();
@@ -277,7 +279,7 @@ public class ContactsActivity extends AppCompatActivity {
     }
     public void snackBarAlert(String alertMessage)
     {
-        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), alertMessage, Snackbar.LENGTH_LONG);
+        Snackbar mSnackBar = Snackbar.make(findViewById(android.R.id.content), alertMessage, BaseTransientBottomBar.LENGTH_LONG);
         TextView snackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
         snackBarView.setTextColor(ContextCompat.getColor(ContactsActivity.this, R.color.white));
         snackBarView.setBackgroundColor(ContextCompat.getColor(ContactsActivity.this, R.color.error));

@@ -8,13 +8,11 @@ import static com.mich01.spidersms.Data.StringsConstants.IV;
 import static com.mich01.spidersms.Data.StringsConstants.MyPinHash;
 import static com.mich01.spidersms.Data.StringsConstants.Salt;
 import static com.mich01.spidersms.Data.StringsConstants.SetupComplete;
-import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
+import static com.mich01.spidersms.Prefs.PrefsMgr.getPrefs;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -22,15 +20,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.hbb20.CountryCodePicker;
 import com.mich01.spidersms.Crypto.PKI_Cipher;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 public class SetupActivity extends AppCompatActivity {
     Button registerUserBtn;
@@ -42,7 +43,6 @@ public class SetupActivity extends AppCompatActivity {
     CountryCodePicker ccp;
 
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,21 +110,19 @@ public class SetupActivity extends AppCompatActivity {
             else
             {
                 Snackbar snackbar;
-                snackbar =Snackbar.make(view,R.string.pin_setup_failed,Snackbar.LENGTH_LONG);
+                snackbar =Snackbar.make(view,R.string.pin_setup_failed, BaseTransientBottomBar.LENGTH_LONG);
                 snackbar.getView().setBackgroundColor(ContextCompat.getColor(SetupActivity.this, R.color.error));
                 snackbar.show();
             }
         });
     }
 
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private boolean setKeyPin(String pin)
     {
         boolean completed;
         String pinHash = PKI_Cipher.ComputeHash(pin);
         new DBManager(SetupActivity.this);
-        MyPrefs = SetupActivity.this.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+        MyPrefs = getPrefs(this);
         MyPrefsEditor = MyPrefs.edit();
         MyPrefsEditor.putString(MyPinHash, pinHash);
         MyPrefsEditor.putInt(SetupComplete, 0);
@@ -151,7 +149,7 @@ public class SetupActivity extends AppCompatActivity {
         if(txtPinNumber.length()==4 && txtUserName.length()>0 && txtPhoneNumber.length()>0)
         {
             Snackbar snackbar;
-            snackbar = Snackbar.make(view,R.string.pin_setup_successful,Snackbar.LENGTH_LONG);
+            snackbar = Snackbar.make(view,R.string.pin_setup_successful, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.getView().setBackgroundColor(ContextCompat.getColor(SetupActivity.this, R.color.light_blue_600));
             snackbar.show();
             Intent i = new Intent(SetupActivity.this, OTPActivity.class);

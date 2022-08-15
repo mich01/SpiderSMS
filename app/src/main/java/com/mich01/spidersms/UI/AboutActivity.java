@@ -1,5 +1,7 @@
 package com.mich01.spidersms.UI;
 
+import static com.mich01.spidersms.Data.StringsConstants.Section;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -22,7 +24,7 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
         browserBundles = getIntent().getExtras();
         browserURL = browserBundles.getString("URL");
-        content = browserBundles.getString("Section");
+        content = browserBundles.getString(Section);
         contentView = findViewById(R.id.about_webview);
         contentView.getSettings().setJavaScriptEnabled(false);
         setTitle(content);

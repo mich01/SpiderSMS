@@ -11,22 +11,21 @@ import static com.mich01.spidersms.Data.StringsConstants.ProxyNumber;
 import static com.mich01.spidersms.Data.StringsConstants.ProxyPubKey;
 import static com.mich01.spidersms.Data.StringsConstants.ServerURL;
 import static com.mich01.spidersms.Data.StringsConstants.ServerUserName;
-import static com.mich01.spidersms.Data.StringsConstants.global_pref;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
 import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefsEditor;
+import static com.mich01.spidersms.Prefs.PrefsMgr.getPrefs;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mich01.spidersms.DB.DBManager;
 import com.mich01.spidersms.R;
@@ -38,7 +37,6 @@ import org.json.JSONObject;
 
 public class SetupConfig
 {
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public static void readScan(Context context, JSONObject input) throws JSONException {
         switch (input.getString(Data))
         {
@@ -67,7 +65,7 @@ public class SetupConfig
         try
         {
             JSONObject configJson = new JSONObject(data);
-            MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+            MyPrefs = getPrefs(context);
             MyPrefsEditor = MyPrefs.edit();
             MyPrefsEditor.putString(ServerURL, configJson.get(ServerURL).toString());
             MyPrefsEditor.putString(ProxyNumber,configJson.get(ProxyNumber).toString());
@@ -79,12 +77,10 @@ public class SetupConfig
             ((ScannerSetupActivity)context).finish();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             new SetupConfig().snackBarError(context.getString(R.string.error_invalid_data),context);
             return false;
         }
     }
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public static void confirmUpdate(Context context, JSONObject input)
     {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
@@ -92,6 +88,7 @@ public class SetupConfig
         alert.setPositiveButton(R.string.update, (dialog, whichButton) -> {
             if(configServer(context,input.toString()))
             {
+                MyPrefs = getPrefs(context);
                 if(MyPrefs.getInt(DBExists,0)==0)
                 {
                     context.startActivity(new Intent(context, UnlockActivity.class));
@@ -115,7 +112,7 @@ public class SetupConfig
         alert.setTitle(R.string.are_you_sure_proxy_update);
         alert.setPositiveButton(R.string.update, (dialog, whichButton) -> {
             try {
-                MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+                MyPrefs = getPrefs(context);
                 MyPrefsEditor = MyPrefs.edit();
                 MyPrefsEditor.putString(ProxyNumber,configJson.getString(ProxyNumber));
                 MyPrefsEditor.putString(ProxyPubKey,configJson.getString(ProxyPubKey));
@@ -123,9 +120,7 @@ public class SetupConfig
                 MyPrefsEditor.commit();
                 new SetupConfig().snackBarAlert(context.getString(R.string.proxy_number_updated),context);
                 ((ScannerSetupActivity)context).finish();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            } catch (JSONException ignored){}
         });
 
         alert.setNegativeButton(R.string.cancel,
@@ -138,7 +133,7 @@ public class SetupConfig
         alert.setTitle(R.string.are_you_sure_api);
         alert.setPositiveButton(R.string.update, (dialog, whichButton) -> {
             try {
-                MyPrefs = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+                MyPrefs = getPrefs(context);
                 MyPrefsEditor = MyPrefs.edit();
                 MyPrefsEditor.putString(ServerURL, configJson.get(ServerURL).toString());
                 MyPrefsEditor.putString(ServerUserName,configJson.get(ServerUserName).toString());
@@ -146,9 +141,7 @@ public class SetupConfig
                 MyPrefsEditor.apply();
                 MyPrefsEditor.commit();
                 new SetupConfig().snackBarAlert(context.getString(R.string.api_updated_success), context);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            } catch (JSONException ignored){}
         });
 
         alert.setNegativeButton(R.string.cancel,
@@ -159,32 +152,28 @@ public class SetupConfig
     {
         Snackbar mSnackBar;
         try {
-            mSnackBar = Snackbar.make(((ScannerSetupActivity) context).findViewById(android.R.id.content), alertMessage, Snackbar.LENGTH_LONG);
+            mSnackBar = Snackbar.make(((ScannerSetupActivity) context).findViewById(android.R.id.content), alertMessage, BaseTransientBottomBar.LENGTH_LONG);
             TextView snackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
             snackBarView.setTextColor(ContextCompat.getColor(context, R.color.black));
             snackBarView.setBackgroundColor(ContextCompat.getColor(context, R.color.green));
             snackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             snackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
             mSnackBar.show();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
+        }catch (Exception ignored){}
 
     }
     public void snackBarError(String alertMessage, Context context)
     {
         Snackbar mSnackBar;
         try {
-            mSnackBar = Snackbar.make(((ScannerSetupActivity) context).findViewById(android.R.id.content), alertMessage, Snackbar.LENGTH_LONG);
+            mSnackBar = Snackbar.make(((ScannerSetupActivity) context).findViewById(android.R.id.content), alertMessage, BaseTransientBottomBar.LENGTH_LONG);
             TextView snackBarView = (mSnackBar.getView()).findViewById(R.id.snackbar_text);
             snackBarView.setTextColor(ContextCompat.getColor(context, R.color.white));
             snackBarView.setBackgroundColor(ContextCompat.getColor(context, R.color.error));
             snackBarView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             snackBarView.setGravity(Gravity.CENTER_HORIZONTAL);
             mSnackBar.show();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
+        }catch (Exception ignored){}
 
     }
 }

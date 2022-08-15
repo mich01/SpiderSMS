@@ -23,7 +23,9 @@
     <string name="enter_otp_number">Enter OTP Number</string>
     <string name="verify_otp">Verify OTP</string>
     <string name="cancel">Cancel</string>
+    <string name="exception">"Exception"</string>
     <string name="update">Update</string>
+    <string name="sms_sent">SMS sent</string>
     <string name="otp_status">OTP Status</string>
     <string name="share_app">You can download and Contact me using this app https://play.google.com/store/apps/details?id=com.mich01.spidersms</string>
     <string name="share_app_link">Share App Link</string>
@@ -72,7 +74,31 @@
     <string name="cannot_open_file">Cannot open file</string>
     <string name="value_required">Value Required</string>
     <string name="yes">Yes</string>
+    <string name="ok">OK</string>
+    <string name="_invite">INVITE</string>
+    <string name="_delete">DELETE</string>
+    <string name="_cancel">CANCEL</string>
+    <string name="cant_share_contact">You cant Share this Contact </string>
+    <string name="perform_action">Perform Action </string>
     <string name="search_contacts">Search Contact..</string>
     <string name="t_n_c"><![CDATA[SpiderSMS T&C]]></string>
     <string name="sure_delete_conversation">Are you sure you want to delete this conversation</string>
+    <string name="failed">Failed</string>
+    <string name="generic_failure">Generic failure</string>
+    <string name="no_servie">No service</string>
+    <string name="null_pdu">Null PDU</string>
+    <string name="radio_off">Radio off</string>
+    <string name="sms_delivered">SMS delivered</string>
+    <string name="sms_not_delivered">SMS not delivered</string>
+    <string name="failed_to_update">Has Failed to Update</string>
+    <string name="updated_contact">Has Updated their Contacts</string>
+    <string name="shared_key_changed">---Shared Key Changed---</string>
+    <string name="app_active">App is active</string>
+    <string name="verification_failed">"Verification Failed "</string>
+    <string name="contacts_update">Contacts Updating</string>
+    <string name="authentication_mode_changed">"Authentication Method Changed: "</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="biometric_title">Biometric login for my app</string>
+    <string name="biometric_subtitle">Log in using your biometric credential</string>
+    <string name="biometric_alternative">Use account password</string>
 </resources>

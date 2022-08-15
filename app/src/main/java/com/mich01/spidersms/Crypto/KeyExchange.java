@@ -13,12 +13,11 @@ import static com.mich01.spidersms.Data.StringsConstants.Pub_Key;
 import static com.mich01.spidersms.Data.StringsConstants.Secret;
 import static com.mich01.spidersms.Data.StringsConstants.SecretKey;
 import static com.mich01.spidersms.Data.StringsConstants.ServerURL;
-import static com.mich01.spidersms.Data.StringsConstants.global_pref;
+import static com.mich01.spidersms.Prefs.PrefsMgr.MyPrefs;
+import static com.mich01.spidersms.Prefs.PrefsMgr.getPrefs;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -40,18 +39,17 @@ import javax.crypto.NoSuchPaddingException;
 public class KeyExchange
 {
     Context context;
-    SharedPreferences preferences;
     public KeyExchange(Context context) {
         this.context = context;
     }
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public void FirstExchange(String contact_ID, String PublicKey, JSONObject ContactKeyJSON)
     {
-        preferences = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+
+        MyPrefs = getPrefs(context);
         try {
-            ContactKeyJSON.put(ContactTarget,preferences.getString(MyContact,"0"));
-            ContactKeyJSON.put(CName,preferences.getString(ContactName,"--"));
-            if(BackendFunctions.isConnectedOnline(context) && !preferences.getString(ServerURL,"---").equals("---"))
+            ContactKeyJSON.put(ContactTarget,MyPrefs.getString(MyContact,"0"));
+            ContactKeyJSON.put(CName,MyPrefs.getString(ContactName,"--"));
+            if(BackendFunctions.isConnectedOnline(context) && !MyPrefs.getString(ServerURL,"---").equals("---"))
             {
                 new SMSHandler(context).sendSMSOnline(contact_ID, ContactKeyJSON, PublicKey);
             }
@@ -59,15 +57,12 @@ public class KeyExchange
             {
                 new SMSHandler(context).sendEncryptedSMS(contact_ID, ContactKeyJSON, PublicKey, null,null,3);
             }
-        } catch (JSONException | NoSuchPaddingException | InvalidKeyException | InvalidKeySpecException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        }
+        } catch (JSONException | NoSuchPaddingException | InvalidKeyException | InvalidKeySpecException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | NullPointerException ignored) {}
     }
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public void VerifyContact(JSONObject ContactObject)
     {
-        preferences = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
-        String Contact_ID = null;
+        MyPrefs = getPrefs(context);
+        String Contact_ID;
         String ContactHash;
         String KeyHash;
         String PublicKey;
@@ -91,12 +86,11 @@ public class KeyExchange
                 {
                     ContactKeyJSON.put(MessageType,6);
                 }
-                Log.i("key M!",Contact_ID);
-                ContactKeyJSON.put(ContactTarget,preferences.getString(MyContact,NewContact));
+                ContactKeyJSON.put(ContactTarget,MyPrefs.getString(MyContact,NewContact));
                 ContactKeyJSON.put(Secret,ContactObject.getString(Secret));
                 ContactKeyJSON.put(SecretKey,KeyHash);
                 new DBManager(context).VerifyContactPK(Contact_ID,ContactHash);
-                if(BackendFunctions.isConnectedOnline(context) && !preferences.getString(ServerURL,"---").equals("---"))
+                if(BackendFunctions.isConnectedOnline(context) && !MyPrefs.getString(ServerURL,"---").equals("---"))
                 {
                     new SMSHandler(context).sendSMSOnline(Contact_ID, ContactKeyJSON, PublicKey);
                 }
@@ -105,19 +99,17 @@ public class KeyExchange
                     new SMSHandler(context).sendEncryptedSMS(Contact_ID, ContactKeyJSON, PublicKey,null,null,3);
                 }
             }
-        } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
-            e.printStackTrace();
-        }
+        } catch (NullPointerException | JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException ignored) {}
     }
     @RequiresApi(api = Build.VERSION_CODES.S)
     public void RequestContact(String CID)
     {
-        preferences = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+        MyPrefs = getPrefs(context);
         JSONObject MyContactJSON = new JSONObject();
         try {
-            MyContactJSON.put(ContactTarget,preferences.getString(MyContact,"0"));
+            MyContactJSON.put(ContactTarget,MyPrefs.getString(MyContact,"0"));
             MyContactJSON.put(MessageType,7);
-            if(BackendFunctions.isConnectedOnline(context) && !preferences.getString(ServerURL,"---").equals("---"))
+            if(BackendFunctions.isConnectedOnline(context) && !MyPrefs.getString(ServerURL,"---").equals("---"))
             {
                 new SMSHandler(context).sendSMSOnline(CID, MyContactJSON, "--");
             }
@@ -125,22 +117,20 @@ public class KeyExchange
             {
                 new SMSHandler(context).sendPlainSMS(CID, MyContactJSON.toString());
             }
-        } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
-            e.printStackTrace();
-        }
+        } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException ignored) {}
     }
     @RequiresApi(api = Build.VERSION_CODES.S)
     public void RespondWithKey(String CID)
     {
 
-        preferences = context.getSharedPreferences(global_pref, Context.MODE_PRIVATE);
+        MyPrefs = getPrefs(context);
         JSONObject OtherContactJSON = new DBManager(context).GetContact(CID);
         JSONObject MyContactJSON = new JSONObject();
         try {
-            MyContactJSON.put(ContactTarget,preferences.getString(MyContact,"0"));
+            MyContactJSON.put(ContactTarget,MyPrefs.getString(MyContact,"0"));
             MyContactJSON.put(MessageType,8);
             MyContactJSON.put(Pub_Key,PKI_Cipher.SharePublicKey());
-            if(BackendFunctions.isConnectedOnline(context) && !preferences.getString(ServerURL,"---").equals("---"))
+            if(BackendFunctions.isConnectedOnline(context) && !MyPrefs.getString(ServerURL,"---").equals("---"))
             {
                 new SMSHandler(context).sendSMSOnline(CID, MyContactJSON, OtherContactJSON.getString(PubKey));
             }
@@ -148,9 +138,7 @@ public class KeyExchange
             {
                 new SMSHandler(context).sendPlainSMS(CID, MyContactJSON.toString());
             }
-        } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
-            e.printStackTrace();
-        }
+        } catch (JSONException | InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeySpecException | BadPaddingException | InvalidKeyException ignored) {}
     }
 
 }

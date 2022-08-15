@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -60,69 +59,76 @@ public class MainReceiver extends BroadcastReceiver
                     } // end for loop
                     message =messageChunk.toString();
                 } // bundle is null
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception ignored) {}
             assert message != null;
             if(message.startsWith(AppTrigger))
             {
-                try
-                {
-                    JSONObject contactJSON = new DBManager(context).GetContact(senderNum);
-                    String DecryptionKey;
-                    JSONObject smsJSON;
-
-                    if(contactJSON.length()>0 && contactJSON.getInt(Confirmed)==1)
-                    {
-                        DecryptionKey = contactJSON.getString("PrivKey");
-                        String AES_Salt = contactJSON.getString("Salt");
-                        String IV = contactJSON.getString(Secret);
-                        Log.i("key V!","Not confirmed");
-                        DecryptedSMS = new PKI_Cipher(context).Decrypt(message.replace( ">",""),DecryptionKey, AES_Salt,IV);
-                        smsJSON = new JSONObject(DecryptedSMS);
-                        ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
-
-                    }
-                    else
-                    {
-                        Log.i("key V!","Not confirmed");
-                        DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( AppTrigger,""));
-                    }
-                    smsJSON = new JSONObject(DecryptedSMS);
-                    ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
-                } catch (Exception ex)
-                {
-                    //Do Nothing
-                    Log.i("key E!",ex.getStackTrace().toString());
-                }
+                decryptPrivateKeyConversation(senderNum, message, context);
             }
             else if(message.startsWith(KeyConfirmTrigger))
             {
-                try
-                {
-                    JSONObject smsJSON;
-                        DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( KeyConfirmTrigger,""));
-                        smsJSON = new JSONObject(DecryptedSMS);
-                        ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
-
-                } catch (Exception e)
-                {
-                    //do NOTHING
-                }
+               decryptPKIConversation(senderNum, message, context);
             }
             else if(message.startsWith(APPEND_PARAM))
             {
-                JSONObject smsJSON;
-                try {
-                    DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( APPEND_PARAM,""));
-                    smsJSON = new JSONObject(DecryptedSMS);
-                    ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                decryptPublicProxiedSMS(senderNum, message, context);
             }
         }
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private void decryptPublicProxiedSMS(String senderNum, String message, Context context)
+    {
+        String DecryptedSMS;
+        JSONObject smsJSON;
+        try {
+            DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( APPEND_PARAM,""));
+            smsJSON = new JSONObject(DecryptedSMS);
+            ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
+        } catch (JSONException ignored){}
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private void decryptPKIConversation(String senderNum, String message, Context context)
+    {
+        String DecryptedSMS;
+        try
+        {
+            JSONObject smsJSON;
+            DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( KeyConfirmTrigger,""));
+            smsJSON = new JSONObject(DecryptedSMS);
+            ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
+
+        } catch (Exception ignored){}
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private void decryptPrivateKeyConversation(String senderNum, String message, Context context)
+    {
+        String DecryptedSMS;
+        try
+        {
+            JSONObject contactJSON = new DBManager(context).GetContact(senderNum);
+            String DecryptionKey;
+            JSONObject smsJSON;
+            if(contactJSON.length()>0 && contactJSON.getInt(Confirmed)==1)
+            {
+                DecryptionKey = contactJSON.getString(PrivKey);
+                String AES_Salt = contactJSON.getString(Salt);
+                String IV = contactJSON.getString(Secret);
+                DecryptedSMS = new PKI_Cipher(context).Decrypt(message.replace( AppTrigger,""),DecryptionKey, AES_Salt,IV);
+                smsJSON = new JSONObject(DecryptedSMS);
+                ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
+            }
+            else
+            {
+                DecryptedSMS = new PKI_Cipher(context).DecryptPKI(message.replace( AppTrigger,""));
+                smsJSON = new JSONObject(DecryptedSMS);
+                ProcessMessage(context.getApplicationContext(),senderNum,smsJSON);
+            }
+        } catch (Exception ignored){}
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.S)
     public void ProcessMessage(Context context, String senderNum, JSONObject smsJSON)
     {
@@ -165,8 +171,6 @@ public class MainReceiver extends BroadcastReceiver
                 smsJSON.put(C_ID,smsJSON.getString(ContactTarget));
                 new DBManager(context).UpdateContact(smsJSON, smsJSON.getString(Pub_Key).replace("\"\"", "").replace("\\++", APPEND_PARAM).replace(" ", ""));
             }
-        } catch (JSONException e) {
-            //Error here so Do NOTHING
-        }
+        } catch (JSONException ignored){}
     }
 }
