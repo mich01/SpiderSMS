@@ -63,6 +63,7 @@ public class SplashActivity extends AppCompatActivity
             PrefEditor = MyPrefs.edit();
             PrefEditor.putLong("InstalledTimestamp", System.currentTimeMillis());
             PrefEditor.apply();
+            CheckPermissions();
         }else
         {
             CheckPermissions();

@@ -16,6 +16,7 @@ import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -162,7 +163,7 @@ public class PKI_Cipher
                             KeyProperties.PURPOSE_DECRYPT)
                             .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
                             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_OAEP)
-                            .setUserAuthenticationRequired(true)
+                            .setUserAuthenticationRequired(false)
                             .build());
             keyPairGenerator.generateKeyPair();
         } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException ignored) {}
@@ -195,7 +196,7 @@ public class PKI_Cipher
             cipher = Cipher.getInstance(cypherInstanceRSA);
             cipher.init(Cipher.ENCRYPT_MODE, publiKey,spec);
             CipherText =  Base64.encodeToString(cipher.doFinal(data.getBytes(StandardCharsets.UTF_8)), Base64.DEFAULT);
-
+            Log.i("SMS: ",CipherText);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException ignored){}
         return CipherText;
     }
