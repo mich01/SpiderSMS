@@ -1,0 +1,18 @@
+
+m	java:S117s"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ç¤Â†8àÃÆˆ¯0
+n	java:S117á"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ç¤Â†8àÃÆˆ¯0
+n	java:S117"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ç¤Â†8àÃÆˆ¯0
+™
+AYJe6pYSHa3afe4jmmlU	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(ÊÍéåûÿÿÿÿ2mich018ˆÖ¡Ñí/
+w	java:S116G"VRename this field "RandomValue" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ë¯‡®ûÿÿÿÿ8àÃÆˆ¯0
+l
+AYJe6pYTHa3afe4jmmls
+java:S1874Z"2Remove this use of "getDefault"; it is deprecated.(ª¡Ä}2mich018¸áóÛ¥0
+]
+java:S1172q";Remove these unused method parameters "phoneNo", "smsText".(äÀ·Ôúÿÿÿÿ8àÃÆˆ¯0
+m
+AYJe6pYTHa3afe4jmmly
+java:S1874º"2Remove this use of "getDefault"; it is deprecated.(ª¡Ä}2mich018¸áóÛ¥0
+m
+AYJe6pYTHa3afe4jmml3
+java:S1874ä"2Remove this use of "getDefault"; it is deprecated.(ª¡Ä}2mich018¸áóÛ¥0

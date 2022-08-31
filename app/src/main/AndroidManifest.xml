@@ -71,7 +71,6 @@
                 <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
         </receiver>
-
         <activity
             android:name=".UI.AboutActivity"
             android:exported="false"

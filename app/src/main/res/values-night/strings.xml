@@ -1,21 +1,34 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="version_number">V1.0</string>
-    <string name="lbl_phone_number">Enter Phone number</string>
     <string name="app_name">SpiderSMS</string>
+    <string name="pin_setup_failed">Pin Setup Failed</string>
+    <string name="username_field_required">Username field is required</string>
+    <string name="phone_number_field_required">Phone Number field is required</string>
+    <string name="pin_required">Pin Is Required field is required</string>
+    <string name="pin_setup_successful">Pin Setup Successful</string>
+    <string name="config_data_corrupted">Config Data Corrupted!!</string>
+    <string name="contact_added">New Contact Added</string>
+    <string name="lbl_phone_number">Enter Phone number 254 700123456</string>
+    <string name="version_number">V1.0</string>
     <string name="app_tagline">Stealthy SMS Communications</string>
     <string name="txt_unlock_instructions">Use Fingerprint or Unlock Key to use app</string>
     <string name="enter_4_digit_pin">Enter 4 Digit Pin</string>
     <string name="share_contact_qr">Share Contact QR</string>
     <string name="send_option1">Encrypt and Send Directly to</string>
+    <string name="send_option2">Encrypt and send to Covert PhoneNo</string>
+    <string name="send_option3">Encrypt and Send Using Online Service</string>
     <string name="enter_name">Enter Your Contact Name</string>
     <string name="app_logo">App Logo</string>
     <string name="unclock_device_text">Enter a 4 digit pin that you will use to unlock your device</string>
     <string name="complete_setup">Complete Setup</string>
     <string name="enter_otp_number">Enter OTP Number</string>
     <string name="verify_otp">Verify OTP</string>
+    <string name="cancel">Cancel</string>
+    <string name="exception">"Exception"</string>
+    <string name="update">Update</string>
+    <string name="sms_sent">SMS sent</string>
     <string name="otp_status">OTP Status</string>
-    <string name="share_app">You can download and Contact me using this app https://play.google.com/store/apps/details?id=com.mich01.hustlepos</string>
+    <string name="share_app">You can download and Contact me using this app https://play.google.com/store/apps/details?id=com.mich01.spidersms</string>
+    <string name="share_app_link">Share App Link</string>
     <string name="rooted_device_error">App Wont run on rooted Devices</string>
     <string name="exit_btn">EXIT</string>
     <string name="my_contact">My Contact</string>
@@ -36,6 +49,7 @@
     <string name="cannot_send_empty_message">You cannot Send an empty Message</string>
     <string name="select_file">Select Config File</string>
     <string name="scan_qr_to_config">Scan QR to Config</string>
+    <string name="updating_contacts">Updating Contacts. Please wait...</string>
     <string name="contacts_updated">Contacts Updated</string>
     <string name="do_you_want_to_delete">Are you sure you want to delete this conversation</string>
     <string name="api_updated_success">API Updated Successfully</string>
@@ -48,12 +62,11 @@
     <string name="are_you_sure_update_contact">Are you sure you want to Change This Contact\'s Information</string>
     <string name="conversation_deleted">\"Conversation Deleted: \"</string>
     <string name="drag_to_update_contact">Drag the contact list down to update your contact lost</string>
-    <string name="updating_contacts">Updating Contacts. Please wait...</string>
     <string name="confirm_delete_contact">Are yo sure they want to delete this contact?</string>
     <string name="terms_and_conditions">Terms and Conditions</string>
     <string name="about_spidersms">About SpiderSMS</string>
     <string name="empty_message_sent">Message Not sent as it was empty</string>
-    <string name="new_message_alert">"You have received a new Encrypted SMS "</string>
+    <string name="new_message_alert">You have received a new Encrypted SMS </string>
     <string name="action_message">Tap to read</string>
     <string name="contact_unavailable">Contact Unavailable</string>
     <string name="havent_selected_file">You Haven\'t selected any file</string>
@@ -65,8 +78,6 @@
     <string name="_invite">INVITE</string>
     <string name="_delete">DELETE</string>
     <string name="_cancel">CANCEL</string>
-    <string name="exception">"Exception"</string>
-    <string name="sms_sent">SMS sent</string>
     <string name="cant_share_contact">You cant Share this Contact </string>
     <string name="perform_action">Perform Action </string>
     <string name="search_contacts">Search Contact..</string>
@@ -76,6 +87,8 @@
     <string name="generic_failure">Generic failure</string>
     <string name="no_servie">No service</string>
     <string name="null_pdu">Null PDU</string>
+    <string name="set_default_sms_title">Set Default SMS app</string>
+    <string name="set_default_sms_message">Do you want to set this app as the default SMS app?</string>
     <string name="radio_off">Radio off</string>
     <string name="sms_delivered">SMS delivered</string>
     <string name="sms_not_delivered">SMS not delivered</string>

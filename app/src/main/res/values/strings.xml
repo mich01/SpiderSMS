@@ -87,6 +87,8 @@
     <string name="generic_failure">Generic failure</string>
     <string name="no_servie">No service</string>
     <string name="null_pdu">Null PDU</string>
+    <string name="set_default_sms_title">Set Default SMS app</string>
+    <string name="set_default_sms_message">Do you want to set this app as the default SMS app?</string>
     <string name="radio_off">Radio off</string>
     <string name="sms_delivered">SMS delivered</string>
     <string name="sms_not_delivered">SMS not delivered</string>

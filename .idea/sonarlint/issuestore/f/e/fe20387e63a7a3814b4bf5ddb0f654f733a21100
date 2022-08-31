@@ -1,0 +1,21 @@
+
+u
+java:S1104"SMake MyPrefs a static final constant or non-public and provide accessors if needed.(Ï¿£‹øÿÿÿÿ8¸©Øˆ¯0
+™
+AYJe6pQaHa3afe4jmmfc
+java:S1104"YMake MyPrefsEditor a static final constant or non-public and provide accessors if needed.(¼ªÍùÿÿÿÿ2mich018ˆ½Äëæ/
+O
+java:S1444"-Make this "public static MyPrefs" field final(Ï¿£‹øÿÿÿÿ8¸©Øˆ¯0
+s
+AYJe6pQaHa3afe4jmmfe
+java:S1444"3Make this "public static MyPrefsEditor" field final(¼ªÍùÿÿÿÿ2mich018ˆ½Äëæ/
+™
+AYJe6pQaHa3afe4jmmff	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(×íÜÏÿÿÿÿÿ2mich018ˆ½Äëæ/
+
+AYJe6pQaHa3afe4jmmfg	java:S116"SRename this field "_context" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(òº€²2mich018ˆ½Äëæ/
+t
+java:S3008"RRename this field "MyPrefs" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ï¿£‹øÿÿÿÿ8¸©Øˆ¯0
+˜
+AYJe6pQaHa3afe4jmmfi
+java:S3008"XRename this field "MyPrefsEditor" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¼ªÍùÿÿÿÿ2mich018ˆ½Äëæ/
+J	java:S1084")Either remove or fill this block of code.(å»çòıÿÿÿÿ8¸©Øˆ¯0

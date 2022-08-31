@@ -1,0 +1,17 @@
+
+r	java:S117*"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(­Ë§œùÿÿÿÿ8¬Ôé‰¯0
+r	java:S117R"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(­Ë§œùÿÿÿÿ8­Ôé‰¯0
+r	java:S117^"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(­Ë§œùÿÿÿÿ8­Ôé‰¯0
+r	java:S117l"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(­Ë§œùÿÿÿÿ8­Ôé‰¯0
+r	java:S117p"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¨Šé×úÿÿÿÿ8­Ôé‰¯0
+m	java:S117u"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.( ÙÄê8­Ôé‰¯0
+r	java:S117v"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÔÎ”Ñûÿÿÿÿ8­Ôé‰¯0
+v	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(’¤Ğğ8µØå‰¯0
+S
+java:S1481*"1Remove this unused "DecryptedSMS" local variable.(­Ë§œùÿÿÿÿ8îÔé‰¯0
+E	java:S108>")Either remove or fill this block of code.(¨šşµ8ñÔé‰¯0
+E	java:S108X")Either remove or fill this block of code.(€ä›ø8ôÔé‰¯0
+E	java:S108f")Either remove or fill this block of code.(¨šşµ8õÔé‰¯0
+F	java:S108")Either remove or fill this block of code.(¨šşµ8øÔé‰¯0
+p	java:S100…"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ğ­¬ıÿÿÿÿ8øÔé‰¯0
+F	java:S108®")Either remove or fill this block of code.(€ä›ø8şÔé‰¯0
