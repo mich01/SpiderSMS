@@ -1,8 +1,6 @@
 
 <
 build.gradle,f\0\f07866736216be0ee2aba49e392191aeae700a35
-k
-;app/src/main/java/com/mich01/spidersms/UI/HomeActivity.java,9\b\9b6f0b0030ed2f280508bbbe2a0b640f957255a3
 q
 Aapp/src/main/java/com/mich01/spidersms/Adapters/ChatsAdapter.java,6\1\61ef38b9c589fc88047b0d23a8af10a9ec2ae125
 j
@@ -23,3 +21,5 @@ q
 Aapp/src/main/java/com/mich01/spidersms/Receivers/MMSReceiver.java,2\8\28151946b7137a584db50552e012142ed24324dc
 9
 	README.md,8\e\8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
+m
+=app/src/main/java/com/mich01/spidersms/Crypto/PKI_Cipher.java,e\c\ecb9c690e786980b79d28541eb546b24ead5c4de

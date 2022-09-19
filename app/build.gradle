@@ -12,7 +12,7 @@ android {
         applicationId "com.mich01.spidersms"
         minSdk 23
         targetSdk 32
-        versionCode 10
+        versionCode 12  
         versionName "Genesis"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
